@@ -1,0 +1,1793 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Dosifica Rodilla</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: sistema de planes de Manuel — hoja crema, barra coral, Oswald para títulos y DM Sans para texto, bloques por tipo de trabajo con su color, tabla Ejercicio/Series/Reps/Carga/Nota. Un solo tema claro, deliberado: es una hoja de plan. */
+:root{
+  --cream:#F0EEE9; --paper:#FFFFFF; --ink:#1C1B19; --muted:#6B6862; --line:#E0DDD6; --soft:#F7F6F2;
+  --coral:#CC4D2C; --coral-soft:#F7E4DD; --green:#3D8A6A; --green-soft:#E1EFE8; --gold:#A07828; --gold-soft:#F4EBD7;
+  --purple:#6B42B8; --purple-soft:#ECE6F7; --blue:#2F6F9F; --blue-soft:#E1ECF5; --dark:#24231F;
+  --ok:#3D8A6A; --warn:#A07828; --bad:#B23A2A;
+  --display:"Oswald","Arial Narrow",Impact,sans-serif; --body:"DM Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--cream);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;margin:0}
+.wrap{max-width:1340px;margin:0 auto;padding-inline:16px;padding-block:14px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-block:4px 14px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .bar{width:6px;height:30px;background:var(--coral);border-radius:2px}
+.brand h1{font-family:var(--display);font-size:1.5rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0}
+.brand span{font-size:.8rem;color:var(--muted)}
+.pbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,input,textarea,button{font:inherit;color:inherit}
+select,input[type=text],input[type=number],textarea{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:7px 9px;min-width:0;width:100%}
+textarea{min-height:64px;resize:vertical}
+button{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 12px;cursor:pointer;font-weight:600;font-size:.88rem}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--coral);border-color:var(--coral);color:#fff}
+button.dark{background:var(--dark);border-color:var(--dark);color:#fff}
+button.ghost{background:transparent;border-style:dashed;color:var(--muted)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(290px,350px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:920px){.grid{grid-template-columns:minmax(0,1fr)}}
+aside.form{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:920px){aside.form{position:static;max-height:none}}
+fieldset{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+legend{font-family:var(--display);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--coral);padding:0;margin-bottom:4px}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:.82rem;color:var(--muted);min-width:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chk{display:flex;gap:8px;align-items:center;font-size:.86rem}
+.chk input{width:16px;height:16px;accent-color:var(--coral)}
+.rng{display:flex;gap:10px;align-items:center}
+.rng input{flex:1;accent-color:var(--coral)}
+.rng output{font-family:var(--display);font-weight:600;min-width:2.8em;text-align:right}
+hr.s{border:0;border-top:1px solid var(--line);margin:0}
+main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.small{font-size:.82rem;color:var(--muted)}
+.example{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:8px;padding:8px 12px;font-size:.86rem}
+/* cabecera estilo plan */
+.phead{display:grid;grid-template-columns:6px minmax(0,1fr);border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--paper)}
+.phead .acc{background:var(--coral)}
+.phead .in{padding:16px 18px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start}
+.trainer{font-family:var(--display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.client{font-family:var(--display);font-size:1.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;line-height:1.1;margin:4px 0 2px;text-wrap:balance}
+.meta{font-size:.9rem;color:var(--muted)}
+.badges{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.badge{font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:var(--coral);color:#fff;border-radius:6px;padding:5px 12px;font-size:.92rem}
+.badge.dk{background:var(--dark)}
+.phase{margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.phase h2{font-family:var(--display);font-size:1.25rem;font-weight:600;letter-spacing:.03em;margin:0 0 4px;text-transform:uppercase}
+.phase p{margin:0;max-width:70ch;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.mods{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.mod{font-size:.86rem;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+/* estado */
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.light{display:flex;gap:12px;align-items:flex-start;border-radius:8px;padding:12px}
+.light.g{background:var(--green-soft)} .light.y{background:var(--gold-soft)} .light.r{background:#F6DEDA}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;margin-top:4px}
+.g .dot{background:var(--ok)} .y .dot{background:var(--warn)} .r .dot{background:var(--bad)}
+.light b{display:block;font-family:var(--display);letter-spacing:.06em;text-transform:uppercase}
+.light p{margin:2px 0 0;font-size:.86rem}
+h3.sec{font-family:var(--display);font-size:.9rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px}
+ul.crit{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+ul.crit li{display:flex;gap:8px;align-items:baseline;font-size:.88rem}
+.ck{font-weight:700;width:1.3em;flex:none;text-align:center}
+.ck.y{color:var(--ok)} .ck.n{color:var(--bad)} .ck.u{color:var(--muted)}
+ul.crit input{width:15px;height:15px;accent-color:var(--green);margin:0 .15em}
+/* leyenda */
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.8rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+/* días */
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--dark);color:#fff;border-radius:8px;padding:10px 14px}
+.dayhead h3{font-family:var(--display);font-size:1.15rem;font-weight:700;letter-spacing:.1em;margin:0}
+.dayhead span{font-size:.82rem;opacity:.8}
+.blk{margin-top:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.blk .bh{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 12px;border-left:5px solid var(--c);background:var(--cs)}
+.blk .bh b{font-family:var(--display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.86rem;color:var(--c)}
+.blk .bh i{font-style:normal;font-size:.78rem;color:var(--muted)}
+.blk .bn{font-size:.82rem;color:var(--muted);padding:6px 12px 0}
+.t-ter{--c:var(--green);--cs:var(--green-soft)} .t-afe{--c:var(--purple);--cs:var(--purple-soft)} .t-sano{--c:var(--coral);--cs:var(--coral-soft)}
+.t-sup{--c:var(--coral);--cs:var(--coral-soft)} .t-core{--c:var(--ink);--cs:var(--soft)} .t-cardio{--c:var(--gold);--cs:var(--gold-soft)}
+.tbl{overflow-x:auto}
+table.pl{width:100%;border-collapse:collapse;font-size:.86rem;min-width:600px}
+table.pl th{font-family:var(--display);font-weight:500;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--paper)}
+table.pl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.pl tr:last-child td{border-bottom:0}
+table.pl td.e{font-weight:600;width:30%} table.pl td.n{color:var(--muted);font-size:.8rem;width:30%}
+table.pl td.s,table.pl td.r{white-space:nowrap}
+table.pl td.c{white-space:nowrap;color:var(--coral);font-weight:600}
+table.pl input{border:1px solid var(--line);border-radius:5px;padding:4px 6px;font-size:.84rem;background:var(--soft)}
+table.pl td.x{width:28px;padding:5px 4px}
+.xbtn{border:0;background:transparent;color:var(--muted);font-size:1.1rem;padding:0 6px;line-height:1}
+.xbtn:hover{color:var(--bad)}
+.addrow{display:flex;padding:6px 10px 8px}
+.edited{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--purple-soft);border-radius:8px;padding:8px 12px;font-size:.86rem}
+/* tabla resumen */
+table.data{width:100%;border-collapse:collapse;font-size:.84rem}
+table.data th,table.data td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.data th{font-family:var(--display);font-weight:500;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+/* evidencia */
+details.ev{margin-top:8px;font-size:.84rem}
+details.ev summary{cursor:pointer;color:var(--muted);font-weight:600;font-size:.8rem;list-style:none;display:inline-flex;gap:6px;align-items:center}
+details.ev summary::-webkit-details-marker{display:none}
+details.ev summary::before{content:"+";display:inline-block;width:1em;font-weight:700}
+details.ev[open] summary::before{content:"–"}
+details.ev ol{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.lv{font-family:var(--display);font-size:.7rem;font-weight:600;border-radius:4px;padding:0 5px;margin-right:4px}
+.lv.A{background:var(--green-soft);color:var(--green)} .lv.B{background:var(--purple-soft);color:var(--purple)} .lv.C{background:var(--gold-soft);color:var(--gold)} .lv.E{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.ref-k{color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mini{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.mini h4{margin:0 0 4px;font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:.88rem}
+.mini p{margin:4px 0;font-size:.86rem}
+details#refs > summary{cursor:pointer;list-style:none;font-family:var(--display);font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:.9rem}
+details#refs > summary::-webkit-details-marker{display:none}
+details#refs ol{font-size:.84rem;display:flex;flex-direction:column;gap:6px;padding-left:20px}
+.lvleg{display:flex;flex-wrap:wrap;gap:10px;font-size:.8rem;color:var(--muted);margin-top:8px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--dark);color:#fff;padding:8px 14px;border-radius:8px;font-size:.88rem;z-index:20}
+.confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.86rem;background:#F6DEDA;border-radius:8px;padding:8px 10px;margin-bottom:12px}
+.savestate{font-size:.78rem;color:var(--muted)}
+
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:2px solid var(--line);padding-bottom:0}
+.tabs button{border:0;border-radius:7px 7px 0 0;background:transparent;font-family:var(--display);letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--muted);padding:9px 14px;margin-bottom:-2px;border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--coral);border-bottom-color:var(--coral);background:var(--paper)}
+.badge.lt{background:transparent;color:var(--ink);border:1.5px solid var(--ink);font-size:.78rem}
+.warnchip{display:inline-block;margin-top:8px;font-size:.8rem;background:#F6DEDA;color:var(--bad);border-radius:6px;padding:3px 8px}
+.t-esp{--c:var(--blue);--cs:var(--blue-soft)}
+.cue{font-size:.76rem;color:var(--muted);font-weight:400;margin-top:2px}
+.sug{font-size:.76rem;color:var(--green);font-weight:600;margin-top:2px}
+table.pl td.e a{color:var(--blue);text-decoration:underline;text-underline-offset:2px}
+table.pl td.v input{width:9em}
+.mini-btn{font-size:.74rem;padding:3px 7px;border-radius:5px;margin-right:4px}
+.subrow td{background:var(--soft)}
+.picks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pick{display:flex;flex-direction:column;align-items:flex-start;text-align:left;font-size:.82rem;max-width:260px}
+.pick i{font-style:normal;font-weight:400;color:var(--muted);font-size:.74rem}
+.lbtn{background:var(--coral);border-color:var(--coral);color:#fff;font-size:.8rem;padding:5px 10px}
+.logf{margin-top:10px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.logf h4{margin:0;font-family:var(--display);letter-spacing:.08em;text-transform:uppercase;font-size:.88rem}
+.row5{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.meso{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.mw{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.8rem;display:flex;flex-direction:column;gap:2px;background:var(--soft)}
+.mw b{font-family:var(--display);font-weight:600;letter-spacing:.05em;font-size:.85rem}
+.mw span{color:var(--muted)}
+.mw.on{border:2px solid var(--coral);background:var(--coral-soft)}
+.mw.dl b{color:var(--green)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{display:flex;flex-direction:column;gap:2px}
+.kpi span{font-family:var(--display);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.kpi b{font-family:var(--display);font-size:1.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi i{font-style:normal;font-size:.8rem;color:var(--muted)}
+td.wrap{white-space:normal!important;min-width:200px;font-size:.78rem}
+.up{color:var(--green);font-weight:600;font-size:.76rem} .down{color:var(--bad);font-weight:600;font-size:.76rem}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
+.pill{font-size:.74rem;font-weight:600;padding:1px 8px;border-radius:99px} .pill.g{background:var(--green-soft);color:var(--green)} .pill.r{background:#F6DEDA;color:var(--bad)}
+.foot{font-size:.78rem;color:var(--muted);text-align:center;padding-block:8px}
+code{font-size:.8rem;background:var(--soft);padding:1px 5px;border-radius:4px}
+
+[hidden]{display:none!important}
+img{max-width:100%}
+.login{min-height:100vh;display:grid;place-items:center;padding:16px}
+.logcard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:24px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px}
+.logcard form{display:flex;flex-direction:column;gap:10px}
+.req{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:10px;background:var(--soft)}
+.req p{margin:6px 0}
+.reqh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill.y{background:var(--gold-soft);color:var(--gold)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<div id="login" class="login" hidden>
+  <div class="logcard">
+    <div class="brand"><div class="bar"></div><h1>Dosifica · Rodilla</h1></div>
+    <p>Entra con tu correo. Te enviamos un enlace para iniciar sesión, sin contraseña.</p>
+    <form id="loginForm"><label class="f">Correo<input type="email" id="loginEmail" autocomplete="email" required></label>
+    <button class="primary" id="loginBtn" type="submit">Enviarme el enlace</button></form>
+    <p class="small" id="loginMsg"></p>
+  </div>
+</div>
+<div id="athleteApp" class="wrap" hidden></div>
+<div id="fisioApp" hidden>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="bar"></div><h1>Dosifica · Rodilla</h1><span>rehabilitación de rodilla por RPE basada en evidencia</span></div>
+  <div class="pbar">
+    <span class="savestate" id="saveState"></span>
+    <span class="small" id="who"></span><button id="fOut">Salir</button>
+    <select id="psel" aria-label="Paciente"></select>
+    <button id="bNew">Nuevo paciente</button>
+    <button id="bDel">Eliminar</button>
+  </div>
+</header>
+<div id="delConfirm" hidden class="confirm"><span id="delTxt"></span><button id="bDelYes" class="primary">Sí, eliminar</button><button id="bDelNo">Cancelar</button></div>
+
+<div class="grid">
+<aside class="form" id="form">
+  <fieldset>
+    <legend>Deportista</legend>
+    <label class="f">Nombre<input type="text" id="nombre" data-k="nombre"></label>
+    <label class="f">Correo del deportista (para entrar a su portal)<input type="email" id="pemail" data-k="email" autocomplete="off"></label>
+    <div class="row2">
+      <label class="f">Deporte<input type="text" id="deporte" data-k="deporte"></label>
+      <label class="f">Rodilla afectada<select id="lado" data-k="lado"><option value="der">Derecha</option><option value="izq">Izquierda</option></select></label>
+    </div>
+    <label class="f">Perfil deportivo para el retorno<select id="perfil" data-k="perfil"><option value="">Sin perfil específico</option><option value="uwr">Rugby subacuático</option><option value="futbol">Fútbol</option><option value="cancha">Baloncesto o voleibol</option><option value="carrera">Carrera</option><option value="natacion">Natación</option></select></label>
+    <label class="chk"><input type="checkbox" id="consent" data-k="consent"> Consentimiento informado para tratar datos de salud firmado</label>
+    <div class="small" id="pidRow"></div>
+  </fieldset>
+  <hr class="s">
+  <fieldset>
+    <legend>Diagnóstico</legend>
+    <label class="f">Condición<select id="cond" data-k="cond">
+      <option value="tend">Tendinopatía</option><option value="pfp">Dolor patelofemoral</option><option value="men">Meniscopatía</option><option value="lca">Ligamento cruzado anterior</option></select></label>
+    <label class="f" data-show="tend">Tendón<select id="tendSub" data-k="tendSub"><option value="rot">Rotuliano</option><option value="quad">Cuadricipital</option></select></label>
+    <label class="f" data-show="men">Situación<select id="menSub" data-k="menSub">
+      <option value="cons">Conservador (sospecha clínica / imagen)</option><option value="mx">Postoperatorio · meniscectomía</option><option value="sut">Postoperatorio · sutura meniscal</option></select></label>
+    <label class="f" data-show="sut">Carga indicada por el cirujano<select id="cargaSut" data-k="cargaSut"><option value="restringida">Restringida (4–6 sem)</option><option value="inmediata">Inmediata según tolerancia</option></select></label>
+    <label class="f" data-show="lca">Situación<select id="lcaSub" data-k="lcaSub">
+      <option value="cons">No operado · manejo conservador</option><option value="pre">Preoperatorio (prehabilitación)</option><option value="post">Postoperatorio</option></select></label>
+    <div class="row2" data-show="lcapost">
+      <label class="f">Injerto<select id="injerto" data-k="injerto"><option value="hth">Hueso-tendón-hueso</option><option value="isq">Isquiotibiales</option><option value="qt">Tendón cuadricipital</option><option value="allo">Aloinjerto</option></select></label>
+      <label class="f">Semanas postop<input type="number" id="semanas" data-k="semanas" min="0" max="104"></label>
+    </div>
+    <label class="chk" data-show="lcapost"><input type="checkbox" id="suturaAsoc" data-k="suturaAsoc"> Sutura meniscal asociada</label>
+    <label class="f" data-show="menpost">Semanas postop<input type="number" id="semanasM" data-k="semanas" min="0" max="104"></label>
+    <label class="f">Fase<select id="fase" data-k="fase"></select></label>
+    <div class="row2">
+      <label class="f">Días por semana<select id="dias" data-k="dias"><option value="3">3 días</option><option value="4">4 días</option></select></label>
+      <label class="f">Semana del plan<input type="number" id="semPlan" data-k="semPlan" min="1" max="52"></label>
+    </div>
+  </fieldset>
+  <hr class="s">
+  <fieldset>
+    <legend>Estado clínico hoy</legend>
+    <label class="f">Dolor durante la carga (0–10)<span class="rng"><input type="range" id="dolor" data-k="dolor" min="0" max="10" step="1"><output id="dolorOut"></output></span></label>
+    <div class="row2">
+      <label class="f">Respuesta a las 24 h<select id="resp24" data-k="resp24"><option value="mejor">Mejor que basal</option><option value="igual">Vuelve a basal</option><option value="peor">Peor que basal</option></select></label>
+      <label class="f">Derrame (barrido)<select id="derrame" data-k="derrame"><option value="0">Cero</option><option value="1">Trazas</option><option value="2">1+</option><option value="3">2+</option><option value="4">3+</option></select></label>
+    </div>
+    <div class="row3">
+      <label class="f">Déficit ext. (°)<input type="number" id="extDef" data-k="extDef" min="0" max="40"></label>
+      <label class="f">Flexión afectada<input type="number" id="flexL" data-k="flexL" min="0" max="170"></label>
+      <label class="f">Flexión sana<input type="number" id="flexS" data-k="flexS" min="0" max="170"></label>
+    </div>
+    <label class="chk"><input type="checkbox" id="slr" data-k="slr"> Elevación de pierna recta sin déficit</label>
+    <label class="chk"><input type="checkbox" id="marcha" data-k="marcha"> Marcha sin cojera ni ayudas</label>
+  </fieldset>
+  <hr class="s">
+  <fieldset>
+    <legend>Notas clínicas</legend>
+    <textarea id="notas" data-k="notas" aria-label="Notas clínicas"></textarea>
+  </fieldset>
+</aside>
+
+<main id="out"></main>
+</div>
+</div>
+</div>
+<datalist id="exlib"></datalist>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ===================== REFERENCIAS ===================== */
+const R = {
+  aspetar:{l:'A',c:'Kotsifaki R, Korakakis V, King E, et al. Aspetar clinical practice guideline on rehabilitation after anterior cruciate ligament reconstruction. Br J Sports Med. 2023;57(9):500-514. PMID 36731908.',k:'Guía GRADE (140 ECA). La mayoría de recomendaciones tienen certeza baja; propone criterios de retorno a correr y al deporte por consenso.'},
+  vanmelick:{l:'C',c:'van Melick N, van Cingel REH, Brooijmans F, et al. Evidence-based clinical practice update: practice guidelines for anterior cruciate ligament rehabilitation. Br J Sports Med. 2016;50(24):1506-1515.',k:'Cadena abierta 90–45° desde la semana 4; rango completo de forma progresiva más adelante.'},
+  grindem:{l:'B',c:'Grindem H, Snyder-Mackler L, Moksnes H, Engebretsen L, Risberg MA. Simple decision rules can reduce reinjury risk by 84% after ACL reconstruction: the Delaware-Oslo ACL cohort study. Br J Sports Med. 2016;50(13):804-808. doi:10.1136/bjsports-2016-096031',k:'La tasa de relesión bajó 51 % por cada mes que se retrasó el retorno hasta los 9 meses; mayor simetría de cuádriceps redujo la relesión.'},
+  rambaud:{l:'C',c:'Rambaud AJM, Ardern CL, Thoreux P, Regnaux JP, Edouard P. Criteria for return to running after anterior cruciate ligament reconstruction: a scoping review. Br J Sports Med. 2018;52(22):1437-1444.',k:'El criterio más usado es el tiempo (~12 semanas); los criterios clínicos y de fuerza son heterogéneos.'},
+  kotsifaki22:{l:'B',c:'Kotsifaki A, Van Rossom S, Whiteley R, et al. Single leg vertical jump performance identifies knee function deficits at return to sport after ACL reconstruction in male athletes. Br J Sports Med. 2022;56(9):490-498.',k:'El salto vertical unipodal detecta déficits de rodilla que el hop horizontal enmascara.'},
+  wellsandt:{l:'B',c:'Wellsandt E, Failla MJ, Snyder-Mackler L. Limb symmetry indexes can overestimate knee function after anterior cruciate ligament injury. J Orthop Sports Phys Ther. 2017;47(5):334-338.',k:'El LSI sobreestima la función si el lado sano también se desacondiciona; comparar con valores previos o normativos.'},
+  frobell:{l:'A',c:'Frobell RB, Roos EM, Roos HP, Ranstam J, Lohmander LS. A randomized trial of treatment for acute anterior cruciate ligament tears. N Engl J Med. 2010;363(4):331-342. (Seguimiento a 5 años: BMJ 2013;346:f232.)',k:'KANON: rehabilitación + reconstrucción diferida opcional dio resultados similares a la reconstrucción temprana en adultos jóvenes activos.'},
+  fitzgerald:{l:'B',c:'Fitzgerald GK, Axe MJ, Snyder-Mackler L. The efficacy of perturbation training in nonoperative anterior cruciate ligament rehabilitation programs for physically active individuals. Phys Ther. 2000;80(2):128-140.',k:'El entrenamiento con perturbaciones mejoró el éxito del retorno en no operados.'},
+  failla:{l:'B',c:'Failla MJ, Logerstedt DS, Grindem H, et al. Does extended preoperative rehabilitation influence outcomes 2 years after ACL reconstruction? Am J Sports Med. 2016;44(10):2608-2614.',k:'La rehabilitación preoperatoria extendida se asoció a mejor función a 2 años.'},
+  giesche:{l:'B',c:'Giesche F, Niederer D, Banzer W, Vogt L. Evidence for the effects of prehabilitation before ACL-reconstruction on return to sport-related and self-reported knee function: a systematic review. PLoS One. 2020;15(10):e0240192.',k:'La prehabilitación mejora fuerza de cuádriceps y función autorreportada hasta 2 años; evidencia limitada en cantidad.'},
+  minshull:{l:'B',c:'Minshull C, Gallacher P, Roberts S, Barnett A, Kuiper JH, Bailey A. Contralateral strength training attenuates muscle performance loss following ACL reconstruction: a randomised-controlled trial. Eur J Appl Physiol. 2021;121(12):3551-3559.',k:'Fuerza de alta intensidad del sano (3×/sem, 8 sem, desde la sem 2): la pérdida de fuerza del cuádriceps operado a las 10 sem fue 16,6 % vs 32,0 % en control; la ventaja no se mantuvo a las 24 sem.'},
+  zhang25:{l:'B',c:'The effects of contralateral limb cross-education training on post-surgical rehabilitation outcomes in patients with ACL reconstruction: a randomized controlled trial. J Orthop Surg Res. 2025. doi:10.1186/s13018-024-05430-3',k:'ECA (n = 40, desde sem 5–6): 6 semanas de educación cruzada mejoraron función, cinemática y equilibrio dinámico.'},
+  zult:{l:'B',c:'Zult T, Gokeler A, van Raay JJAM, et al. Cross-education does not accelerate the rehabilitation of neuromuscular functions after ACL reconstruction: a randomized controlled clinical trial. Eur J Appl Physiol. 2018;118(8):1609-1623.',k:'Resultado negativo: la educación cruzada no aceleró la recuperación. Por eso el nivel global es B (resultados mixtos).'},
+  hughes19:{l:'B',c:'Hughes L, Rosenblatt B, Haddad F, et al. Comparing the effectiveness of blood flow restriction and traditional heavy load resistance training in the post-surgery rehabilitation of ACL reconstruction patients: a UK NHS randomised controlled trial. Sports Med. 2019;49(11):1787-1805.',k:'BFR al 30 % 1RM vs carga pesada al 70 %: ganancias de fuerza e hipertrofia comparables.'},
+  hughes19p:{l:'B',c:'Hughes L, Patterson SD, Haddad F, et al. Examination of the comfort and pain experienced with blood flow restriction training during post-surgery rehabilitation of ACL reconstruction patients. Phys Ther Sport. 2019;39:90-98.',k:'Menor dolor de rodilla durante y a las 24 h con BFR; sin eventos adversos.'},
+  curran:{l:'B',c:'Curran MT, Bedi A, Mendias CL, Wojtys EM, Kujawa MV, Palmieri-Smith RM. Blood flow restriction training applied with high-intensity exercise does not improve quadriceps muscle function after ACL reconstruction: a randomized controlled trial. Am J Sports Med. 2020;48(4):825-837.',k:'Añadir BFR a cargas altas no aporta: el BFR sirve para cargas bajas cuando la carga alta no es tolerable.'},
+  patterson:{l:'C',c:'Patterson SD, Hughes L, Warmington S, et al. Blood flow restriction exercise: considerations of methodology, application, and safety. Front Physiol. 2019;10:533.',k:'Posicionamiento: 20–40 % 1RM, 40–80 % de la presión de oclusión, 30-15-15-15 reps, 30–60 s de pausa, cribado de riesgo trombótico.'},
+  breda:{l:'B',c:'Breda SJ, Oei EHG, Zwerver J, et al. Effectiveness of progressive tendon-loading exercise therapy in patients with patellar tendinopathy: a randomised clinical trial. Br J Sports Med. 2021;55(9):501-509.',k:'Carga progresiva por etapas (isométrica → isotónica → pliométrica → deporte) guiada por dolor fue superior a la excéntrica a 24 semanas.'},
+  malliaras:{l:'C',c:'Malliaras P, Cook J, Purdam C, Rio E. Patellar tendinopathy: clinical diagnosis, load management, and advice for challenging case presentations. J Orthop Sports Phys Ther. 2015;45(11):887-898.',k:'Modelo de cuatro etapas de carga según tolerancia.'},
+  kongsgaard:{l:'B',c:'Kongsgaard M, Kovanen V, Aagaard P, et al. Corticosteroid injections, eccentric decline squat training and heavy slow resistance training in patellar tendinopathy. Scand J Med Sci Sports. 2009;19(6):790-802.',k:'HSR (3×/sem, 15RM → 6RM, 3 s subir/3 s bajar) con buenos resultados clínicos a 6 meses.'},
+  silbernagel:{l:'B',c:'Silbernagel KG, Thomeé R, Eriksson BI, Karlsson J. Continued sports activity, using a pain-monitoring model, during rehabilitation in patients with Achilles tendinopathy. Am J Sports Med. 2007;35(6):897-906.',k:'Modelo de monitoreo del dolor: carga permitida si el dolor es tolerable y vuelve a basal al día siguiente. Validado en Aquiles; aquí se extrapola.'},
+  rio:{l:'B',c:'Rio E, Kidgell D, Purdam C, et al. Isometric exercise induces analgesia and reduces inhibition in patellar tendinopathy. Br J Sports Med. 2015;49(19):1277-1283.',k:'5 × 45 s al 70 % CVM redujeron el dolor de forma inmediata (n = 6).'},
+  clifford:{l:'A',c:'Clifford C, Challoumas D, Paul L, Syme G, Millar NL. Effectiveness of isometric exercise in the management of tendinopathy: a systematic review and meta-analysis of randomised trials. BMJ Open Sport Exerc Med. 2020;6(1):e000760.',k:'La isometría no fue superior a la isotónica, ni de forma inmediata ni a ≤ 12 semanas; la respuesta es variable entre personas.'},
+  challoumas:{l:'A',c:'Challoumas D, Pedret C, Biddle M, et al. Management of patellar tendinopathy: a systematic review and network meta-analysis of randomised studies. BMJ Open Sport Exerc Med. 2021;7(4):e001110.',k:'Isometría tan eficaz como isotónica para alivio inmediato (sin superioridad).'},
+  mohamadi:{l:'C',c:'Mohamadi A, Momenzadeh K, Masoudi A, et al. Rehabilitation following meniscal repair: a systematic review. BMJ Open Sport Exerc Med. 2018;4(1):e000212.',k:'Sin consenso sobre el protocolo óptimo; los protocolos acelerados no se asociaron a más fallos.'},
+  ojsm25:{l:'C',c:'Postoperative rehabilitation protocol after isolated meniscal repair: a systematic review. Orthop J Sports Med. 2025. doi:10.1177/23259671251357513',k:'Fallos 24,1 % (carga acelerada) vs 28,3 % (restringida); el tipo de rotura y la técnica condicionan la decisión.'},
+  skou:{l:'B',c:'Skou ST, Hölmich P, Lind M, et al. Early surgery or exercise and education for meniscal tears in young adults. NEJM Evid. 2022;1(2). (Ensayo DREAM)',k:'En 18–40 años, la cirugía temprana no fue superior al ejercicio supervisado con opción de cirugía posterior.'},
+  kise:{l:'A',c:'Kise NJ, Risberg MA, Stensrud S, et al. Exercise therapy versus arthroscopic partial meniscectomy for degenerative meniscal tear in middle aged patients: randomised controlled trial with two year follow-up. BMJ. 2016;354:i3740.',k:'El ejercicio fue igual de eficaz que la meniscectomía en roturas degenerativas.'},
+  pastora:{l:'C',c:'Pastora-Bernal JM, Estebanez-Pérez MJ, Lucena-Anton D, et al. The effectiveness and recommendation of motor imagery techniques for rehabilitation after ACL reconstruction: a systematic review. J Clin Med. 2021;10(3):428.',k:'Seis estudios con resultados desiguales; sin evidencia clara de beneficio añadido, aunque algunos favorecen activación y fuerza.'},
+  paravlic:{l:'C',c:'Paravlic AH. Motor imagery and action observation as appropriate strategies for home-based rehabilitation: a mini-review focusing on improving physical function in orthopedic patients. Front Psychol. 2022;13:826476.',k:'Racional neural: la inhibición del cuádriceps explica gran parte de la pérdida temprana de fuerza.'},
+  abbiss:{l:'B',c:'Abbiss CR, Karagounis LG, Laursen PB, et al. Single-leg cycle training is superior to double-leg cycling in improving the oxidative potential and metabolic profile of trained skeletal muscle. J Appl Physiol. 2011;110(5):1248-1255.',k:'Ciclismo unipodal mantiene un estímulo aeróbico alto; estudio en sanos entrenados (extrapolado).'},
+  fleming:{l:'C',c:'Fleming BC, Beynnon BD, Renstrom PA, et al. The strain behavior of the anterior cruciate ligament during bicycling: an in vivo study. Am J Sports Med. 1998;26(1):109-118.',k:'La bicicleta genera tensión baja sobre el LCA, independiente de la potencia.'},
+  weakley:{l:'C',c:'Weakley J, Mann B, Banyard H, et al. Velocity-based training: from theory to application. Strength Cond J. 2021;43(2):31-49.',k:'Zonas de velocidad aproximadas y uso de pérdida de velocidad para regular el volumen.'},
+  pareja:{l:'B',c:'Pareja-Blanco F, Rodríguez-Rosell D, Sánchez-Medina L, et al. Effects of velocity loss during resistance training on athletic performance, strength gains and muscle adaptations. Scand J Med Sci Sports. 2017;27(7):724-735.',k:'Pérdida de velocidad del 20 % dio mejores ganancias de salto con menos fatiga que el 40 %.'},
+  helms:{l:'C',c:'Helms ER, Cronin J, Storey A, Zourdos MC. Application of the repetitions in reserve-based rating of perceived exertion scale for resistance training. Strength Cond J. 2016;38(4):42-49.',k:'Escala RPE basada en repeticiones en reserva (RPE 8 ≈ 2 RIR).'},
+  lesuer:{l:'B',c:'LeSuer DA, McCormick JH, Mayhew JL, Wasserstein RL, Arnold MD. The accuracy of prediction equations for estimating 1-RM performance in the bench press, squat, and deadlift. J Strength Cond Res. 1997;11(4):211-213.',k:'Las ecuaciones (Epley, Brzycki) son razonables con ≤ 10 repeticiones; pierden precisión con más.'},
+  sturgill:{l:'B',c:'Sturgill LP, Snyder-Mackler L, Manal TJ, Axe MJ. Interrater reliability of a clinical scale to assess knee joint effusion. J Orthop Sports Phys Ther. 2009;39(12):845-849.',k:'Prueba de barrido (cero, trazas, 1+, 2+, 3+) con buena fiabilidad.'},
+  exp:{l:'E',c:'Experiencia clínica y razonamiento fisiológico.',k:'Sin estudio directo para este punto concreto; ajústalo a tu criterio.'}
+};
+const LV = {A:'Metaanálisis o ECA consistentes',B:'ECA aislados o resultados mixtos',C:'Guías de consenso, revisiones con certeza baja o extrapolación',E:'Experiencia clínica'};
+
+
+/* ===================== UTILIDADES ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => (v === '' || v === null || v === undefined || isNaN(+v)) ? null : +v;
+const clone = o => JSON.parse(JSON.stringify(o));
+function getP(o, p){ return p.split('.').reduce((a,k)=> a==null?undefined:a[k], o); }
+function setP(o, p, v){ const ks=p.split('.'); let a=o; ks.slice(0,-1).forEach(k=>{ if(a[k]==null||typeof a[k]!=='object') a[k]={}; a=a[k]; }); a[ks[ks.length-1]]=v; }
+
+function blank(){
+  return {nombre:'',deporte:'',lado:'der',cond:'lca',tendSub:'rot',perfil:'',consent:false,menSub:'cons',cargaSut:'restringida',lcaSub:'post',injerto:'hth',suturaAsoc:false,semanas:0,fase:'auto',dias:'3',semPlan:1,
+    dolor:0,resp24:'igual',derrame:0,extDef:'',flexL:'',flexS:'',slr:false,marcha:false,chk:{},plans:{},notas:''};
+}
+const EXAMPLE = Object.assign(blank(), {nombre:'Ejemplo · LCA HTH',deporte:'Rugby subacuático',perfil:'uwr',cond:'lca',lcaSub:'post',injerto:'hth',semanas:18,semPlan:10,dolor:2,resp24:'igual',derrame:0,extDef:0,flexL:138,flexS:142,slr:true,marcha:true});
+
+/* ===================== CRITERIOS ===================== */
+const CR = {
+  der0:{t:'Sin derrame (barrido: cero)', f:s=> s.derrame==0},
+  derT:{t:'Derrame ≤ trazas', f:s=> s.derrame<=1},
+  der1:{t:'Derrame ≤ 1+', f:s=> s.derrame<=2},
+  ext:{t:'Extensión completa (déficit 0°)', f:s=> num(s.extDef)==null?null: num(s.extDef)<=0},
+  f90:{t:'Flexión ≥ 90°', f:s=> num(s.flexL)==null?null:num(s.flexL)>=90},
+  f110:{t:'Flexión ≥ 110°', f:s=> num(s.flexL)==null?null:num(s.flexL)>=110},
+  f120:{t:'Flexión ≥ 120°', f:s=> num(s.flexL)==null?null:num(s.flexL)>=120},
+  f95:{t:'Flexión ≥ 95 % del lado sano', f:s=> (num(s.flexL)==null||num(s.flexS)==null)?null: num(s.flexL)>=0.95*num(s.flexS)},
+  slr:{t:'Elevación de pierna recta sin déficit', f:s=> !!s.slr},
+  marcha:{t:'Marcha sin cojera ni ayudas', f:s=> !!s.marcha},
+  d3:{t:'Dolor ≤ 3/10 y vuelta a basal a las 24 h', f:s=> s.dolor<=3 && s.resp24!=='peor'},
+  d2:{t:'Dolor ≤ 2/10 y vuelta a basal a las 24 h', f:s=> s.dolor<=2 && s.resp24!=='peor'},
+  q60:{t:'Fuerza de cuádriceps ≥ 60 % del sano', m:1},
+  q70:{t:'Fuerza de cuádriceps ≥ 70 % del sano', m:1},
+  q80:{t:'Fuerza de cuádriceps ≥ 80 % del sano', m:1},
+  q90:{t:'Fuerza de cuádriceps ≥ 90 % del sano', m:1},
+  p80:{t:'Fuerza en prensa unilateral ≥ 80 % del sano', m:1},
+  p90:{t:'Fuerza en prensa unilateral ≥ 90 % del sano', m:1},
+  w6:{t:'≥ 6 semanas postoperatorias', f:s=> num(s.semanas)>=6},
+  w12:{t:'≥ 12 semanas postoperatorias', f:s=> num(s.semanas)>=12},
+  w16:{t:'≥ 16 semanas postoperatorias', f:s=> num(s.semanas)>=16},
+  w39:{t:'≥ 9 meses (39 semanas) postoperatorios', f:s=> num(s.semanas)>=39}
+};
+function critVal(id, s){ const c=CR[id]; if(c.m) return s.chk?.[id] ? true : null; return c.f(s); }
+
+/* ===================== DOSIS Y VELOCIDAD ===================== */
+const VZ = {fmax:'0,35–0,55 m/s', acel:'0,55–0,75 m/s', fv:'0,75–1,0 m/s', vf:'> 1,0 m/s'};
+// item: n nombre, d dosis, p [%min,%max] de 1RM, rpe, v zona, lift, limb, t nota técnica
+const X = (n,d,o={}) => Object.assign({n,d},o);
+
+/* ===================== PROTOCOLOS ===================== */
+const ISO_TEND = X('Extensión de rodilla isométrica a 60°','5 × 45 s · pausa 2 min',{rpe:'6–7',t:'~70 % de la contracción voluntaria máxima. 1–2 veces al día y antes de entrenar si alivia. Tendinopatía cuadricipital: empieza en 30–45° si 60° irrita.'});
+const P = {
+ tend:{label:'Tendinopatía', phases:[
+  {name:'Fase 1 · Isometría y control del dolor', when:'1–3 semanas aprox.', goal:'Bajar la irritabilidad del tendón sin dejar de cargarlo y mantener la fuerza de todo lo que no lo irrita.',
+   next:['d3'], nextLabel:'Para pasar a carga isotónica pesada',
+   blocks:[
+    {h:'Carga del tendón', ev:['breda','rio','clifford'], items:[ISO_TEND,
+      X('Sentadilla isométrica en pared o "Spanish squat"','4–5 × 30–45 s',{rpe:'6–7',t:'Rodilla a 60–70°. Dolor ≤ 3/10 durante.'})]},
+    {h:'Lo que no irrita: cadera, isquios, tríceps sural', ev:['exp'], items:[
+      X('Hip thrust','4 × 6–8',{rpe:'8',t:'Carga alta; poca demanda del tendón rotuliano.'}),
+      X('Curl femoral unilateral','3 × 8–10',{p:[70,80],rpe:'8',lift:'curl',limb:'L'}),
+      X('Elevación de talones (rodilla extendida y flexionada)','4 × 8–12',{rpe:'8'}),
+      X('Abducción de cadera en polea o banda','3 × 12–15',{rpe:'8'})]}],
+   sano:'cx', cx:{bici:'ok',remo:'cond',int:'base'}, tools:['iso','bfr']},
+  {name:'Fase 2 · Isotónica pesada (HSR)', when:'4–12 semanas aprox.', goal:'Construir capacidad de carga del tendón y fuerza máxima del cuádriceps con contracciones lentas y pesadas.',
+   next:['d3','q90'], nextLabel:'Para pasar a almacenamiento de energía',
+   blocks:[
+    {h:'Fuerza pesada lenta · 3 × semana', ev:['kongsgaard','breda','malliaras'], items:[
+      X('Prensa unilateral 0–90°','4 × 15 → 6 reps en 12 semanas',{p:[65,85],rpe:'7–9',lift:'prensa',limb:'L',v:'acel',t:'Tempo 3 s bajar / 3 s subir. Empieza en 15 reps a RPE 7 y baja a 6 reps a RPE 8–9 en 12 semanas. Sube carga cuando el dolor es ≤ 3/10 y vuelve a basal en 24 h.'}),
+      X('Sentadilla (hack o trasera)','4 × 6–8',{p:[70,85],rpe:'8',lift:'sent',v:'acel',t:'Tempo 3-0-3.'}),
+      X('Extensión de rodilla unilateral','3 × 8–12',{p:[65,80],rpe:'8',lift:'ext',limb:'L',t:'Tempo 3-0-3.'}),
+      X('Sentadilla búlgara','3 × 6–10',{rpe:'8'}),
+      X('Peso muerto rumano','3 × 6–8',{rpe:'8'})]},
+    {h:'Isometría de apoyo', ev:['rio','clifford'], items:[X('Isometría pre-entreno (opcional)','3–5 × 45 s a 60°',{rpe:'6–7',t:'Solo si al deportista le baja el dolor; no es obligatoria.'})]}],
+   sano:'cx', cx:{bici:'ok',remo:'ok',int:'int'}, tools:['iso','bfr']},
+  {name:'Fase 3 · Almacenamiento de energía', when:'Desde que tolera fuerza pesada', goal:'Reintroducir el ciclo estiramiento-acortamiento: saltos, aterrizajes y carrera, sin perder la fuerza ganada.',
+   next:['d3'], nextLabel:'Para el retorno deportivo',
+   blocks:[
+    {h:'Pliometría progresiva · cada 2–3 días', ev:['breda','malliaras'], items:[
+      X('Progresión de saltos','2–4 × 6–10 contactos · 40–80 por sesión',{rpe:'7–8',t:'Bilateral → unilateral; vertical → horizontal; poca → mucha altura de caída. Sube contactos solo con dolor ≤ 3/10 y respuesta a 24 h estable.'}),
+      X('Sentadilla con salto','4 × 4–5',{p:[30,40],lift:'sent',v:'vf',t:'Carga ligera y máxima intención. Corta la serie si el salto pierde altura o se ve más lento.'})]},
+    {h:'Mantener fuerza · 2 × semana', ev:['kongsgaard','pareja'], items:[
+      X('Sentadilla','3–4 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Prensa unilateral','3 × 5–6',{p:[80,85],rpe:'8',lift:'prensa',limb:'L'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:['iso']},
+  {name:'Fase 4 · Retorno deportivo', when:'Variable', goal:'Exponer el tendón a las demandas reales del deporte con volumen creciente.',
+   next:['d3','q90'], nextLabel:'Criterios de alta',
+   blocks:[
+    {h:'Deporte y mantenimiento', ev:['breda','malliaras'], items:[
+      X('Tareas específicas del deporte','Volumen creciente semana a semana',{t:'Mismo monitoreo de dolor. Si una sesión dispara el dolor > 5/10 o empeora a las 24 h, baja un escalón.'}),
+      X('Fuerza pesada de mantenimiento','1–2 × semana · sentadilla 3 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Saltos reactivos máximos','2 × semana · 3–4 × 5',{rpe:'8–9'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+ ]},
+ 'men-cons':{label:'Meniscopatía · conservador', phases:[
+  {name:'Fase 1 · Calmar la rodilla', when:'1–3 semanas aprox.', goal:'Controlar derrame, recuperar rango y activar cuádriceps, glúteo medio y estabilidad sin provocar síntomas mecánicos.',
+   next:['derT','ext','f95','d3','marcha'], nextLabel:'Para pasar a fuerza',
+   blocks:[
+    {h:'Activación y control', ev:['skou','exp'], items:[
+      X('Extensión terminal de rodilla (TKE) con banda','4 × 15–20',{rpe:'6–7',t:'Sostén 1–2 s en extensión completa.'}),
+      X('Isometría de cuádriceps (extensión 60° o pared 45–60°)','5 × 30–45 s',{rpe:'6–7'}),
+      X('Elevación de pierna recta','3 × 10–15',{rpe:'6'})]},
+    {h:'Glúteo medio y estabilidad', ev:['skou','exp'], items:[
+      X('Plancha lateral','3 × 20–40 s',{rpe:'7–8'}),
+      X('Abducción con banda / marcha lateral','3 × 12–15',{rpe:'8'}),
+      X('Apoyo unipodal con progresión','4 × 30–45 s',{t:'Superficie inestable → ojos cerrados → perturbaciones.'})]},
+    {h:'Cadena posterior', ev:['exp'], items:[
+      X('Puente / hip thrust','3 × 8–12',{rpe:'7–8'}),
+      X('Curl femoral unilateral','3 × 8–10',{p:[65,75],rpe:'7',lift:'curl',limb:'L',t:'Omitir si provoca dolor en la interlínea posterior.'})]}],
+   avoid:'Evita sentadilla profunda cargada y pivotes con carga hasta que la rodilla esté calmada.',
+   sano:'cx', cx:{bici:'ok',remo:'cond',int:'base'}, tools:['iso','bfr']},
+  {name:'Fase 2 · Fuerza', when:'3–8 semanas aprox.', goal:'Fuerza máxima del cuádriceps y de la cadera en rangos que no reproducen síntomas.',
+   next:['derT','q80','p80','d3'], nextLabel:'Para pasar a potencia',
+   blocks:[
+    {h:'Fuerza · 3 × semana', ev:['skou','kise','helms'], items:[
+      X('Prensa unilateral 0–70°','4 × 6–8',{p:[75,85],rpe:'8',lift:'prensa',limb:'L',v:'acel'}),
+      X('Sentadilla a cajón (≤ 90°)','4 × 5–6',{p:[75,85],rpe:'8',lift:'sent',v:'acel'}),
+      X('Extensión de rodilla 90–30°','3 × 8–10',{p:[70,80],rpe:'8',lift:'ext',limb:'L'}),
+      X('Peso muerto rumano','3 × 6–8',{rpe:'8'}),
+      X('Step-down excéntrico','3 × 8–10',{rpe:'7',t:'Control del valgo dinámico.'}),
+      X('Abducción de cadera en polea','3 × 10–12',{rpe:'8'}),
+      X('Estabilidad con perturbaciones','3–4 × 30 s',{t:'Plataforma, empujones, balón.'})]}],
+   sano:'cx', cx:{bici:'ok',remo:'ok',int:'int'}, tools:['bfr']},
+  {name:'Fase 3 · Potencia, pliometría y cambios de dirección', when:'Desde LSI ≥ 80 %', goal:'Convertir fuerza en potencia y tolerancia a fuerzas de rotación.',
+   next:['q90','d3'], nextLabel:'Para el retorno deportivo',
+   blocks:[
+    {h:'Fuerza máxima · 2 × semana', ev:['pareja','weakley'], items:[
+      X('Sentadilla','4 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Prensa unilateral','3 × 4–6',{p:[80,90],rpe:'8',lift:'prensa',limb:'L',v:'fmax'})]},
+    {h:'Potencia y pliometría', ev:['exp'], items:[
+      X('Sentadilla con salto','4 × 4–5',{p:[30,40],lift:'sent',v:'vf'}),
+      X('Saltos bilaterales → unilaterales','2 × semana · 60–100 contactos',{rpe:'7–8'}),
+      X('Cambios de dirección','45° → 90° → 180° · preplanificado → reactivo',{t:'Aquí aparecen los síntomas mecánicos si van a aparecer; vigílalos.'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]},
+  {name:'Fase 4 · Retorno al deporte', when:'Variable', goal:'Volumen e intensidad del deporte completos sin derrame ni síntomas mecánicos.',
+   next:['der0','q90','d2'], nextLabel:'Criterios de alta',
+   blocks:[{h:'Deporte y mantenimiento', ev:['skou'], items:[
+      X('Entrenamiento con equipo progresivo','Volumen creciente',{t:'Si reaparece derrame o bloqueo, vuelve a fase 2 y reevalúa.'}),
+      X('Fuerza de mantenimiento','2 × semana · sentadilla 3 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+ ]},
+ 'men-mx':{label:'Meniscectomía', weeks:[0,2,6], phases:[
+  {name:'Fase 1 · Postoperatorio inmediato', when:'0–2 semanas', goal:'Carga según tolerancia, controlar derrame, extensión completa y activación del cuádriceps.',
+   next:['derT','ext','f120','slr','marcha'], nextLabel:'Para pasar a fuerza',
+   blocks:[{h:'Activación', ev:['exp','sturgill'], items:[
+      X('Isometría de cuádriceps a 0° y 60°','5–10 × 10 s',{rpe:'7–8'}),
+      X('Elevación de pierna recta','3 × 10–15'),
+      X('TKE con banda','4 × 15–20',{rpe:'6–7'}),
+      X('Deslizamiento de talón / flexión asistida','Varias veces al día'),
+      X('Glúteo medio en decúbito y puente','3 × 12–15',{rpe:'7'})]}],
+   sano:'cx', cx:{bici:'cond',remo:'brazos',int:'base'}, tools:['iso','bfr','mi']},
+  {name:'Fase 2 · Fuerza', when:'2–6 semanas', goal:'Recuperar fuerza máxima con progresión rápida si la rodilla no se inflama.',
+   next:['derT','q80','p80','d3'], nextLabel:'Para pasar a potencia',
+   blocks:[{h:'Fuerza · 3 × semana', ev:['kise','exp'], items:[
+      X('Prensa unilateral 0–90°','4 × 6–10',{p:[70,80],rpe:'7–8',lift:'prensa',limb:'L'}),
+      X('Sentadilla a cajón','4 × 6–8',{p:[70,80],rpe:'8',lift:'sent',v:'acel'}),
+      X('Extensión de rodilla','3 × 8–12',{p:[65,75],rpe:'8',lift:'ext',limb:'L'}),
+      X('Peso muerto rumano','3 × 6–8',{rpe:'8'}),
+      X('Glúteo medio y estabilidad dinámica','3 × 10–12 / 30 s',{rpe:'8'})]}],
+   sano:'cx', cx:{bici:'ok',remo:'ok',int:'int'}, tools:['bfr']},
+  {name:'Fase 3 · Potencia y retorno', when:'≥ 6 semanas', goal:'Pliometría, cambios de dirección y vuelta al deporte por criterios.',
+   next:['der0','q90','d2'], nextLabel:'Criterios de alta',
+   blocks:[{h:'Potencia y deporte', ev:['pareja','exp'], items:[
+      X('Sentadilla','4 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Sentadilla con salto','4 × 4–5',{p:[30,40],lift:'sent',v:'vf'}),
+      X('Pliometría bilateral → unilateral','2 × semana · 60–100 contactos'),
+      X('Cambios de dirección progresivos','2 × semana')]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+ ]},
+ 'men-sut':{label:'Sutura meniscal', weeks:[0,6,12,16], phases:[
+  {name:'Fase 1 · Protección de la sutura', when:'0–6 semanas', goal:'Proteger la reparación (flexión ≤ 90°), mantener la extensión completa y activar el cuádriceps.',
+   next:['w6','derT','ext','f90'], nextLabel:'Para pasar a carga progresiva',
+   blocks:[{h:'Activación en rango protegido', ev:['mohamadi','ojsm25','exp'], items:[
+      X('Isometría de cuádriceps a 0–30°','5–10 × 10 s',{rpe:'7–8'}),
+      X('Elevación de pierna recta','3 × 10–15'),
+      X('TKE con banda','4 × 15–20',{rpe:'6–7'}),
+      X('Glúteo medio en decúbito / plancha lateral','3 × 12–15 / 20–30 s',{rpe:'7–8'}),
+      X('Puente con rodilla ≤ 90°','3 × 10–12',{rpe:'7'})]}],
+   avoid:'Sin curl femoral cargado ni flexión > 90° en este período (cizalla sobre el cuerno posterior). Las roturas radiales o de raíz suelen ser más restrictivas: manda el cirujano.',
+   sano:'cx', cx:{bici:'uni',remo:'brazos',int:'base'}, tools:['iso','bfr','mi']},
+  {name:'Fase 2 · Carga progresiva', when:'6–12 semanas', goal:'Fuerza en cadena cerrada en rangos 0–60/70° y recuperar la flexión.',
+   next:['w12','derT','f120','q70'], nextLabel:'Para pasar a fuerza máxima',
+   blocks:[{h:'Fuerza en rango limitado · 3 × semana', ev:['mohamadi','exp'], items:[
+      X('Prensa unilateral 0–60°','4 × 8–12',{p:[60,75],rpe:'7',lift:'prensa',limb:'L'}),
+      X('Minisentadilla 0–60°','3 × 8–12',{p:[55,70],rpe:'7',lift:'sent'}),
+      X('Extensión de rodilla 90–30°','3 × 10–12',{p:[55,70],rpe:'7',lift:'ext',limb:'L'}),
+      X('Curl femoral ligero','3 × 12–15',{p:[40,55],rpe:'6',lift:'curl',limb:'L',t:'Desde ~8 semanas si el cirujano lo autoriza.'}),
+      X('Estabilidad unipodal','4 × 30–45 s')]}],
+   avoid:'Sin carga en flexión > 90° hasta ~12–16 semanas.',
+   sano:'cx', cx:{bici:'cond',remo:'brazos',int:'base'}, tools:['bfr','mi']},
+  {name:'Fase 3 · Fuerza máxima', when:'12–16 semanas', goal:'Cargar flexión profunda de forma progresiva y empezar a correr si cumple criterios.',
+   next:['w16','q80','f95','d3'], nextLabel:'Para pasar a potencia',
+   blocks:[{h:'Fuerza · 3 × semana', ev:['mohamadi','rambaud','exp'], items:[
+      X('Sentadilla progresando a > 90°','4 × 5–6',{p:[75,85],rpe:'8',lift:'sent',v:'acel'}),
+      X('Prensa unilateral 0–90°','4 × 6–8',{p:[75,85],rpe:'8',lift:'prensa',limb:'L'}),
+      X('Extensión de rodilla','3 × 8–10',{p:[70,80],rpe:'8',lift:'ext',limb:'L'}),
+      X('Curl femoral','3 × 8–10',{p:[65,75],rpe:'7–8',lift:'curl',limb:'L'}),
+      X('Carrera intervalada','Caminar-trotar 2–3 × semana',{t:'Solo con LSI ≥ 70 % y sin derrame.'})]}],
+   sano:'late', cx:{bici:'ok',remo:'cond',int:'int'}, tools:['bfr']},
+  {name:'Fase 4 · Potencia y retorno', when:'≥ 16 semanas (4–6 meses)', goal:'Pliometría, cambios de dirección y retorno por criterios.',
+   next:['w16','der0','q90'], nextLabel:'Criterios de alta',
+   blocks:[{h:'Potencia y deporte', ev:['pareja','exp'], items:[
+      X('Sentadilla','4 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Sentadilla con salto','4 × 4–5',{p:[30,40],lift:'sent',v:'vf'}),
+      X('Pliometría bilateral → unilateral','2 × semana · 60–100 contactos'),
+      X('Cambios de dirección','45° → 90° → 180°')]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+ ]},
+ 'lca-cons':{label:'LCA · no operado', phases:[
+  {name:'Fase 1 · Resolver déficits', when:'0–4 semanas aprox.', goal:'Rodilla sin derrame, extensión completa y cuádriceps activo.',
+   next:['derT','ext','f95','slr','marcha'], nextLabel:'Para pasar a fuerza y perturbaciones',
+   blocks:[{h:'Activación', ev:['frobell','aspetar'], items:[
+      X('Isometría de cuádriceps a 0° y 60°','5–10 × 10 s',{rpe:'8'}),
+      X('Elevación de pierna recta','3 × 10–15'),
+      X('Prensa bilateral 0–60°','3 × 10–15',{p:[50,60],rpe:'6',lift:'prensa',limb:'L'}),
+      X('Glúteo medio y puente','3 × 12–15',{rpe:'7–8'})]}],
+   sano:'cx', cx:{bici:'ok',remo:'cond',int:'base'}, tools:['iso','bfr']},
+  {name:'Fase 2 · Fuerza y perturbaciones', when:'4–12 semanas aprox.', goal:'Fuerza máxima y control neuromuscular para tolerar perturbaciones sin ceder.',
+   next:['q80','p80','derT','d3'], nextLabel:'Para pasar a potencia',
+   blocks:[
+    {h:'Fuerza · 3 × semana', ev:['frobell','aspetar'], items:[
+      X('Prensa unilateral 0–90°','4 × 6–8',{p:[75,85],rpe:'8',lift:'prensa',limb:'L',v:'acel'}),
+      X('Sentadilla','4 × 5–6',{p:[75,85],rpe:'8',lift:'sent',v:'acel'}),
+      X('Extensión de rodilla 90–45°','3 × 8–10',{p:[65,75],rpe:'8',lift:'ext',limb:'L',t:'Rango 90–45° para limitar la traslación tibial anterior.'}),
+      X('Curl femoral / nórdico','3 × 6–8',{p:[75,85],rpe:'8',lift:'curl',limb:'L'}),
+      X('Peso muerto rumano','3 × 6–8',{rpe:'8'})]},
+    {h:'Perturbaciones · 2–3 × semana', ev:['fitzgerald'], items:[
+      X('Plataforma basculante, rollerboard y plataforma deslizante','10 sesiones · 3 × 1 min por tarea',{t:'Protocolo de Fitzgerald: progresar dirección, velocidad y añadir tarea deportiva.'})]}],
+   sano:'cx', cx:{bici:'ok',remo:'ok',int:'int'}, tools:['bfr']},
+  {name:'Fase 3 · Potencia, carrera y pliometría', when:'Desde LSI ≥ 80 %', goal:'Potencia, carrera y cambios de dirección con rodilla estable.',
+   next:['q90','d2'], nextLabel:'Para el retorno deportivo',
+   blocks:[{h:'Potencia y pliometría', ev:['pareja','weakley','exp'], items:[
+      X('Sentadilla','4 × 3–5',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Sentadilla con salto','4 × 4–5',{p:[30,40],lift:'sent',v:'vf'}),
+      X('Pliometría bilateral → unilateral','2 × semana · 60–100 contactos'),
+      X('Carrera y cambios de dirección','Progresión semanal')]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]},
+  {name:'Fase 4 · Retorno al deporte', when:'Decisión compartida', goal:'Volver al deporte sin episodios de inestabilidad.',
+   next:['der0','q90'], nextLabel:'Criterios de alta',
+   blocks:[{h:'Deporte', ev:['frobell','grindem'], items:[
+      X('Entrenamiento con equipo progresivo','Volumen creciente',{t:'Un episodio de inestabilidad (giving way) cambia la indicación: reevaluar reconstrucción. En deportes con pivote el riesgo es mayor.'}),
+      X('Fuerza de mantenimiento','2 × semana',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+ ]},
+ 'lca-pre':{label:'LCA · prehabilitación', phases:[
+  {name:'Prehabilitación', when:'Hasta la cirugía (ideal ≥ 4–6 semanas)', goal:'Llegar a quirófano sin derrame, con extensión completa y el cuádriceps lo más fuerte posible: es el mejor predictor del postoperatorio.',
+   next:['derT','ext','f95','marcha','slr','q80'], nextLabel:'Listo para cirugía',
+   blocks:[
+    {h:'Fuerza · 3 × semana', ev:['failla','giesche'], items:[
+      X('Prensa unilateral 0–90°','4 × 6–8',{p:[75,85],rpe:'8',lift:'prensa',limb:'L',v:'acel'}),
+      X('Extensión de rodilla 90–45°','4 × 6–10',{p:[70,80],rpe:'8',lift:'ext',limb:'L'}),
+      X('Sentadilla','4 × 5–6',{p:[70,85],rpe:'8',lift:'sent',v:'acel'}),
+      X('Curl femoral','3 × 6–8',{p:[75,85],rpe:'8',lift:'curl',limb:'L'}),
+      X('Peso muerto rumano','3 × 6–8',{rpe:'8'})]},
+    {h:'Control neuromuscular', ev:['fitzgerald','failla'], items:[
+      X('Perturbaciones y equilibrio','2–3 × semana · 3 × 1 min por tarea')]}],
+   note:'Meta de LSI de cuádriceps: ≥ 80 % mínimo, ideal ≥ 90 % (consenso).',
+   sano:'cx', cx:{bici:'ok',remo:'ok',int:'int'}, tools:['bfr','iso']}
+ ]},
+ 'lca-post':{label:'LCA · postoperatorio', weeks:[0,2,8,16,26], phases:[
+  {name:'Fase 1 · Protección y activación', when:'≈ 0–2 semanas', goal:'Controlar el derrame, extensión completa ya, y el cuádriceps encendido desde el día 1.',
+   next:['der1','ext','f90','slr','marcha'], nextLabel:'Para pasar a fuerza base',
+   blocks:[
+    {h:'Activación', ev:['aspetar','vanmelick'], items:[
+      X('Isometría de cuádriceps a 0° y 60°','5–10 × 10 s',{rpe:'8',t:'Contracción máxima tolerable; dolor ≤ 3/10.'}),
+      X('Electroestimulación del cuádriceps (si dispones)','10–15 contracciones · 1–2 × día',{t:'Aspetar la recomienda en fase temprana.'}),
+      X('Elevación de pierna recta','3 × 10–15',{t:'Si hay déficit de extensión activa, no progresar a cargas.'}),
+      X('Extensión pasiva: talón elevado / prono','3–5 min · varias veces al día'),
+      X('Prensa o minisentadilla 0–45°','3 × 10–15',{p:[30,45],rpe:'5–6',lift:'prensa',limb:'L'})]},
+    {h:'Cadera', ev:['exp'], items:[X('Abducción de cadera y puente','3 × 12–15',{rpe:'7'})]}],
+   sano:'cx', cx:{bici:'uni',remo:'brazos',int:'base'}, tools:['iso','bfr','mi']},
+  {name:'Fase 2 · Fuerza base', when:'≈ 2–8 semanas', goal:'Fuerza en cadena cerrada y abierta, flexión ≥ 120°, sin derrame.',
+   next:['derT','ext','f120','d3','q60'], nextLabel:'Para pasar a fuerza máxima',
+   blocks:[{h:'Fuerza · 3–4 × semana', ev:['aspetar','vanmelick','helms'], items:[
+      X('Prensa unilateral 0–90°','4 × 8–12',{p:[60,75],rpe:'7–8',lift:'prensa',limb:'L'}),
+      X('Sentadilla a cajón (90°)','3–4 × 6–10',{p:[60,75],rpe:'7–8',lift:'sent'}),
+      X('Extensión de rodilla 90–45°','3 × 10–15',{p:[50,70],rpe:'7',lift:'ext',limb:'L',t:'Desde la semana 4. Rango restringido protege el injerto.'}),
+      X('Curl femoral','3 × 10–12',{p:[50,65],rpe:'7',lift:'curl',limb:'L'}),
+      X('Peso muerto rumano','3 × 8',{rpe:'7–8'}),
+      X('Step-up / step-down','3 × 10',{rpe:'7'}),
+      X('Elevación de talones unilateral','4 × 12',{rpe:'8'}),
+      X('Apoyo unipodal y perturbaciones suaves','4 × 30–45 s')]}],
+   sano:'cx', cx:{bici:'cond',remo:'brazos',int:'base'}, tools:['bfr','mi']},
+  {name:'Fase 3 · Fuerza máxima y retorno a correr', when:'≈ 8–16 semanas', goal:'Fuerza máxima, empezar a correr con criterios y pliometría bilateral básica.',
+   next:['der0','f95','q80','p80','d3'], nextLabel:'Para pasar a potencia y pliometría',
+   extra:{label:'Criterios para empezar a correr', list:['w12','derT','ext','f95','q70','d2'], ev:['rambaud','aspetar']},
+   blocks:[
+    {h:'Fuerza máxima · 3 × semana', ev:['aspetar','weakley','pareja'], items:[
+      X('Sentadilla','4 × 4–6',{p:[75,85],rpe:'8',lift:'sent',v:'acel'}),
+      X('Prensa unilateral','4 × 5–8',{p:[75,85],rpe:'8',lift:'prensa',limb:'L'}),
+      X('Extensión de rodilla','4 × 6–10',{p:[70,80],rpe:'8',lift:'ext',limb:'L',t:'90–45° hasta ~12 semanas; luego rango completo progresivo.'}),
+      X('Curl femoral / nórdico excéntrico','3 × 6–8',{p:[70,80],rpe:'8',lift:'curl',limb:'L'}),
+      X('Sentadilla búlgara','3 × 6–8',{rpe:'8'})]},
+    {h:'Pliometría y carrera', ev:['aspetar','rambaud'], items:[
+      X('Saltos bilaterales submáximos','2–3 × 8–10 contactos',{t:'Aterrizaje silencioso, rodilla alineada.'}),
+      X('Carrera intervalada','Caminar-trotar 2–3 × semana',{t:'Solo con los criterios de carrera cumplidos.'})]}],
+   sano:'late', cx:{bici:'ok',remo:'cond',int:'int'}, tools:['bfr']},
+  {name:'Fase 4 · Potencia, pliometría y cambios de dirección', when:'≈ 4–6 meses', goal:'Convertir la fuerza en potencia, pliometría unilateral y cambios de dirección.',
+   next:['q90','d2'], nextLabel:'Para el retorno al deporte',
+   blocks:[
+    {h:'Fuerza máxima · 2 × semana', ev:['pareja','weakley'], items:[
+      X('Sentadilla','4 × 3–5',{p:[85,90],rpe:'8–9',lift:'sent',v:'fmax'}),
+      X('Prensa unilateral','4 × 4–6',{p:[80,90],rpe:'8',lift:'prensa',limb:'L',v:'fmax'}),
+      X('Extensión de rodilla','4 × 6–8',{p:[75,85],rpe:'8',lift:'ext',limb:'L'})]},
+    {h:'Potencia y pliometría · 2 × semana', ev:['aspetar','kotsifaki22'], items:[
+      X('Sentadilla con salto / salto con trap bar','4 × 4–5',{p:[30,50],lift:'sent',v:'vf'}),
+      X('Pliometría unilateral progresiva','60–100 contactos',{t:'Salto al cajón → hop simple → triple → drop jump bajo.'}),
+      X('Aceleración, desaceleración y cambios de dirección','45° → 90° → 180° · preplanificado → reactivo')]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]},
+  {name:'Fase 5 · Retorno al deporte', when:'≥ 9 meses', goal:'Exposición progresiva al deporte en condiciones reales, incluida la fatiga.',
+   next:['w39','der0','q90','d2'], nextLabel:'Criterios de retorno al deporte',
+   blocks:[{h:'Deporte y mantenimiento', ev:['grindem','kotsifaki22','aspetar'], items:[
+      X('Entrenamiento con equipo progresivo','Sin contacto → contacto → competición'),
+      X('Fuerza de mantenimiento','2 × semana',{p:[80,90],rpe:'8',lift:'sent',v:'fmax'}),
+      X('Pliometría y agilidad en fatiga','1–2 × semana')]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+ ]}
+};
+
+const GRAFT = {
+  hth:{t:'Injerto HTH',m:'Vigila dolor anterior y de la zona donante: aplica el monitoreo de dolor de tendinopatía (≤ 3/10, basal a las 24 h) en la extensión de rodilla y evita arrodillarse los primeros meses.',ev:['silbernagel','exp']},
+  isq:{t:'Injerto de isquiotibiales',m:'Protege la zona donante: sin curl femoral pesado aislado ~6–8 semanas. Isometría submáxima primero, luego progresa según dolor. En esta app el curl femoral de las fases 1–2 se lee como submáximo.',ev:['exp']},
+  qt:{t:'Injerto cuadricipital',m:'La inhibición del cuádriceps suele ser mayor y la zona donante está en él: prioriza activación temprana (electroestimulación, BFR) y progresa la extensión abierta con más cautela.',ev:['exp']},
+  allo:{t:'Aloinjerto',m:'La incorporación biológica es más lenta: progresiones de carga y retorno más conservadores (con frecuencia ≥ 12 meses).',ev:['exp']}
+};
+
+/* ===================== REFERENCIAS NUEVAS ===================== */
+Object.assign(R, {
+  crossley16:{l:'C',c:'Crossley KM, van Middelkoop M, Callaghan MJ, et al. 2016 Patellofemoral pain consensus statement from the 4th International Patellofemoral Pain Research Retreat, Manchester. Part 2: recommended physical interventions. Br J Sports Med. 2016;50(14):844-852.',k:'Ejercicio combinado de cadera y rodilla como base; plantillas a corto plazo.'},
+  willy19:{l:'A',c:'Willy RW, Hoglund LT, Barton CJ, et al. Patellofemoral pain: clinical practice guidelines linked to the International Classification of Functioning, Disability and Health from the Academy of Orthopaedic Physical Therapy of the APTA. J Orthop Sports Phys Ther. 2019;49(9):CPG1-CPG95.',k:'Recomendación fuerte para ejercicio de cadera y rodilla; reentrenamiento de la carrera en corredores; ortesis y vendaje solo a corto plazo y combinados con ejercicio.'},
+  heiderscheit:{l:'B',c:'Heiderscheit BC, Chumanov ES, Michalski MP, Wille CM, Ryan MB. Effects of step rate manipulation on joint mechanics during running. Med Sci Sports Exerc. 2011;43(2):296-302.',k:'Subir la cadencia 5–10 % redujo la carga sobre la rodilla al correr.'},
+  foster01:{l:'B',c:'Foster C, Florhaug JA, Franklin J, et al. A new approach to monitoring exercise training. J Strength Cond Res. 2001;15(1):109-115.',k:'Carga interna = RPE de la sesión (CR-10) × minutos.'},
+  haddad17:{l:'B',c:'Haddad M, Stylianides G, Djaoui L, Dellal A, Chamari K. Session-RPE method for training load monitoring: validity, ecological usefulness, and influencing factors. Front Neurosci. 2017;11:612.',k:'El RPE de sesión es válido y práctico para monitorizar la carga interna en distintos deportes.'},
+  buckthorpe19:{l:'C',c:'Buckthorpe M, Della Villa F, Della Villa S, Roi GS. On-field rehabilitation part 1: 4 pillars of high-quality on-field rehabilitation are restoring movement quality, physical conditioning, restoring sport-specific skills, and progressively developing chronic training load. J Orthop Sports Phys Ther. 2019;49(8):565-569.',k:'El retorno en campo progresa calidad de movimiento, condición física, habilidades del deporte y carga crónica.'},
+  webster08:{l:'B',c:'Webster KE, Feller JA, Lambros C. Development and preliminary validation of a scale to measure the psychological impact of returning to sport following anterior cruciate ligament reconstruction surgery. Phys Ther Sport. 2008;9(1):9-15.',k:'ACL-RSI: emoción, confianza y valoración del riesgo (0–100).'},
+  irrgang01:{l:'B',c:'Irrgang JJ, Anderson AF, Boland AL, et al. Development and validation of the International Knee Documentation Committee subjective knee form. Am J Sports Med. 2001;29(5):600-613.',k:'IKDC subjetivo (0–100).'},
+  roos98:{l:'B',c:'Roos EM, Roos HP, Lohmander LS, Ekdahl C, Beynnon BD. Knee Injury and Osteoarthritis Outcome Score (KOOS): development of a self-administered outcome measure. J Orthop Sports Phys Ther. 1998;28(2):88-96.',k:'KOOS; la subescala Deporte/Recreación es la más sensible en deportistas.'},
+  visentini98:{l:'B',c:'Visentini PJ, Khan KM, Cook JL, et al. The VISA score: an index of severity of symptoms in patients with jumper’s knee (patellar tendinosis). J Sci Med Sport. 1998;1(1):22-28.',k:'VISA-P (0–100) para tendinopatía rotuliana.'},
+  kujala93:{l:'B',c:'Kujala UM, Jaakkola LH, Koskinen SK, et al. Scoring of patellofemoral disorders. Arthroscopy. 1993;9(2):159-163.',k:'AKPS / Kujala (0–100) para dolor patelofemoral.'}
+});
+
+/* ===================== DOLOR PATELOFEMORAL ===================== */
+P.pfp = {label:'Dolor patelofemoral', phases:[
+  {name:'Fase 1 · Calmar y cargar en rangos cómodos', when:'2–4 semanas aprox.', goal:'Bajar la irritabilidad reduciendo el estrés patelofemoral (rango y volumen) mientras se fortalecen cadera y cuádriceps.',
+   next:['d3','derT'], nextLabel:'Para pasar a fuerza en rango completo',
+   blocks:[
+    {h:'Cadera', ev:['crossley16','willy19'], items:[
+      X('Abducción de cadera en decúbito lateral','3 × 10–15',{rpe:'8'}),
+      X('Clamshell con banda','3 × 15',{rpe:'8'}),
+      X('Plancha lateral con abducción','3 × 20–30 s',{rpe:'8'}),
+      X('Hip thrust','4 × 8–10',{rpe:'8'})]},
+    {h:'Rodilla en rangos de bajo estrés patelofemoral', ev:['willy19','exp'], items:[
+      X('Prensa 0–45°','4 × 8–12',{rpe:'7–8',lift:'prensa',t:'En cadena cerrada el estrés patelofemoral es menor cerca de la extensión.'}),
+      X('Extensión de rodilla 90–45°','3 × 10–12',{rpe:'7–8',lift:'ext',t:'En cadena abierta el estrés es menor en flexión.'}),
+      X('Minisentadilla 0–45°','3 × 10–12',{rpe:'7',lift:'sent'})]}],
+   note:'Plantillas o vendaje rotuliano: alivio a corto plazo, siempre junto al ejercicio (nivel C).',
+   sano:'late', cx:{bici:'ok',remo:'cond',int:'base'}, tools:['iso']},
+  {name:'Fase 2 · Fuerza en rango completo', when:'4–8 semanas aprox.', goal:'Ampliar el rango cargado según dolor y llevar cadera y cuádriceps a fuerza máxima.',
+   next:['d3','q90'], nextLabel:'Para pasar a potencia y retorno',
+   blocks:[{h:'Fuerza · 3 × semana', ev:['crossley16','willy19'], items:[
+      X('Sentadilla progresando profundidad','4 × 6–8',{rpe:'8',lift:'sent',t:'Amplía el rango 10–15° cuando el dolor sea ≤ 3/10.'}),
+      X('Sentadilla búlgara','3 × 6–8',{rpe:'8',lift:'prensa'}),
+      X('Step-down excéntrico','3 × 8–10',{rpe:'7–8',t:'Control del valgo dinámico y de la caída de la pelvis.'}),
+      X('Extensión de rodilla rango completo progresivo','3 × 8–10',{rpe:'8',lift:'ext'}),
+      X('Peso muerto rumano','3 × 6–8',{rpe:'8'}),
+      X('Abducción de cadera en polea','3 × 10–12',{rpe:'8'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'int'}, tools:[]},
+  {name:'Fase 3 · Potencia y retorno', when:'Desde dolor ≤ 3/10 en sentadilla profunda', goal:'Pliometría, carrera y gesto deportivo sin reaparición del dolor.',
+   next:['d2','q90'], nextLabel:'Criterios de alta',
+   blocks:[{h:'Potencia y pliometría', ev:['willy19','heiderscheit','exp'], items:[
+      X('Sentadilla','4 × 3–5',{rpe:'8',lift:'sent'}),
+      X('Sentadilla búlgara','3 × 5–6',{rpe:'8',lift:'prensa'}),
+      X('Progresión de saltos','2–4 × 6–10 contactos',{rpe:'7–8',t:'Bilateral → unilateral; dolor ≤ 3/10 y vuelta a basal a las 24 h.'}),
+      X('Carrera con cadencia +5–10 %','Progresión semanal',{t:'Subir la cadencia reduce la carga sobre la rodilla al correr.'})]}],
+   sano:'late', cx:{bici:'ok',remo:'ok',int:'sprint'}, tools:[]}
+]};
+
+/* ===================== RETORNO ESPECÍFICO POR DEPORTE ===================== */
+const PERFILES = {
+  '':{l:'Sin perfil específico'},
+  uwr:{l:'Rugby subacuático', ev:['exp'], items:[
+    X('Aleteo técnico con aletas cortas','4–6 × 2 min',{rpe:'5–6',t:'Patada desde la cadera, rodilla con flexión moderada. Empieza en superficie y luego en inmersión.'}),
+    X('Sprints con aletas en apnea','6–8 × 15 m',{rpe:'7–8',t:'Recuperación completa en superficie entre series.'}),
+    X('Giros, frenadas y cambios de dirección en el agua','4 × 6',{rpe:'7',t:'Primero preplanificados, luego reactivos.'}),
+    X('Lucha por el balón con contacto progresivo','4–6 × 30 s',{rpe:'7–8',t:'Oposición pasiva → activa → libre.'}),
+    X('Juego reducido en el agua','Progresivo',{t:'Minutos y número de jugadores crecientes antes del partido completo.'})]},
+  futbol:{l:'Fútbol', ev:['buckthorpe19','exp'], items:[
+    X('Carrera lineal progresiva','Volumen creciente',{rpe:'6–7',t:'Trote → carrera → sprints al 70–90 %.'}),
+    X('Curvas y cambios de ritmo','4–6 × 30–40 m',{rpe:'7'}),
+    X('Técnica con balón','15–20 min',{t:'Pase corto → largo → conducción → remate.'}),
+    X('Cambios de dirección con balón','4–6 × 20 s',{rpe:'7–8',t:'Preplanificado → reactivo.'}),
+    X('Juegos reducidos','Progresivo',{t:'Sin contacto → contacto → entrenamiento con el grupo.'})]},
+  cancha:{l:'Baloncesto o voleibol', ev:['buckthorpe19','exp'], items:[
+    X('Saltos y aterrizajes repetidos','3–4 × 6–8',{rpe:'7–8',t:'Aterrizaje silencioso y alineado; progresar a salto de remate o rebote.'}),
+    X('Desplazamientos laterales y defensivos','4–6 × 15 s',{rpe:'7'}),
+    X('Cambios de dirección reactivos','4–6 × 15 s',{rpe:'8'}),
+    X('Juego reducido con contacto progresivo','Progresivo')]},
+  carrera:{l:'Carrera', ev:['heiderscheit','exp'], items:[
+    X('Carrera continua progresiva','Volumen creciente',{rpe:'4–6',t:'Sube volumen solo con dolor ≤ 3/10 y vuelta a basal a las 24 h.'}),
+    X('Cadencia +5–10 %','En todas las salidas',{t:'Reduce la carga sobre la rodilla.'}),
+    X('Intervalos o cuestas','4–6 × 2–3 min',{rpe:'7–8'})]},
+  natacion:{l:'Natación', ev:['exp'], items:[
+    X('Patada de crol o espalda con tabla','6–8 × 50 m',{rpe:'6–7'}),
+    X('Nado completo progresivo','Volumen creciente',{rpe:'6–7'}),
+    X('Patada de braza','Al final de la progresión',{t:'Valgo y rotación con carga: la dejo para fases tardías en LCA y menisco.'})]}
+};
+
+/* ===================== BIBLIOTECA ESTRUCTURADA ===================== */
+// pat: patrón; fx: flexión máxima de rodilla con carga (°); tn: estrés tendón/patelofemoral 0–2; im: impacto 0/1; cue: claves técnicas
+const ALT = [
+  {n:'Isometría de cuádriceps a 60°',pat:'iso',fx:60,tn:0,im:0,cue:'Empuja contra la resistencia sin moverte; sube la intensidad poco a poco.'},
+  {n:'Extensión de rodilla isométrica a 60°',pat:'iso',fx:60,tn:1,im:0,cue:'5 × 45 s; respira, no aguantes el aire.'},
+  {n:'Sentadilla isométrica en pared',pat:'iso',fx:70,tn:1,im:0,cue:'Espalda en la pared, rodillas sobre los pies.'},
+  {n:'Spanish squat',pat:'iso',fx:70,tn:1,im:0,cue:'Banda detrás de las rodillas; tibias verticales, cadera atrás.'},
+  {n:'Isometría de cuádriceps a 30°',pat:'iso',fx:30,tn:0,im:0,cue:'Rango corto, útil con flexión limitada.'},
+  {n:'Extensión de rodilla 90–45°',pat:'okc',fx:90,tn:1,im:0,cue:'Sube controlado, sin bloquear la rodilla.'},
+  {n:'Extensión de rodilla 90–30°',pat:'okc',fx:90,tn:1,im:0,cue:'Tempo 2 s subir, 3 s bajar.'},
+  {n:'Extensión de rodilla unilateral',pat:'okc',fx:90,tn:2,im:0,cue:'Pausa 1 s arriba.'},
+  {n:'TKE con banda',pat:'okc',fx:30,tn:0,im:0,cue:'Bloquea la extensión y aprieta el cuádriceps 1–2 s.'},
+  {n:'Prensa 0–45°',pat:'domr',fx:45,tn:0,im:0,cue:'Pies a la altura de la cadera, rodillas alineadas.'},
+  {n:'Prensa unilateral 0–60°',pat:'uni',fx:60,tn:1,im:0,cue:'Rodilla en línea con el segundo dedo.'},
+  {n:'Prensa unilateral 0–90°',pat:'uni',fx:90,tn:2,im:0,cue:'Baja controlado, no despegues la pelvis.'},
+  {n:'Minisentadilla 0–60°',pat:'domr',fx:60,tn:1,im:0,cue:'Cadera atrás, peso repartido.'},
+  {n:'Sentadilla a cajón (≤ 90°)',pat:'domr',fx:90,tn:1,im:0,cue:'Toca el cajón sin sentarte.'},
+  {n:'Sentadilla goblet',pat:'domr',fx:110,tn:2,im:0,cue:'Codos dentro de las rodillas, tronco erguido.'},
+  {n:'Sentadilla trasera',pat:'domr',fx:120,tn:2,im:0,cue:'Bracea antes de bajar; rodillas siguen a los pies.'},
+  {n:'Sentadilla hack',pat:'domr',fx:120,tn:2,im:0,cue:'Espalda pegada al respaldo.'},
+  {n:'Sentadilla búlgara',pat:'uni',fx:110,tn:2,im:0,cue:'Tronco ligeramente inclinado, rodilla adelantada controlada.'},
+  {n:'Step-up',pat:'uni',fx:90,tn:1,im:0,cue:'Empuja con la pierna de arriba, no impulses con la de abajo.'},
+  {n:'Step-down excéntrico',pat:'uni',fx:60,tn:1,im:0,cue:'Baja en 3 s; pelvis nivelada.'},
+  {n:'Split squat estático',pat:'uni',fx:90,tn:1,im:0,cue:'Baja vertical; rodilla de atrás hacia el suelo.'},
+  {n:'Peso muerto rumano',pat:'domc',fx:20,tn:0,im:0,cue:'Bisagra de cadera, espalda neutra, rodillas suaves.'},
+  {n:'Peso muerto rumano unilateral',pat:'domc',fx:20,tn:0,im:0,cue:'Cadera cuadrada al suelo.'},
+  {n:'Hip thrust',pat:'domc',fx:90,tn:0,im:0,cue:'Mentón al pecho, extiende la cadera sin arquear la lumbar.'},
+  {n:'Puente de glúteo',pat:'domc',fx:90,tn:0,im:0,cue:'Aprieta glúteos arriba 2 s.'},
+  {n:'Curl femoral unilateral',pat:'isq',fx:90,tn:0,im:0,cue:'Baja en 3 s.'},
+  {n:'Curl femoral con fitball',pat:'isq',fx:90,tn:0,im:0,cue:'Cadera arriba durante todo el movimiento.'},
+  {n:'Nórdico excéntrico asistido',pat:'isq',fx:90,tn:0,im:0,cue:'Baja lo más lento posible.'},
+  {n:'Abducción de cadera en decúbito lateral',pat:'glu',fx:0,tn:0,im:0,cue:'Talón hacia atrás, sin rotar la pelvis.'},
+  {n:'Clamshell con banda',pat:'glu',fx:45,tn:0,im:0,cue:'Pies juntos, pelvis quieta.'},
+  {n:'Abducción de cadera en polea',pat:'glu',fx:0,tn:0,im:0,cue:'Tronco quieto.'},
+  {n:'Marcha lateral con banda',pat:'glu',fx:30,tn:0,im:0,cue:'Rodillas semiflexionadas, pasos cortos.'},
+  {n:'Plancha lateral con abducción',pat:'glu',fx:0,tn:0,im:0,cue:'Cuerpo en línea recta.'},
+  {n:'Elevación de talón unilateral',pat:'pant',fx:0,tn:0,im:0,cue:'Sube completo, baja en 3 s.'},
+  {n:'Elevación de talón sentado',pat:'pant',fx:90,tn:0,im:0,cue:'Trabaja el sóleo.'},
+  {n:'Apoyo unipodal con perturbación',pat:'est',fx:20,tn:0,im:0,cue:'Rodilla suave, pelvis nivelada.'},
+  {n:'Apoyo unipodal en superficie inestable',pat:'est',fx:20,tn:0,im:0,cue:'Mira al frente; luego ojos cerrados.'},
+  {n:'Y-balance dinámico',pat:'est',fx:60,tn:1,im:0,cue:'Alcanza lejos sin perder la alineación.'},
+  {n:'Saltos de tobillo (pogo)',pat:'plio',fx:20,tn:1,im:1,cue:'Contactos cortos y rígidos.'},
+  {n:'Saltos bilaterales al cajón',pat:'plio',fx:90,tn:1,im:1,cue:'Aterriza suave arriba; baja caminando.'},
+  {n:'Saltos bilaterales submáximos',pat:'plio',fx:60,tn:2,im:1,cue:'Aterrizaje silencioso.'},
+  {n:'Hop unipodal con estabilización',pat:'plio',fx:60,tn:2,im:1,cue:'Mantén el aterrizaje 2 s.'},
+  {n:'Drop jump bajo',pat:'plio',fx:60,tn:2,im:1,cue:'Rebota rápido; altura de caja baja.'},
+  {n:'Bici',pat:'cardio',fx:110,tn:0,im:0,cue:'Sillín a la altura de la cadera.'},
+  {n:'Bici unipodal con el sano',pat:'cardio',fx:0,tn:0,im:0,cue:'Pierna afectada en un taburete.'},
+  {n:'Remo',pat:'cardio',fx:125,tn:1,im:0,cue:'Piernas → tronco → brazos.'},
+  {n:'Remo solo brazos y tronco',pat:'cardio',fx:0,tn:0,im:0,cue:'Piernas fijas.'},
+  {n:'Ergómetro de brazos',pat:'cardio',fx:0,tn:0,im:0,cue:'Intervalos igual que en bici.'},
+  {n:'Press banca',pat:'sup-eh',fx:0,tn:0,im:0,cue:'Escápulas atrás y abajo, pies firmes.'},
+  {n:'Press con mancuernas en banco',pat:'sup-eh',fx:0,tn:0,im:0,cue:'Codos a 45°.'},
+  {n:'Press inclinado con mancuernas',pat:'sup-eh',fx:0,tn:0,im:0,cue:'Banco a 30°.'},
+  {n:'Flexiones con lastre',pat:'sup-eh',fx:0,tn:0,im:0,cue:'Cuerpo en bloque.'},
+  {n:'Dominadas (lastradas si hace más de 8)',pat:'sup-tv',fx:0,tn:0,im:0,cue:'Pecho a la barra, sin balanceo.'},
+  {n:'Jalón al pecho',pat:'sup-tv',fx:90,tn:0,im:0,cue:'Lleva los codos a los bolsillos.'},
+  {n:'Press de hombro sentado con respaldo',pat:'sup-ev',fx:90,tn:0,im:0,cue:'Costillas abajo.'},
+  {n:'Press de hombro de pie o landmine',pat:'sup-ev',fx:0,tn:0,im:0,cue:'Glúteos apretados, sin arquear.'},
+  {n:'Remo con pecho apoyado',pat:'sup-th',fx:0,tn:0,im:0,cue:'Lleva el codo atrás, pausa 1 s.'},
+  {n:'Remo con mancuerna a una mano',pat:'sup-th',fx:0,tn:0,im:0,cue:'Apoyo en banco con la mano.'},
+  {n:'Face pull',pat:'sup-acc',fx:0,tn:0,im:0,cue:'Tira hacia la frente abriendo codos.'},
+  {n:'Press cerrado en banco',pat:'sup-acc',fx:0,tn:0,im:0,cue:'Codos pegados.'},
+  {n:'Curl de bíceps + extensión de tríceps en superserie',pat:'sup-acc',fx:0,tn:0,im:0,cue:'Sin balanceo.'},
+  {n:'Dead bug',pat:'core',fx:90,tn:0,im:0,cue:'Lumbar pegada al suelo.'},
+  {n:'Pallof press sentado',pat:'core',fx:90,tn:0,im:0,cue:'Resiste la rotación.'},
+  {n:'Pallof press de pie',pat:'core',fx:0,tn:0,im:0,cue:'Pelvis quieta.'},
+  {n:'Pallof press con rotación',pat:'core',fx:0,tn:0,im:0,cue:'Rota desde la cadera.'},
+  {n:'Hollow hold',pat:'core',fx:0,tn:0,im:0,cue:'Lumbar al suelo.'},
+  {n:'Plancha frontal',pat:'core',fx:0,tn:0,im:0,cue:'Glúteos activos.'},
+  {n:'Plancha lateral',pat:'core',fx:0,tn:0,im:0,cue:'Cadera arriba.'},
+  {n:'Plancha con arrastre',pat:'core',fx:0,tn:0,im:0,cue:'Sin girar la pelvis.'},
+  {n:'Caminata de granjero unilateral',pat:'core',fx:0,tn:0,im:0,cue:'Hombros nivelados.'}
+];
+const ALTMAP = Object.fromEntries(ALT.map(a=>[a.n,a]));
+function classify(name){
+  const n=(name||'').toLowerCase();
+  if(ALTMAP[name]) return ALTMAP[name].pat;
+  if(/isom|spanish/.test(n)) return 'iso';
+  if(/salto|pogo|aterrizaj|hop|pliom|drop jump/.test(n)) return 'plio';
+  if(/extensión de rodilla|tke|extensión terminal/.test(n)) return 'okc';
+  if(/búlgara|step|split|unilateral 0|prensa unilateral/.test(n)) return 'uni';
+  if(/sentadilla|prensa/.test(n)) return 'domr';
+  if(/peso muerto|hip thrust|puente/.test(n)) return 'domc';
+  if(/curl femoral|nórdico/.test(n)) return 'isq';
+  if(/abducci|glúteo|marcha lateral|clamshell/.test(n)) return 'glu';
+  if(/talón|talones|gemel/.test(n)) return 'pant';
+  if(/unipodal|estabilidad|perturbaci|balance/.test(n)) return 'est';
+  if(/^bici|^remo(?! con)|ergómetro|carrera/.test(n)) return 'cardio';
+  if(/plancha|pallof|dead bug|hollow|granjero/.test(n)) return 'core';
+  if(/press banca|mancuernas en banco|flexiones/.test(n)) return 'sup-eh';
+  if(/dominada|jalón/.test(n)) return 'sup-tv';
+  if(/press de hombro/.test(n)) return 'sup-ev';
+  if(/remo con|remo a una/.test(n)) return 'sup-th';
+  return null;
+}
+/* ===================== ESTADO ===================== */
+const VERSION = 'Protocolos v1.2 · evidencia revisada en octubre de 2026';
+function pkey(s){ if(s.cond==='tend') return 'tend'; if(s.cond==='pfp') return 'pfp'; if(s.cond==='men') return 'men-'+s.menSub; return 'lca-'+s.lcaSub; }
+function suggested(s){ const P0=P[pkey(s)]; if(!P0.weeks) return 0; const w=num(s.semanas)||0; let i=0; P0.weeks.forEach((t,k)=>{ if(w>=t) i=k; }); return Math.min(i,P0.phases.length-1); }
+function phaseIdx(s){ const n=P[pkey(s)].phases.length; if(s.fase==='auto') return suggested(s); const i=+s.fase; return (i>=0&&i<n)?i:0; }
+function planKey(s){ return pkey(s)+'|'+phaseIdx(s)+'|'+(s.dias==='4'?4:3); }
+function subLabel(s, P0){ return s.cond==='tend' ? (s.tendSub==='quad'?'Tendinopatía cuadricipital':'Tendinopatía rotuliana') : P0.label; }
+const todayISO = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
+const daysAgo = n => { const d=new Date(Date.now()-n*86400000); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
+
+let st = clone(EXAMPLE);
+let curId = null, isExample = true, editMode = false, view = 'plan', logOpen = null, subOpen = null, evalOpen = false;
+let sessions = [], evals = [], patients = [];
+const EX_SESSIONS = [
+  {id:'e1',fecha:daysAgo(13),semana:9,dia:'Día 1',fase:'Fase 4',min:75,srpe:6,dolor:3,d24:'igual',ex:[{e:'Sentadilla',kg:55,reps:6,rpe:7},{e:'Prensa unilateral',kg:60,reps:8,rpe:8}]},
+  {id:'e2',fecha:daysAgo(11),semana:9,dia:'Día 2',fase:'Fase 4',min:70,srpe:6,dolor:2,d24:'igual',ex:[]},
+  {id:'e3',fecha:daysAgo(9),semana:9,dia:'Día 3',fase:'Fase 4',min:80,srpe:7,dolor:3,d24:'igual',ex:[{e:'Sentadilla',kg:57.5,reps:6,rpe:7}]},
+  {id:'e4',fecha:daysAgo(6),semana:10,dia:'Día 1',fase:'Fase 4',min:80,srpe:7,dolor:2,d24:'mejor',ex:[{e:'Sentadilla',kg:60,reps:5,rpe:7},{e:'Prensa unilateral',kg:65,reps:7,rpe:8}]},
+  {id:'e5',fecha:daysAgo(4),semana:10,dia:'Día 2',fase:'Fase 4',min:70,srpe:6,dolor:2,d24:'igual',ex:[]}
+];
+const EX_EVALS = [
+  {id:'v1',fecha:daysAgo(28),fase:'Fase 2',semana:6,dolor:3,der:2,flex:118,ext:2,prom:{aclrsi:48,ikdc:58,koos:45}},
+  {id:'v2',fecha:daysAgo(7),fase:'Fase 4',semana:9,dolor:2,der:0,flex:136,ext:0,prom:{aclrsi:56,ikdc:66,koos:55}}
+];
+
+/* ===================== CONSTRUCTOR DEL PLAN ===================== */
+const STAGES = {tend:['mid','mid','late','late'],pfp:['mid','mid','late'],'men-cons':['early','mid','late','late'],'men-mx':['early','mid','late'],'men-sut':['early','early','mid','late'],'lca-cons':['early','mid','late','late'],'lca-pre':['mid'],'lca-post':['early','early','mid','late','late']};
+function constraints(s){
+  const key=pkey(s), i=phaseIdx(s), stage=STAGES[key][i];
+  let fx=140; if(key==='men-sut'&&i===0) fx=90; if(key==='men-sut'&&i===1) fx=70; if(key==='lca-post'&&s.suturaAsoc&&i<=1) fx=90;
+  if(key==='lca-post'&&i===0) fx=Math.min(fx,60);
+  let tn=2; if(key==='tend'&&i===0) tn=1; if(key==='pfp'&&i===0) tn=1;
+  return {fx, tn, im: stage==='late' ? 1 : 0};
+}
+function dailyTherapy(key, i, s){
+  const stage = STAGES[key][i];
+  const flexLim = (key==='men-sut' && i<=1) || (key==='lca-post' && s.suturaAsoc && i<=1);
+  let items;
+  if(stage==='early') items = [
+    s.derrame>=1 ? X('Control del derrame','1 × 10–15 min',{t:'Compresión y elevación después de la sesión o en casa.'}) : null,
+    X('Extensión pasiva con talón elevado','3 × 2 min'),
+    X('Flexión asistida (deslizamiento de talón)', flexLim ? '2 × 15' : '2 × 15',{t: flexLim ? 'Máximo 90°.' : 'Ganando rango cada día.'}),
+    X('Isometría de cuádriceps a 0° y 60°','5 × 10 s',{rpe:'8'}),
+    X('Elevación de pierna recta','2 × 15',{rpe:'6'}),
+    X('TKE con banda','2 × 20',{rpe:'6'})
+  ];
+  else if(stage==='mid') items = [
+    X('Movilidad de rodilla, cadera y tobillo','1 × 5 min'),
+    X('Isometría de cuádriceps a 60°','3 × 30 s',{rpe:'7'}),
+    X('TKE con banda','2 × 20',{rpe:'6'}),
+    X('Apoyo unipodal con perturbación','3 × 30 s')
+  ];
+  else items = [
+    X('Movilidad dinámica','1 × 5 min'),
+    X('Activación: isometría a 60° + TKE','2 × 20 s + 20 reps',{rpe:'6'}),
+    X('Saltos de tobillo (pogo)','2 × 15',{rpe:'6'}),
+    X('Aterrizajes controlados','2 × 5',{t:'Aterrizaje silencioso, rodilla alineada sobre el pie.'})
+  ];
+  if(key==='tend' && i<=1) items = [ISO_TEND, ...items.filter(x=>x && !/^Isometría/.test(x.n))];
+  if(key==='pfp' && i===0) items = items.filter(x=>x && !/^Saltos|^Aterrizajes/.test(x.n));
+  return items.filter(Boolean);
+}
+function allKnee(ph){ return ph.blocks.flatMap(b=>b.items); }
+function liftsOnly(ph){ return allKnee(ph).filter(it=>it.lift); }
+function lightKnee(ph){
+  const out = allKnee(ph).filter(it=>!it.lift && !/^Isometr/.test(it.n));
+  if(ph.tools.includes('bfr')) out.unshift(X('BFR · prensa o extensión unilateral','4 × 30-15-15-15',{rpe:'7–8',t:'Carga muy ligera, 30 s de pausa. 60–80 % de la presión de oclusión, solo con manguito que la mida.'}));
+  if(!out.length) out.push(X('Apoyo unipodal con perturbación','4 × 30–45 s'));
+  return out;
+}
+function sanoItems(kind, light){
+  if(kind==='cx'){
+    if(light) return [X('Isometría máxima de extensión a 60°','4 × 5 s',{rpe:'10',t:'Día corto: estímulo neural con poca fatiga.'})];
+    return [
+      X('Extensión de rodilla unilateral','3 × 4–6',{rpe:'8',t:'Pausa 2–3 min. Sin llegar al fallo.'}),
+      X('Prensa unilateral','2 × 5–6',{rpe:'8'}),
+      X('Curl femoral unilateral','3 × 6–8',{rpe:'8'}),
+      X('Isometría máxima de extensión a 60°','4 × 5 s',{rpe:'10',t:'Al final del bloque, máxima intención.'}),
+      X('Elevación de talón unilateral','3 × 8–10',{rpe:'8'})];
+  }
+  if(light) return [X('Elevación de talón unilateral','3 × 8–10',{rpe:'8'})];
+  return [
+    X('Prensa unilateral','3 × 3–5',{rpe:'8–9'}),
+    X('Extensión de rodilla unilateral','3 × 6–8',{rpe:'8'}),
+    X('Sentadilla búlgara (sano adelante)','3 × 4–6',{rpe:'8',t:'Solo si la rodilla afectada tolera ir atrás con flexión ≥ 100°.'}),
+    X('Peso muerto rumano unilateral','3 × 6–8',{rpe:'8'})];
+}
+function upperItems(type, stage){
+  const early = stage==='early';
+  if(type==='A') return [
+    early ? X('Press con mancuernas en banco','4 × 5–6',{rpe:'8',t:'Pies apoyados en el banco.'}) : X('Press banca','4 × 4–6',{rpe:'8'}),
+    early ? X('Jalón al pecho','4 × 6–8',{rpe:'8'}) : X('Dominadas (lastradas si hace más de 8)','4 × 5–8',{rpe:'8'}),
+    X('Press inclinado con mancuernas','3 × 8–10',{rpe:'8'}),
+    X('Face pull','3 × 12–15',{rpe:'7–8'})];
+  return [
+    early ? X('Press de hombro sentado con respaldo','4 × 6–8',{rpe:'8'}) : X('Press de hombro de pie o landmine','4 × 6–8',{rpe:'8'}),
+    X('Remo con pecho apoyado','4 × 6–8',{rpe:'8'}),
+    X('Press cerrado en banco','3 × 8–10',{rpe:'8'}),
+    X('Curl de bíceps + extensión de tríceps en superserie','3 × 10–12',{rpe:'8'})];
+}
+function coreItems(type, stage){
+  const L = {
+    early:[X('Dead bug','3 × 8 por lado',{rpe:'6–7'}),X('Pallof press sentado','3 × 10 por lado',{rpe:'7'}),X('Hollow hold','3 × 20–30 s',{rpe:'7'})],
+    mid:[X('Plancha frontal','3 × 30–45 s',{rpe:'7'}),X('Plancha lateral','3 × 20–40 s por lado',{rpe:'7',t:'Doble función: core y glúteo medio.'}),X('Pallof press de pie','3 × 10 por lado',{rpe:'8'})],
+    late:[X('Pallof press con rotación','3 × 8 por lado',{rpe:'8'}),X('Caminata de granjero unilateral','3 × 20–30 m',{rpe:'8'}),X('Plancha con arrastre','3 × 8 por lado',{rpe:'7'})]
+  }[stage];
+  return type==='A' ? L.slice(0,2) : L.slice(1,3);
+}
+function cardioItem(ph, s, kind){
+  const fl=num(s.flexL), cx=ph.cx;
+  const bike = cx.bici==='uni' ? 'uni' : (fl!=null && fl<110) || (cx.bici==='cond' && fl==null) ? 'partial' : 'full';
+  const row = cx.remo==='no' ? 'no' : cx.remo==='brazos' ? 'brazos' : (fl==null || fl<120 || cx.remo==='cond') ? 'cond' : 'full';
+  const allowed = {base:0,int:1,sprint:2}[cx.int], want = {base:0,int:1,sprint:2}[kind];
+  const k = ['base','int','sprint'][Math.min(allowed,want)];
+  const D = {base:['1','25–35 min','3–4','Ritmo en el que puede hablar.'], int:['4–6','4 min','7–8','2 min suave entre series.'], sprint:['6–10','15–20 s','9–10','2–3 min suave entre series.']}[k];
+  if(bike==='full') return X('Bici', `${D[0]} × ${D[1]}`, {rpe:D[2], t:D[3]+(row==='full'?' Alternativa: remo con la misma dosis.':'')});
+  if(row==='full') return X('Remo', `${D[0]} × ${D[1]}`, {rpe:D[2], t:D[3]});
+  if(bike==='uni') return X('Bici unipodal con el sano', k==='base'?'1 × 20–30 min':'4–6 × 4 min', {rpe:k==='base'?'4–5':'6–7', t:'Pierna afectada apoyada en un taburete.'+(row==='brazos'?' Alternativa: remo solo brazos 6–10 × 1 min a RPE 7.':'')});
+  if(bike==='partial') return X('Bici con sillín alto (medio pedaleo)', k==='base'?'1 × 20–25 min':'4–6 × 3 min', {rpe:k==='base'?'3–4':'6–7', t:`La vuelta completa necesita ~110° de flexión${fl!=null?` (hoy ${fl}°)`:''}.`});
+  return X('Remo solo brazos y tronco','6–10 × 1 min',{rpe:'7',t:'1 min suave entre series. Piernas fijas.'});
+}
+function toRow(it){
+  const m = it.d.match(/^(\d+(?:–\d+)?)\s*×\s*([^·]+?)\s*(?:·\s*(.+))?$/);
+  let s='', r=it.d, extra='';
+  if(m){ s=m[1]; r=m[2].trim(); extra=m[3]||''; }
+  return {e:it.n, s, r, c: it.rpe ? 'RPE '+it.rpe : '', n:[extra, it.t].filter(Boolean).join('. ')};
+}
+const SEGS = {ter:'Terapia y activación', afe:'Rehabilitación · rodilla afectada', esp:'Retorno específico al deporte', sano:'Fuerza · miembro sano', sup:'Fuerza · miembro superior', core:'Core', cardio:'Cardio · bici y remo'};
+function genWeek(s){
+  const key=pkey(s), i=phaseIdx(s), ph=P[key].phases[i];
+  const n = s.dias==='4' ? 4 : 3, stage = STAGES[key][i];
+  const perfil = PERFILES[s.perfil||''];
+  const espDays = stage==='late' && perfil.items ? (n===3 ? [1] : [1,3]) : [];
+  const days=[];
+  for(let d=0; d<n; d++){
+    const heavy = n===3 ? true : (d===0 || d===2);
+    let knee, sub;
+    if(n===3){ knee = d===1 ? liftsOnly(ph) : allKnee(ph); sub = d===1 ? 'fuerza' : 'sesión completa'; if(knee.length<3){ knee=allKnee(ph); sub='sesión completa'; } }
+    else { knee = heavy ? allKnee(ph) : lightKnee(ph); sub = heavy ? 'sesión completa' : 'ligera'; }
+    const ther = dailyTherapy(key,i,s);
+    const tKeys = ther.map(t=>t.n.slice(0,14).toLowerCase());
+    knee = knee.filter(it=> it!==ISO_TEND && !tKeys.includes(it.n.slice(0,14).toLowerCase()));
+    if(!knee.length) knee=[X('Sin bloque adicional','La terapia del día cubre la rodilla')];
+    const sanoLight = n===4 && !heavy;
+    const up = n===3 ? (d===1?'B':'A') : (d%2===0?'A':'B');
+    const cardioKind = n===3 ? ['base','int','sprint'][d] : ['base','int','base','sprint'][d];
+    const segs = [
+      {type:'ter', sub:'todos los días', rows:dailyTherapy(key,i,s).map(toRow)},
+      {type:'afe', sub, rows:knee.map(toRow)}
+    ];
+    if(espDays.includes(d)) segs.push({type:'esp', sub:perfil.l.toLowerCase(), rows:perfil.items.map(toRow)});
+    segs.push(
+      {type:'sano', sub: sanoLight?'corto':(ph.sano==='cx'?'educación cruzada':'referencia'), rows:sanoItems(ph.sano, sanoLight).map(toRow)},
+      {type:'sup', sub: up==='A'?'empuje horizontal y tracción vertical':'empuje vertical y tracción horizontal', rows:upperItems(up, stage).map(toRow)},
+      {type:'core', sub:'', rows:coreItems(up, stage).map(toRow)},
+      {type:'cardio', sub:{base:'base aeróbica',int:'intervalos',sprint:'sprints'}[cardioKind], rows:[toRow(cardioItem(ph,s,cardioKind))]}
+    );
+    days.push({name:`Día ${d+1}`, segs});
+  }
+  return days;
+}
+function baseWeek(s){ const k=planKey(s); return s.plans?.[k] ? {days:s.plans[k], custom:true} : {days:genWeek(s), custom:false}; }
+
+/* ===================== MESOCICLO ===================== */
+const MESO = [
+  {w:1, l:'Introducción', d:'RPE un punto por debajo del objetivo: aprender los ejercicios y encontrar las cargas.', rpe:-1, ser:0},
+  {w:2, l:'Carga', d:'Dosis objetivo.', rpe:0, ser:0},
+  {w:3, l:'Sobrecarga', d:'Una serie más en los ejercicios principales, mismo RPE.', rpe:0, ser:1},
+  {w:4, l:'Descarga', d:'≈ 40–50 % menos series y un punto menos de RPE para consolidar.', rpe:-1, ser:-0.4}
+];
+const mesoWeek = s => MESO[((Math.max(1,num(s.semPlan)||1)-1)%4)];
+function adjSeries(str, ser, main){
+  if(!str || !ser) return str;
+  return str.replace(/\d+/g, x=>{ const v=+x; if(ser<0) return String(Math.max(1, Math.round(v*(1+ser)))); return main && v>=2 ? String(Math.min(6, v+ser)) : x; });
+}
+function adjRPE(str, d){
+  if(!str || !d) return str;
+  return str.replace(/RPE\s*([\d–]+)/, (m,g)=> 'RPE '+g.split('–').map(x=>String(Math.max(5,Math.min(10,+x+d)))).join('–'));
+}
+function applyMeso(days, s){
+  const m = mesoWeek(s);
+  if(!m.rpe && !m.ser) return days;
+  const out = clone(days);
+  out.forEach(d=>d.segs.forEach(sg=>{
+    if(sg.type==='ter') return;
+    sg.rows.forEach(r=>{
+      const main = /RPE\s*(8|9|10)/.test(r.c) && ['afe','sano','sup'].includes(sg.type);
+      if(sg.type!=='cardio' || m.ser<0) r.s = adjSeries(r.s, m.ser, main);
+      if(sg.type!=='cardio' && !/RPE 10/.test(r.c)) r.c = adjRPE(r.c, m.rpe);
+    });
+  }));
+  return out;
+}
+function viewWeek(s){ const b=baseWeek(s); return {days: editMode ? b.days : applyMeso(b.days, s), custom:b.custom}; }
+
+/* ===================== SUGERENCIAS DESDE EL REGISTRO ===================== */
+function lastFor(name){
+  const sorted = sessions.slice().sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+  for(const ses of sorted){ const e=(ses.ex||[]).find(x=>x.e===name && (x.kg||x.rpe)); if(e) return {...e, fecha:ses.fecha}; }
+  return null;
+}
+function suggestion(row){
+  const l = lastFor(row.e); if(!l) return '';
+  const tgt = (row.c.match(/RPE\s*(\d+)/)||[])[1]; const real = num(l.rpe);
+  let act='';
+  if(tgt && real!=null){ const t=+tgt; act = real<=t-1 ? 'sube la carga 2,5–5 %' : real>=t+1 ? 'baja la carga 5–10 %' : 'mantén y suma 1 repetición'; }
+  return `Última: ${l.kg?l.kg+' kg':''}${l.reps?' × '+l.reps:''}${real!=null?' a RPE '+real:''}${act?' → '+act:''}`;
+}
+
+/* ===================== BIBLIOTECA Y VIDEOS ===================== */
+let myLib = [], myMeta = {};
+const BASE = new Set();
+function collectBase(){
+  Object.values(P).forEach(p=>p.phases.forEach(ph=>allKnee(ph).forEach(it=>BASE.add(it.n))));
+  ['early','mid','late'].forEach(sg=>{ ['A','B'].forEach(t=>{ upperItems(t,sg).forEach(i=>BASE.add(i.n)); coreItems(t,sg).forEach(i=>BASE.add(i.n)); }); });
+  ['cx','late'].forEach(k=>[true,false].forEach(l=>sanoItems(k,l).forEach(i=>BASE.add(i.n))));
+  Object.values(PERFILES).forEach(p=>(p.items||[]).forEach(i=>BASE.add(i.n)));
+  ALT.forEach(a=>BASE.add(a.n));
+}
+function renderLib(){ const all=[...new Set([...myLib, ...BASE])].sort((a,b)=>a.localeCompare(b,'es')); $('#exlib').innerHTML = all.map(n=>`<option value="${esc(n)}"></option>`).join(''); }
+const cueOf = n => myMeta[n]?.cue || ALTMAP[n]?.cue || '';
+const videoOf = n => { const v=myMeta[n]?.video||''; return /^https?:\/\//i.test(v) ? v : ''; };
+function candidates(name, s){
+  const pat = classify(name); if(!pat) return [];
+  const c = constraints(s);
+  return ALT.filter(a=>a.pat===pat && a.n!==name && a.fx<=c.fx && a.tn<=c.tn && a.im<=c.im);
+}
+/* ===================== PIEZAS DE RENDER ===================== */
+function refList(keys){
+  const ks=[...new Set(keys)].filter(k=>R[k]);
+  return `<details class="ev"><summary>Evidencia</summary><ol>${ks.map(k=>`<li><span class="lv ${R[k].l}">${R[k].l}</span>${esc(R[k].c)} <span class="ref-k">— ${esc(R[k].k)}</span></li>`).join('')}</ol></details>`;
+}
+function critList(ids, s){
+  return `<ul class="crit">${ids.map(id=>{
+    if(CR[id].m) return `<li><input type="checkbox" data-chk="${id}" ${s.chk?.[id]?'checked':''} aria-label="${esc(CR[id].t)}"><span>${esc(CR[id].t)} <span class="small">(márcalo tras tu evaluación)</span></span></li>`;
+    const r=critVal(id,s); const k=r===true?'y':r===false?'n':'u'; const sym=r===true?'✓':r===false?'✗':'·';
+    return `<li><span class="ck ${k}">${sym}</span><span>${esc(CR[id].t)}${r==null?' <span class="small">(sin dato)</span>':''}</span></li>`; }).join('')}</ul>`;
+}
+function painLight(s){
+  const effUp = s.derrame>=3;
+  if(s.dolor>5 || s.resp24==='peor') return {c:'r', t:'Reducir carga', p:'Dolor > 5/10 o peor que el basal a las 24 h: baja 1–2 puntos de RPE o un 20–30 % del volumen y reevalúa en la próxima sesión.'};
+  if(s.dolor>=4 || effUp) return {c:'y', t:'Mantener carga', p: effUp ? 'Derrame 2+ o más: mantén la carga y prioriza controlar el derrame antes de progresar.' : 'Dolor 4–5/10: repite la misma carga y RPE.'};
+  return {c:'g', t:'Progresar carga', p:'Dolor ≤ 3/10 y vuelve a basal a las 24 h: si el RPE real quedó por debajo del objetivo, sube peso; si quedó en el objetivo, suma 1–2 repeticiones.'};
+}
+const isLoggable = (sg,r) => ['afe','sano','sup','esp'].includes(sg.type) && /RPE/.test(r.c||'');
+
+function rowView(r){
+  const cue=cueOf(r.e), vid=videoOf(r.e), sug=suggestion(r);
+  return `<tr><td class="e">${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td><td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
+}
+function rowEdit(r, di, gi, ri){
+  const a=(f,w)=>`<input value="${esc(r[f])}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}"${w?` style="width:${w}"`:''} aria-label="${f}">`;
+  let html = `<tr><td class="e"><input list="exlib" value="${esc(r.e)}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="e" aria-label="Ejercicio"></td>
+    <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="c">${a('c','7em')}</td><td class="n">${a('n')}</td>
+    <td class="v"><input value="${esc(myMeta[r.e]?.video||'')}" data-vid="${esc(r.e)}" placeholder="https://…" aria-label="Enlace del video"></td>
+    <td class="x"><button class="mini-btn" data-sub="${di}|${gi}|${ri}">Sustituir</button><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
+  if(subOpen===`${di}|${gi}|${ri}`){
+    const c=candidates(r.e, st);
+    html += `<tr class="subrow"><td colspan="7">${c.length?`<span class="small">Alternativas que respetan las restricciones de esta fase:</span><div class="picks">${c.map(x=>`<button class="pick" data-pick="${di}|${gi}|${ri}|${esc(x.n)}">${esc(x.n)}<i>${esc(x.cue)}</i></button>`).join('')}</div>`:'<span class="small">No hay alternativas en la biblioteca que respeten las restricciones de esta fase. Escribe una tú.</span>'}</td></tr>`;
+  }
+  return html;
+}
+function logForm(day, di){
+  const ex=[]; day.segs.forEach(sg=>sg.rows.forEach(r=>{ if(isLoggable(sg,r)) ex.push(r); }));
+  return `<div class="logf" id="logf">
+    <h4>Registrar sesión · ${esc(day.name)}</h4>
+    <div class="row5">
+      <label class="f">Fecha<input type="date" id="lf-fecha" value="${todayISO()}"></label>
+      <label class="f">Duración (min)<input type="number" id="lf-min" min="0" max="300" value="75"></label>
+      <label class="f">RPE de la sesión (0–10)<input type="number" id="lf-srpe" min="0" max="10" value="7"></label>
+      <label class="f">Dolor durante (0–10)<input type="number" id="lf-dolor" min="0" max="10" value="${st.dolor}"></label>
+      <label class="f">A las 24 h<select id="lf-d24"><option value="">Aún no</option><option value="mejor">Mejor que basal</option><option value="igual" selected>Vuelve a basal</option><option value="peor">Peor que basal</option></select></label>
+    </div>
+    ${ex.length?`<div class="tbl"><table class="pl" style="min-width:480px"><thead><tr><th>Ejercicio</th><th>kg</th><th>Reps hechas</th><th>RPE real</th></tr></thead><tbody>
+      ${ex.map((r,k)=>`<tr><td class="e">${esc(r.e)} <span class="small">${esc(r.c)}</span></td><td><input type="number" step="0.5" data-lx="${k}" data-lf="kg" style="width:6em"></td><td><input type="number" data-lx="${k}" data-lf="reps" style="width:5em"></td><td><input type="number" min="1" max="10" data-lx="${k}" data-lf="rpe" style="width:5em"></td></tr>`).join('')}
+    </tbody></table></div>`:''}
+    <label class="f">Comentario<input type="text" id="lf-nota"></label>
+    <div class="actions"><button class="primary" id="lfSave" data-day="${di}">Guardar sesión</button><button id="lfCancel">Cancelar</button></div>
+  </div>`;
+}
+function dayHTML(day, di){
+  return `<section class="card day" style="padding:12px">
+  <div class="dayhead"><h3>${esc(day.name.toUpperCase())}</h3>${!editMode?`<button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button>`:''}</div>
+  ${logOpen===di && !editMode ? logForm(day, di) : ''}
+  ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
+    <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(sg.sub||'')}</i></div>
+    ${sg.type==='ter'?'<div class="bn">Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.</div>':''}
+    <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th><th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th>Video</th><th></th>':''}</tr></thead><tbody>
+    ${sg.rows.map((r,ri)=> editMode ? rowEdit(r,di,gi,ri) : rowView(r)).join('')}
+    </tbody></table></div>
+    ${editMode?`<div class="addrow"><button class="ghost" data-add="${di}|${gi}">+ Añadir ejercicio</button></div>`:''}
+  </div>`).join('')}
+  </section>`;
+}
+function mesoCard(s){
+  const m=mesoWeek(s), w=num(s.semPlan)||1, blk=Math.floor((w-1)/4)+1;
+  return `<section class="card"><h3 class="sec">Mesociclo ${blk} · semana ${m.w} de 4</h3>
+    <div class="meso">${MESO.map(x=>`<div class="mw${x.w===m.w?' on':''}${x.w===4?' dl':''}"><b>S${x.w} · ${x.l}</b><span>${esc(x.d)}</span></div>`).join('')}</div>
+    <p class="small" style="margin:8px 0 0">El plan se ajusta solo según la semana del plan. Al terminar la descarga, reevalúa criterios antes de empezar el siguiente bloque. ${editMode?'Estás editando la semana base; la progresión se aplica encima.':''}</p>
+    ${refList(['helms','exp'])}</section>`;
+}
+function fundamentos(ph, s){
+  const kneeEv = [...new Set(ph.blocks.flatMap(b=>b.ev))];
+  const four = s.dias==='4';
+  return `<section class="card"><h3 class="sec">Fundamento del plan</h3>
+  <div class="mods">
+    <div class="mod"><b>Carga por RPE.</b> RPE 8 = podría hacer 2 repeticiones más; RPE 7 = 3 más. El peso se ajusta cada sesión para caer en el RPE objetivo; la app compara el RPE real registrado con el objetivo y sugiere el ajuste. ${refList(['helms'])}</div>
+    <div class="mod"><b>Orden de la sesión.</b> Terapia → rodilla afectada → retorno específico → sano → superior → core → cardio. La rodilla afectada se entrena sin fatiga previa (criterio clínico).</div>
+    <div class="mod"><b>Reparto de la rodilla afectada.</b> ${four ? 'Con 4 días, la sesión completa va en los días 1 y 3, y los días 2 y 4 son ligeros. En tendinopatía el ensayo de carga pesada lenta usó 3 sesiones por semana: si el tendón lo tolera, añade la prensa también el día 2.' : 'Con 3 días, la fuerza va los tres días y lo que no es fuerza (pliometría, estabilidad, técnica) va los días 1 y 3.'} ${refList(kneeEv)}</div>
+    <div class="mod"><b>Miembro sano.</b> ${ph.sano==='cx' ? 'Alta intensidad (RPE 8, sin fallo) con un tope de 15 series duras por semana para los extensores de rodilla del sano. El tope es mi criterio, no un dato de ensayo.' : 'Fase tardía: el sano sigue entrenando fuerte como referencia exigente.'} ${refList(ph.sano==='cx'?['minshull','zhang25','zult']:['wellsandt'])}</div>
+    <div class="mod"><b>Retorno específico al deporte.</b> Aparece en las fases tardías según el perfil deportivo. Casi todo es experiencia clínica (nivel E); el marco general viene del retorno en campo. ${refList(['buckthorpe19','exp'])}</div>
+    <div class="mod"><b>Superior, core y cardio.</b> Básicos a RPE 8, accesorios a 8–15 reps; en fase temprana todo sentado o apoyado y sin arrodillarse. La bici bipodal requiere ~110° de flexión y el remo completo ~120°. ${refList(['helms','abbiss','fleming','exp'])}</div>
+  </div></section>`;
+}
+function toolsBlock(ph){
+  const out=[];
+  if(ph.tools.includes('iso')) out.push(`<div class="mini"><h4>Isometría analgésica</h4><p><b>Dosis:</b> 5 × 45 s a ~70 % de una contracción máxima (RPE 6–7), rodilla a 60°, 2 min de pausa.</p><p><b>Evidencia:</b> analgesia inmediata en el estudio original (n = 6), sin ventaja frente a la carga isotónica en los metaanálisis. Úsala si le funciona al deportista.</p>${refList(['rio','clifford','challoumas'])}</div>`);
+  if(ph.tools.includes('bfr')) out.push(`<div class="mini"><h4>BFR</h4><p>Manguito en la parte alta del muslo; con cargas muy ligeras logra ganancias de fuerza parecidas a las de cargas altas, con menos dolor.</p><p><b>Dosis:</b> 30-15-15-15 reps, 30 s de pausa, 60–80 % de la presión de oclusión. Cribado de riesgo trombótico y manguito que mida la presión.</p>${refList(['hughes19','hughes19p','curran','patterson'])}</div>`);
+  if(ph.tools.includes('mi')) out.push(`<div class="mini"><h4>Imaginería y observación</h4><p><b>Dosis:</b> 10–15 min, 3–5 × semana en casa.</p><p><b>Evidencia:</b> mecanismo plausible, sin beneficio añadido claro. Coste cero, riesgo cero.</p>${refList(['pastora','paravlic'])}</div>`);
+  if(!out.length) return '';
+  return `<section class="card"><h3 class="sec">Herramientas complementarias</h3><div class="cols">${out.join('')}</div></section>`;
+}
+function allRefs(){
+  return `<section class="card"><details id="refs"><summary>Referencias y niveles de evidencia</summary>
+  <div class="lvleg">${Object.entries(LV).map(([k,v])=>`<span><span class="lv ${k}">${k}</span>${v}</span>`).join('')}</div>
+  <ol>${Object.entries(R).filter(([k])=>k!=='exp').map(([k,r])=>`<li><span class="lv ${r.l}">${r.l}</span>${esc(r.c)}</li>`).join('')}</ol></details></section>`;
+}
+
+/* ===================== VISTA: PLAN ===================== */
+function planView(){
+  const key=pkey(st), P0=P[key], i=phaseIdx(st), ph=P0.phases[i];
+  const {days, custom} = viewWeek(st);
+  const light = painLight(st);
+  const mods=[];
+  if(key==='lca-post'){ const g=GRAFT[st.injerto]; mods.push(`<div class="mod"><b>${g.t}.</b> ${esc(g.m)} ${refList(g.ev)}</div>`);
+    if(st.suturaAsoc) mods.push(`<div class="mod"><b>Sutura meniscal asociada.</b> Manda la restricción más conservadora: flexión ≤ 90° y sin curl femoral cargado hasta ~6 semanas, bici bipodal cuando haya 110°, y sin carga en flexión > 90° hasta ~12–16 semanas. ${refList(['mohamadi','ojsm25'])}</div>`); }
+  if(key==='men-sut') mods.push(`<div class="mod"><b>Carga ${st.cargaSut==='inmediata'?'inmediata según tolerancia':'restringida 4–6 semanas'}.</b> ${st.cargaSut==='inmediata'?'Las revisiones no muestran más fallos con carga acelerada en roturas estables; aun así, limita la flexión en carga.':'Respeta la descarga indicada; trabaja activación en cadena abierta y el miembro sano duro.'} ${refList(['mohamadi','ojsm25'])}</div>`);
+  if(key==='tend' && st.tendSub==='quad') mods.push(`<div class="mod"><b>Tendón cuadricipital.</b> Casi toda la evidencia es de tendinopatía rotuliana; aquí se extrapola (nivel C). Suele irritarse en flexión profunda: empieza con rangos medios.</div>`);
+  if(key==='men-cons') mods.push(`<div class="mod"><b>Sin resonancia.</b> Tratar por sospecha clínica es razonable porque el manejo inicial es el mismo: ejercicio. ${refList(['skou','kise'])}</div>`);
+  if(key==='pfp') mods.push(`<div class="mod"><b>Dolor patelofemoral.</b> La base es ejercicio combinado de cadera y rodilla; en corredores, reentrenar la carrera. ${refList(['willy19','crossley16'])}</div>`);
+  if(ph.avoid) mods.push(`<div class="mod"><b>Evitar en esta fase.</b> ${esc(ph.avoid)}</div>`);
+  if(ph.note) mods.push(`<div class="mod">${esc(ph.note)}</div>`);
+  const sug = suggested(st);
+  const time = P0.weeks ? `Semana postop ${num(st.semanas)||0} · por tiempo correspondería ${esc(P0.phases[sug].name.split(' · ')[0].toLowerCase())}` : 'Fase elegida por criterios';
+  const nd = days.length;
+  const overview = `<div class="tbl"><table class="data"><thead><tr><th>Día</th><th>Rodilla afectada</th><th>Deporte</th><th>Sano</th><th>Superior</th><th>Cardio</th></tr></thead><tbody>
+    ${days.map(d=>{ const g=t=>d.segs.find(x=>x.type===t); return `<tr><td><b>${esc(d.name)}</b></td><td>${esc(g('afe')?.sub||'—')}</td><td>${g('esp')?'✓':'—'}</td><td>${esc(g('sano')?.sub||'—')}</td><td>${esc(g('sup')?.sub||'—')}</td><td>${esc(g('cardio')?.rows?.[0]?.e||'—')} · ${esc(g('cardio')?.sub||'')}</td></tr>`; }).join('')}
+    </tbody></table></div><p class="small" style="margin:8px 0 0">Reparto sugerido: ${nd===4?'lunes, martes, jueves y viernes':'lunes, miércoles y viernes'}. Terapia y activación todos los días.</p>`;
+  return `
+  <section class="card"><div class="status">
+    <div class="light ${light.c}"><span class="dot"></span><div><b>${light.t}</b><p>${esc(light.p)}</p>${sessions.length?`<p class="small">Según la última sesión registrada.</p>`:''}</div></div>
+    <div><h3 class="sec">${esc(ph.nextLabel)}</h3>${critList(ph.next, st)}${(i>=P0.phases.length-2)?'<p class="small" style="margin:6px 0 0">La batería de saltos (≥ 90 %) también cuenta; se evalúa en la app de pruebas.</p>':''}</div>
+    ${ph.extra?`<div><h3 class="sec">${esc(ph.extra.label)}</h3>${critList(ph.extra.list, st)}${refList(ph.extra.ev)}</div>`:''}
+  </div>
+  ${refList(['silbernagel','breda','grindem','aspetar','exp'])}</section>
+  ${mods.length?`<section class="card"><h3 class="sec">Consideraciones de este caso</h3><div class="mods" style="margin:0">${mods.join('')}</div></section>`:''}
+  ${mesoCard(st)}
+  <section class="card"><h3 class="sec">Semana tipo</h3>${overview}
+    <div class="legend" style="margin-top:10px">${[['Terapia y activación','var(--green)'],['Rehabilitación','var(--purple)'],['Deporte','var(--blue)'],['Fuerza','var(--coral)'],['Core','var(--ink)'],['Cardio','var(--gold)']].map(([l,c])=>`<span><i class="sw" style="background:${c}"></i>${l}</span>`).join('')}</div>
+  </section>
+  ${custom?`<div class="edited"><span><b>Plan modificado por ti</b> para esta fase y ${nd} días.</span><button id="bReset">Restablecer plan base</button></div>`:''}
+  ${days.map((d,di)=>dayHTML(d,di)).join('')}
+  ${fundamentos(ph, st)}
+  ${toolsBlock(ph)}
+  ${allRefs()}`;
+}
+
+/* ===================== VISTA: SESIONES Y EVOLUCIÓN ===================== */
+const PROMS = {
+  aclrsi:{l:'ACL-RSI', ref:'webster08'}, ikdc:{l:'IKDC subjetivo', ref:'irrgang01'}, koos:{l:'KOOS deporte', ref:'roos98'},
+  visap:{l:'VISA-P', ref:'visentini98'}, akps:{l:'AKPS (Kujala)', ref:'kujala93'}
+};
+function promsFor(s){ if(s.cond==='lca') return ['aclrsi','ikdc','koos']; if(s.cond==='men') return ['koos','ikdc']; if(s.cond==='tend') return ['visap']; return ['akps']; }
+function weeklyLoad(){
+  const by={}; sessions.forEach(x=>{ const w=num(x.semana)||0; if(!by[w]) by[w]={load:0,n:0,pain:[]}; by[w].load+=(num(x.min)||0)*(num(x.srpe)||0); by[w].n++; if(num(x.dolor)!=null) by[w].pain.push(+x.dolor); });
+  return Object.keys(by).map(Number).sort((a,b)=>a-b).slice(-8).map(w=>({w, ...by[w]}));
+}
+function loadChart(){
+  const data=weeklyLoad(); if(!data.length) return '<p class="small">Aún no hay sesiones registradas.</p>';
+  const max=Math.max(...data.map(d=>d.load),1), W=560, H=170, pad=34, bw=Math.min(48,(W-pad-10)/data.length-10);
+  const step=(W-pad-10)/data.length;
+  const ticks=[0,0.5,1].map(f=>Math.round(max*f));
+  return `<div class="tbl"><svg viewBox="0 0 ${W} ${H+34}" width="100%" style="max-width:${W}px;min-width:360px" role="img" aria-label="Carga interna semanal">
+    ${ticks.map(t=>{ const y=H-(t/max)*(H-20); return `<line x1="${pad}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${pad-6}" y="${y+4}" font-size="10" text-anchor="end" fill="var(--muted)">${t}</text>`; }).join('')}
+    ${data.map((d,k)=>{ const h=(d.load/max)*(H-20), x=pad+k*step+(step-bw)/2, y=H-h; const avg=d.pain.length?(d.pain.reduce((a,b)=>a+b,0)/d.pain.length):null;
+      return `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${k===data.length-1?'var(--coral)':'var(--coral-soft)'}" stroke="var(--coral)"/>
+      <text x="${x+bw/2}" y="${y-5}" font-size="10" text-anchor="middle" fill="var(--ink)">${Math.round(d.load)}</text>
+      <text x="${x+bw/2}" y="${H+14}" font-size="10" text-anchor="middle" fill="var(--muted)">S${d.w}</text>
+      <text x="${x+bw/2}" y="${H+28}" font-size="9" text-anchor="middle" fill="var(--muted)">${d.n} ses · dolor ${avg==null?'—':avg.toFixed(1)}</text>`; }).join('')}
+  </svg></div>`;
+}
+function adherence(){
+  const w=num(st.semPlan)||1, n=st.dias==='4'?4:3;
+  const cur=sessions.filter(x=>num(x.semana)===w).length;
+  const last4=[w-3,w-2,w-1,w].filter(x=>x>=1); const done=sessions.filter(x=>last4.includes(num(x.semana))).length;
+  return {cur, n, pct4: last4.length? Math.round(done/(last4.length*n)*100) : null};
+}
+function evalForm(){
+  const pf=promsFor(st);
+  return `<div class="logf"><h4>Nueva evaluación</h4>
+    <p class="small" style="margin:0 0 6px">Guarda dolor, derrame, rango y fase actuales del formulario, más los puntajes de los cuestionarios que apliques en su versión validada.</p>
+    <div class="row5"><label class="f">Fecha<input type="date" id="ev-fecha" value="${todayISO()}"></label>
+    ${pf.map(k=>`<label class="f">${PROMS[k].l} (0–100)<input type="number" min="0" max="100" id="ev-${k}"></label>`).join('')}</div>
+    <div class="actions"><button class="primary" id="evSave">Guardar evaluación</button><button id="evCancel">Cancelar</button></div></div>`;
+}
+function sessionsView(){
+  const ad=adherence(), pf=promsFor(st), der=['Cero','Trazas','1+','2+','3+'];
+  const ses = sessions.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const evs = evals.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  return `
+  <section class="card"><div class="kpis">
+    <div class="kpi"><span>Semana actual</span><b>${ad.cur}/${ad.n}</b><i>sesiones registradas</i></div>
+    <div class="kpi"><span>Adherencia 4 semanas</span><b>${ad.pct4==null?'—':ad.pct4+' %'}</b><i>sesiones hechas / planificadas</i></div>
+    <div class="kpi"><span>Último dolor</span><b>${ses[0]?.dolor??'—'}${ses[0]?'/10':''}</b><i>${ses[0]?esc(ses[0].fecha):'sin registros'}</i></div>
+  </div></section>
+  <section class="card"><h3 class="sec">Carga interna semanal (minutos × RPE de la sesión)</h3>${loadChart()}
+    <p class="small">Úsala para ver tendencias y saltos bruscos de carga entre semanas, no como predictor aislado de lesión.</p>${refList(['foster01','haddad17'])}</section>
+  <section class="card"><h3 class="sec">Sesiones registradas</h3>
+    ${ses.length?`<div class="tbl"><table class="data"><thead><tr><th>Fecha</th><th>Semana</th><th>Día</th><th>Min</th><th>RPE</th><th>Carga</th><th>Dolor</th><th>24 h</th><th>Ejercicios</th><th></th></tr></thead><tbody>
+    ${ses.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.semana)}</td><td>${esc(x.dia)}</td><td>${esc(x.min)}</td><td>${esc(x.srpe)}</td><td>${Math.round((num(x.min)||0)*(num(x.srpe)||0))}</td><td>${esc(x.dolor)}/10</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td class="wrap">${(x.ex||[]).filter(e=>e.kg||e.rpe).map(e=>esc(`${e.e} ${e.kg?e.kg+' kg':''}${e.reps?'×'+e.reps:''}${e.rpe?' @'+e.rpe:''}`)).join('<br>')||'—'}</td><td>${curId?`<button class="xbtn" data-delses="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
+    </tbody></table></div>`:'<p class="small">Registra sesiones desde cada día del plan con "Registrar sesión".</p>'}
+  </section>
+  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 class="sec" style="margin:0">Evaluaciones y cuestionarios</h3>${!evalOpen?'<button class="dark" id="bEval">Nueva evaluación</button>':''}</div>
+    ${evalOpen?evalForm():''}
+    ${evs.length?`<div class="tbl" style="margin-top:10px"><table class="data"><thead><tr><th>Fecha</th><th>Semana</th><th>Fase</th><th>Dolor</th><th>Derrame</th><th>Flexión</th><th>Déf. ext.</th>${pf.map(k=>`<th>${PROMS[k].l}</th>`).join('')}<th></th></tr></thead><tbody>
+    ${evs.map((e,k)=>`<tr><td>${esc(e.fecha)}</td><td>${esc(e.semana??'—')}</td><td>${esc(e.fase)}</td><td>${esc(e.dolor)}/10</td><td>${der[e.der]??'—'}</td><td>${e.flex??'—'}°</td><td>${e.ext??'—'}°</td>${pf.map(p=>{ const v=e.prom?.[p], pv=k>0?evs[k-1].prom?.[p]:null; const dlt=(v!=null&&pv!=null)?v-pv:null; return `<td>${v??'—'}${dlt!=null?` <span class="${dlt>=0?'up':'down'}">${dlt>=0?'+':''}${dlt}</span>`:''}</td>`; }).join('')}<td>${curId?`<button class="xbtn" data-delev="${esc(e.id)}" aria-label="Borrar evaluación">×</button>`:''}</td></tr>`).join('')}
+    </tbody></table></div>`:'<p class="small" style="margin-top:8px">Aún no hay evaluaciones.</p>'}
+    <p class="small">La app guarda los puntajes; aplica cada cuestionario en su versión validada en español y usa sus propios puntos de corte.</p>
+    ${refList(pf.map(k=>PROMS[k].ref))}
+  </section>`;
+}
+
+/* ===================== VISTA: PANEL ===================== */
+function panelView(){
+  const rows = patients.slice().sort((a,b)=>(b.updated||'').localeCompare(a.updated||''));
+  const by={}; rows.forEach(p=>{ const k=P[pkey(Object.assign(blank(),p.st||{}))]?.label||'—'; by[k]=(by[k]||0)+1; });
+  return `<section class="card"><div class="kpis">
+    <div class="kpi"><span>Pacientes</span><b>${rows.length}</b><i>guardados</i></div>
+    <div class="kpi"><span>Con sesión en los últimos 7 días</span><b>${rows.filter(p=>p.sum?.last && p.sum.last>=daysAgo(7)).length}</b><i>activos</i></div>
+    <div class="kpi"><span>Solicitudes pendientes</span><b>${Object.values(pendingBy).reduce((a,b)=>a+b,0)}</b><i>por responder</i></div>
+    <div class="kpi"><span>Sin consentimiento</span><b>${rows.filter(p=>!p.st?.consent).length}</b><i>pendientes</i></div>
+  </div>
+  ${Object.keys(by).length?`<div class="legend" style="margin-top:10px">${Object.entries(by).map(([k,v])=>`<span>${esc(k)}: <b>${v}</b></span>`).join('')}</div>`:''}</section>
+  <section class="card"><h3 class="sec">Pacientes</h3>
+  ${rows.length?`<div class="tbl"><table class="data"><thead><tr><th>Paciente</th><th>Condición</th><th>Fase</th><th>Semana</th><th>Adherencia semana</th><th>Último dolor</th><th>Última sesión</th><th>Consentimiento</th></tr></thead><tbody>
+  ${rows.map(p=>{ const s=Object.assign(blank(),p.st||{}); const k=pkey(s); const P0=P[k]; const ph=P0.phases[phaseIdx(s)]; const sm=p.sum||{};
+    return `<tr class="click" data-open="${esc(p.id)}"><td><b>${esc(p.nombre)}</b></td><td>${esc(subLabel(s,P0))}</td><td>${esc(ph.name.split(' · ')[0])}</td><td>${esc(s.semPlan)}</td><td>${sm.adh??'—'}</td><td>${sm.dolor!=null?esc(sm.dolor)+'/10':'—'}</td><td>${esc(sm.last||'—')}</td><td>${s.consent?'<span class="pill g">Sí</span>':'<span class="pill r">No</span>'}</td></tr>`; }).join('')}
+  </tbody></table></div>`:'<p class="small">Cuando guardes pacientes aparecerán aquí con su fase, adherencia y último dolor.</p>'}
+  </section>`;
+}
+
+/* ===================== RENDER PRINCIPAL ===================== */
+function render(){
+  const key=pkey(st), P0=P[key], i=phaseIdx(st), ph=P0.phases[i], m=mesoWeek(st);
+  const nd = st.dias==='4'?4:3;
+  const head = `${isExample?'<div class="example">Estás viendo un caso de ejemplo con sesiones de muestra. Crea un paciente nuevo o elige uno guardado; nada se guarda hasta que pulses Guardar.</div>':''}
+  <div class="phead"><div class="acc"></div><div>
+    <div class="in">
+      <div style="min-width:0;flex:1 1 300px">
+        <div class="trainer">Fisioterapeuta Manuel Celis</div>
+        <div class="client">${esc(st.nombre||'Sin nombre')}</div>
+        <div class="meta">${esc(subLabel(st,P0))} · rodilla ${st.lado==='der'?'derecha':'izquierda'}${st.deporte?' · '+esc(st.deporte):''} · ${nd} días por semana</div>
+        ${(!st.consent && !isExample)?'<div class="warnchip">Falta registrar el consentimiento informado para tratar datos de salud</div>':''}
+      </div>
+      <div class="badges"><span class="badge">Semana ${esc(num(st.semPlan)||1)}</span><span class="badge dk">${esc(ph.name.split(' · ')[0])}</span><span class="badge lt">S${m.w} · ${esc(m.l)}</span></div>
+    </div>
+    <div class="in" style="padding-top:0;display:block">
+      <div class="phase"><h2>${esc(ph.name.split(' · ').slice(1).join(' · ')||ph.name)}</h2><p>${esc(ph.goal)}</p><p class="small" style="margin-top:4px">${esc(ph.when)}</p></div>
+      <div class="actions">
+        <button class="primary" id="bSave">Guardar</button>
+        ${view==='plan'?`<button class="dark" id="bEdit">${editMode?'Terminar edición':'Editar ejercicios'}</button>`:''}
+        <button id="bPdf">Descargar PDF</button>
+        <button id="bXls">Descargar Excel</button>
+        <button class="dark" id="bPub">Publicar al deportista</button>
+      </div>
+    </div>
+  </div></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-view="plan" aria-selected="${view==='plan'}">Plan semanal</button>
+    <button role="tab" data-view="ses" aria-selected="${view==='ses'}">Sesiones y evolución</button>
+    <button role="tab" data-view="req" aria-selected="${view==='req'}">Solicitudes${(pendingBy[curId]||0)?` (${pendingBy[curId]})`:''}</button>
+    <button role="tab" data-view="panel" aria-selected="${view==='panel'}">Panel de pacientes</button>
+  </nav>`;
+  const body = view==='plan' ? planView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : panelView();
+  $('#out').innerHTML = head + body + `<footer class="foot">Herramienta de apoyo a la decisión clínica; no reemplaza el juicio del fisioterapeuta. ${esc(VERSION)}.</footer>`;
+  $('#pidRow').innerHTML = curId ? `ID del paciente: <code>${esc(curId)}</code> <button class="mini-btn" id="bCopyId">Copiar</button>` : 'ID del paciente: se asigna al guardar';
+  const cb=$('#bCopyId'); if(cb) cb.onclick=()=>{ try{ navigator.clipboard.writeText(curId).then(()=>toast('ID copiado'),()=>toast(curId)); }catch(e){ toast(curId); } };
+}
+/* ===================== INTERACCIÓN ===================== */
+function ensureCustom(){ const k=planKey(st); if(!st.plans) st.plans={}; if(!st.plans[k]) st.plans[k]=clone(genWeek(st)); return st.plans[k]; }
+$('#out').addEventListener('input', e=>{
+  const t=e.target;
+  if(t.dataset.f){ const days=ensureCustom(); days[+t.dataset.d].segs[+t.dataset.g].rows[+t.dataset.r][t.dataset.f]=t.value; markDirty(); }
+});
+$('#out').addEventListener('change', e=>{
+  const t=e.target;
+  if(t.dataset.chk){ if(!st.chk) st.chk={}; st.chk[t.dataset.chk]=t.checked; markDirty(); }
+  if(t.dataset.vid!==undefined){ const n=t.dataset.vid; myMeta[n]=Object.assign({}, myMeta[n], {video:t.value.trim()}); saveLib(); }
+  if(t.dataset.f==='e'){ const v=t.value.trim(); if(v && !BASE.has(v) && !myLib.includes(v)){ myLib.push(v); renderLib(); saveLib(); } render(); }
+  else if(t.dataset.f && !document.querySelector('.edited')) render();
+});
+$('#out').addEventListener('click', async e=>{
+  const q=s=>e.target.closest(s);
+  let b;
+  if(q('#bSave')) return save(false);
+  if(q('#bPdf')) return pdf();
+  if(q('#bXls')) return excel();
+  if(q('#bEdit')){ editMode=!editMode; subOpen=null; logOpen=null; return render(); }
+  if(q('#bReset')){ delete st.plans[planKey(st)]; render(); return markDirty(); }
+  if((b=q('[data-view]'))){ view=b.dataset.view; editMode=false; logOpen=null; return render(); }
+  if((b=q('[data-del]'))){ const [d,g,r]=b.dataset.del.split('|').map(Number); ensureCustom()[d].segs[g].rows.splice(r,1); subOpen=null; render(); return markDirty(); }
+  if((b=q('[data-add]'))){ const [d,g]=b.dataset.add.split('|').map(Number); const days=ensureCustom(); days[d].segs[g].rows.push({e:'',s:'3',r:'',c:'RPE 8',n:''}); render(); markDirty();
+    const inp=document.querySelector(`input[data-d="${d}"][data-g="${g}"][data-r="${days[d].segs[g].rows.length-1}"][data-f="e"]`); if(inp) inp.focus(); return; }
+  if((b=q('[data-sub]'))){ subOpen = subOpen===b.dataset.sub ? null : b.dataset.sub; return render(); }
+  if((b=q('[data-pick]'))){ const p=b.dataset.pick.split('|'); const [d,g,r]=p.slice(0,3).map(Number); const name=p.slice(3).join('|'); const row=ensureCustom()[d].segs[g].rows[r]; row.e=name; subOpen=null; render(); return markDirty(); }
+  if((b=q('[data-log]'))){ const d=+b.dataset.log; logOpen = logOpen===d ? null : d; return render(); }
+  if(q('#lfCancel')){ logOpen=null; return render(); }
+  if((b=q('#lfSave'))) return saveSession(+b.dataset.day);
+  if(q('#bEval')){ evalOpen=true; return render(); }
+  if(q('#evCancel')){ evalOpen=false; return render(); }
+  if(q('#evSave')) return saveEval();
+  if((b=q('[data-delses]'))) return delSub('sesiones', b.dataset.delses);
+  if((b=q('[data-delev]'))) return delSub('evaluaciones', b.dataset.delev);
+  if((b=q('[data-open]'))) return openPatient(b.dataset.open, 'plan');
+});
+
+/* ===================== FORMULARIO ===================== */
+function syncVisibility(){
+  const k=pkey(st);
+  document.querySelectorAll('[data-show]').forEach(el=>{
+    const v=el.dataset.show;
+    el.hidden = !( (v==='tend'&&st.cond==='tend') || (v==='men'&&st.cond==='men') || (v==='lca'&&st.cond==='lca') || (v==='sut'&&k==='men-sut') || (v==='lcapost'&&k==='lca-post') || (v==='menpost'&&(k==='men-mx'||k==='men-sut')) );
+  });
+  const ph=P[k].phases, sel=$('#fase');
+  sel.innerHTML = (P[k].weeks?`<option value="auto">Automática por semanas (${esc(ph[suggested(st)].name.split(' · ')[0])})</option>`:'') + ph.map((p,i)=>`<option value="${i}">${esc(p.name)}</option>`).join('');
+  if(!P[k].weeks && st.fase==='auto') st.fase='0';
+  sel.value = st.fase; if(sel.value!==String(st.fase)){ st.fase = P[k].weeks?'auto':'0'; sel.value=st.fase; }
+}
+function fillForm(){
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const v=getP(st, el.dataset.k);
+    if(el.type==='checkbox') el.checked=!!v; else if(el.id!=='fase') el.value = v==null?'':v;
+  });
+  $('#dolorOut').textContent = st.dolor+'/10';
+  syncVisibility();
+}
+let tmr;
+$('#form').addEventListener('input', e=>{
+  const el=e.target, k=el.dataset.k; if(!k) return;
+  let v = el.type==='checkbox'? el.checked : el.value;
+  if(['dolor','derrame'].includes(k)) v=+v;
+  setP(st,k,v);
+  if(k==='semanas'){ document.querySelectorAll('[data-k="semanas"]').forEach(x=>{ if(x!==el) x.value=v; }); }
+  if(k==='dolor') $('#dolorOut').textContent=v+'/10';
+  if(['cond','tendSub','menSub','lcaSub','semanas'].includes(k)){ if(k!=='semanas'&&k!=='tendSub') st.fase = P[pkey(st)].weeks?'auto':'0'; syncVisibility(); }
+  clearTimeout(tmr); tmr=setTimeout(render, 120); markDirty();
+});
+$('#form').addEventListener('change', e=>{ if(e.target.dataset.k==='fase'){ st.fase=e.target.value; render(); markDirty(); } });
+
+/* ===================== ALMACENAMIENTO (SUPABASE) ===================== */
+const SB_URL='https://pxttepssphezwptpgdvw.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4dHRlcHNzcGhlendwdHBnZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzOTY2NTUsImV4cCI6MjEwNjk3MjY1NX0.aVcozH1keMxEMdVlpRJ8i1rjVLzqOab-xj0uuSNTkI8';
+const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true, detectSessionInUrl:true}});
+let me = {email:null, uid:null, role:null}, solicitudes = [], pendingBy = {}, sumBy = {};
+function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(el._t); el._t=setTimeout(()=>el.hidden=true, 2600); }
+function saveBlob(blob, fname){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000); }
+let dirtyT;
+function markDirty(){ if(!curId) return; $('#saveState').textContent='Cambios sin guardar…'; clearTimeout(dirtyT); dirtyT=setTimeout(()=>save(true), 1500); }
+
+function renderSel(){
+  const sel=$('#psel');
+  const opts = patients.slice().sort((a,b)=> (b.updated||'').localeCompare(a.updated||'')).map(p=>`<option value="${esc(p.id)}">${esc(p.nombre||'Sin nombre')}${pendingBy[p.id]?` (${pendingBy[p.id]} solicitud${pendingBy[p.id]>1?'es':''})`:''}</option>`).join('');
+  sel.innerHTML = (isExample ? '<option value="">Ejemplo (sin guardar)</option>' : (curId ? '' : '<option value="">Paciente sin guardar</option>')) + opts;
+  sel.value = curId||'';
+}
+async function loadPatients(){
+  const {data, error} = await sb.from('pacientes').select('id,nombre,email,estado,consent,updated_at').order('updated_at',{ascending:false});
+  if(error){ toast('No se pudieron cargar los pacientes.'); return; }
+  patients = (data||[]).map(p=>({id:p.id, nombre:p.nombre, email:p.email, st:Object.assign({}, p.estado, {email:p.email||'', consent:p.consent}), updated:p.updated_at}));
+  const [{data:ses},{data:sol}] = await Promise.all([
+    sb.from('sesiones').select('paciente_id,fecha,dolor,semana').order('fecha',{ascending:false}).limit(2000),
+    sb.from('solicitudes').select('paciente_id').eq('estado','pendiente')
+  ]);
+  sumBy={}; (ses||[]).forEach(x=>{ const s=sumBy[x.paciente_id]||(sumBy[x.paciente_id]={last:x.fecha, dolor:x.dolor, byWeek:{}}); s.byWeek[x.semana]=(s.byWeek[x.semana]||0)+1; });
+  pendingBy={}; (sol||[]).forEach(x=>{ pendingBy[x.paciente_id]=(pendingBy[x.paciente_id]||0)+1; });
+  patients.forEach(p=>{ const s=sumBy[p.id]; const w=num(p.st?.semPlan)||1, n=p.st?.dias==='4'?4:3; p.sum = s ? {last:s.last, dolor:s.dolor, adh:`${s.byWeek[w]||0}/${n}`} : {adh:`0/${n}`}; p.pend = pendingBy[p.id]||0; });
+  renderSel();
+}
+async function loadLib(){
+  const {data} = await sb.from('biblioteca').select('nombre,cue,video');
+  myLib=(data||[]).map(r=>r.nombre); myMeta=Object.fromEntries((data||[]).map(r=>[r.nombre,{cue:r.cue||'',video:r.video||''}])); renderLib();
+}
+async function saveLib(){
+  const names=[...new Set([...myLib, ...Object.keys(myMeta)])].filter(Boolean);
+  const rows=names.map(n=>({nombre:n, cue:myMeta[n]?.cue||null, video:(myMeta[n]?.video||'').trim()||null}));
+  if(!rows.length) return;
+  const {error}=await sb.from('biblioteca').upsert(rows,{onConflict:'fisio_email,nombre'});
+  if(error) toast(/video/.test(error.message)?'El enlace del video debe empezar por http:// o https://':'No se pudo guardar la biblioteca.');
+}
+async function save(quiet){
+  const name=(st.nombre||'').trim();
+  if(!name){ if(!quiet){ toast('Escribe el nombre del deportista antes de guardar'); $('#nombre').focus(); } return; }
+  if(isExample && name==='Ejemplo · LCA HTH'){ if(!quiet){ toast('Cambia el nombre del ejemplo antes de guardarlo'); $('#nombre').focus(); } return; }
+  const email=(st.email||'').trim().toLowerCase();
+  if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ if(!quiet) toast('El correo del deportista no es válido.'); return; }
+  const estado=clone(st); delete estado.email; delete estado.consent;
+  const row={nombre:name, email: email||null, estado, consent:!!st.consent};
+  let res;
+  if(curId) res = await sb.from('pacientes').update(row).eq('id',curId).select('id,updated_at').single();
+  else res = await sb.from('pacientes').insert(row).select('id,updated_at').single();
+  if(res.error){ $('#saveState').textContent='No se pudo guardar'; if(!quiet) toast(/pacientes_email_unico|duplicate/.test(res.error.message)?'Ese correo ya está asignado a otro paciente.':'No se pudo guardar. Revisa la conexión e inténtalo de nuevo.'); return; }
+  const wasNew=!curId; curId=res.data.id; isExample=false;
+  const p={id:curId, nombre:name, email, st:clone(st), updated:res.data.updated_at, sum:(patients.find(x=>x.id===curId)||{}).sum};
+  const i=patients.findIndex(x=>x.id===curId); if(i<0) patients.push(p); else patients[i]=p;
+  renderSel(); $('#saveState').textContent='Guardado';
+  if(wasNew){ sessions=[]; evals=[]; solicitudes=[]; render(); }
+  if(!quiet) toast('Guardado');
+}
+async function loadSubs(){
+  if(!curId){ return; }
+  const [a,b,c] = await Promise.all([
+    sb.from('sesiones').select('*').eq('paciente_id',curId).order('fecha',{ascending:false}),
+    sb.from('evaluaciones').select('*').eq('paciente_id',curId).order('fecha'),
+    sb.from('solicitudes').select('*').eq('paciente_id',curId).order('created_at',{ascending:false})
+  ]);
+  sessions = a.data||[];
+  evals = (b.data||[]).map(r=>Object.assign({}, r.datos, {id:r.id, fecha:r.fecha}));
+  solicitudes = c.data||[];
+  render();
+}
+async function delSub(name, id){
+  const {error} = await sb.from(name).delete().eq('id', id);
+  if(error){ toast('No se pudo borrar.'); return; }
+  if(name==='sesiones') sessions=sessions.filter(x=>x.id!==id); else evals=evals.filter(x=>x.id!==id);
+  render(); toast('Borrado');
+}
+function collectLog(day){
+  const ex=[]; day.segs.forEach(sg=>sg.rows.forEach(r=>{ if(isLoggable(sg,r)) ex.push({e:r.e}); }));
+  document.querySelectorAll('[data-lx]').forEach(inp=>{ const k=+inp.dataset.lx; const v=num(inp.value); if(v!=null && ex[k]) ex[k][inp.dataset.lf]=v; });
+  const clamp=(v,a,b)=> v==null?null:Math.max(a,Math.min(b,Math.round(v)));
+  return {fecha:$('#lf-fecha').value||todayISO(), dia:day.name, min:clamp(num($('#lf-min').value),0,600), srpe:clamp(num($('#lf-srpe').value),0,10), dolor:clamp(num($('#lf-dolor').value),0,10),
+    d24:$('#lf-d24').value||'', nota:($('#lf-nota').value||'').slice(0,2000), ex:ex.filter(x=>x.kg!=null||x.rpe!=null||x.reps!=null)};
+}
+async function saveSession(di){
+  if(!curId){ toast('Guarda el paciente antes de registrar sesiones.'); return; }
+  const day=viewWeek(st).days[di];
+  const row=Object.assign(collectLog(day), {paciente_id:curId, semana:num(st.semPlan)||1, fase:P[pkey(st)].phases[phaseIdx(st)].name.split(' · ')[0], autor:'fisio'});
+  const {data,error}=await sb.from('sesiones').insert(row).select('*').single();
+  if(error){ toast('No se pudo registrar la sesión.'); return; }
+  sessions.unshift(data);
+  if(data.dolor!=null) st.dolor=data.dolor; if(data.d24) st.resp24=data.d24; fillForm();
+  logOpen=null; await save(true); render(); toast('Sesión registrada');
+}
+async function saveEval(){
+  if(!curId){ toast('Guarda el paciente antes de registrar evaluaciones.'); return; }
+  const prom={}; promsFor(st).forEach(k=>{ const v=num($('#ev-'+k).value); if(v!=null) prom[k]=Math.max(0,Math.min(100,v)); });
+  const datos={semana:num(st.semPlan)||1, fase:P[pkey(st)].phases[phaseIdx(st)].name.split(' · ')[0], dolor:st.dolor, der:st.derrame, flex:num(st.flexL), ext:num(st.extDef), chk:clone(st.chk||{}), prom};
+  const {data,error}=await sb.from('evaluaciones').insert({paciente_id:curId, fecha:$('#ev-fecha').value||todayISO(), datos}).select('*').single();
+  if(error){ toast('No se pudo guardar la evaluación.'); return; }
+  evals.push(Object.assign({}, data.datos, {id:data.id, fecha:data.fecha})); evalOpen=false; render(); toast('Evaluación guardada');
+}
+async function publishPlan(){
+  if(!curId){ await save(false); if(!curId) return; }
+  if(!(st.email||'').trim()){ toast('Agrega el correo del deportista para que pueda entrar a ver su plan.'); $('#pemail').focus(); return; }
+  await save(true);
+  const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)], m=mesoWeek(st);
+  const dias = applyMeso(baseWeek(st).days, st).map(d=>({name:d.name, segs:d.segs.map(sg=>({type:sg.type, sub:sg.sub, rows:sg.rows.map(r=>Object.assign({}, r, {cue:cueOf(r.e), video:videoOf(r.e)}))}))}));
+  const tools=[]; if(ph.tools.includes('iso')) tools.push('Isometría: 5 × 45 s con la rodilla a 60° (RPE 6–7), antes de entrenar o si duele.'); if(ph.tools.includes('bfr')) tools.push('BFR solo supervisado y con manguito: 30-15-15-15 reps con carga muy ligera.'); if(ph.tools.includes('mi')) tools.push('Imaginería y observación de video: 10–15 min, 3–5 veces por semana.');
+  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{w:m.w,l:m.l,d:m.d}, dias, tools};
+  const {error}=await sb.from('planes').insert({paciente_id:curId, semana:contenido.semana, fase:ph.name, titulo:`Semana ${contenido.semana}`, contenido});
+  if(error){ toast('No se pudo publicar el plan.'); return; }
+  toast(`Plan de la semana ${contenido.semana} publicado: ya lo ve ${st.email}`);
+}
+async function answerReq(id, estado){
+  const resp=(document.querySelector(`[data-resp="${id}"]`)?.value||'').trim().slice(0,2000);
+  const {error}=await sb.from('solicitudes').update({estado, respuesta:resp||null, resuelta_at:new Date().toISOString()}).eq('id',id);
+  if(error){ toast('No se pudo responder.'); return; }
+  const r=solicitudes.find(x=>x.id===id); if(r){ r.estado=estado; r.respuesta=resp; }
+  pendingBy[curId]=Math.max(0,(pendingBy[curId]||1)-1); renderSel(); render(); toast(estado==='aprobada'?'Solicitud aprobada':'Solicitud rechazada');
+}
+function requestsView(){
+  const est={pendiente:'<span class="pill y">Pendiente</span>',aprobada:'<span class="pill g">Aprobada</span>',rechazada:'<span class="pill r">Rechazada</span>'};
+  if(!curId) return '<section class="card"><p class="small">Guarda el paciente para recibir solicitudes.</p></section>';
+  return `<section class="card"><h3 class="sec">Solicitudes de cambio del deportista</h3>
+  <p class="small">Si apruebas un cambio, edita el plan y publícalo de nuevo; la respuesta le llega al deportista en su portal.</p>
+  ${solicitudes.length? solicitudes.map(r=>`<div class="req"><div class="reqh">${est[r.estado]||''}<span class="small">${esc((r.created_at||'').slice(0,10))}</span></div><p>${esc(r.texto)}</p>
+    ${r.estado==='pendiente'?`<label class="f">Respuesta<input type="text" data-resp="${esc(r.id)}" placeholder="Opcional"></label><div class="actions"><button class="primary" data-ans="${esc(r.id)}|aprobada">Aprobar</button><button data-ans="${esc(r.id)}|rechazada">Rechazar</button></div>`:(r.respuesta?`<p class="small"><b>Tu respuesta:</b> ${esc(r.respuesta)}</p>`:'')}</div>`).join('') : '<p class="small">No hay solicitudes.</p>'}
+  </section>`;
+}
+function openPatient(id, toView){
+  const p=patients.find(x=>x.id===id); if(!p) return;
+  st = Object.assign(blank(), clone(p.st||{})); curId=id; isExample=false; editMode=false; logOpen=null; evalOpen=false; subOpen=null;
+  sessions=[]; evals=[]; solicitudes=[]; if(toView) view=toView;
+  fillForm(); render(); renderSel(); $('#saveState').textContent=''; loadSubs();
+}
+$('#psel').addEventListener('change', e=>{ if(e.target.value) openPatient(e.target.value); });
+$('#bNew').onclick=()=>{ st=blank(); curId=null; isExample=false; editMode=false; sessions=[]; evals=[]; solicitudes=[]; view='plan'; fillForm(); render(); renderSel(); $('#saveState').textContent=''; $('#nombre').focus(); };
+$('#bDel').onclick=()=>{ if(!curId){ toast('Este paciente no está guardado'); return; } $('#delTxt').textContent=`¿Eliminar a ${st.nombre||'este paciente'} con sus planes, sesiones y evaluaciones? No se puede deshacer.`; $('#delConfirm').hidden=false; };
+$('#bDelNo').onclick=()=>{ $('#delConfirm').hidden=true; };
+$('#bDelYes').onclick=async()=>{
+  $('#delConfirm').hidden=true;
+  const {error}=await sb.from('pacientes').delete().eq('id',curId);
+  if(error){ toast('No se pudo eliminar.'); return; }
+  patients=patients.filter(p=>p.id!==curId);
+  st=clone(EXAMPLE); curId=null; isExample=true; sessions=clone(EX_SESSIONS); evals=clone(EX_EVALS); solicitudes=[]; fillForm(); render(); renderSel(); toast('Paciente eliminado');
+};
+$('#out').addEventListener('click', e=>{
+  const b=e.target.closest('[data-ans]'); if(b){ const [id,estado]=b.dataset.ans.split('|'); answerReq(id, estado); return; }
+  if(e.target.closest('#bPub')) publishPlan();
+  if(e.target.closest('[data-view="ses"]') || e.target.closest('[data-view="req"]')) loadSubs();
+  if(e.target.closest('[data-view="panel"]')) loadPatients().then(()=>{ if(view==='panel') render(); });
+});
+
+/* ===================== PORTAL DEL DEPORTISTA ===================== */
+let A = {p:null, plan:null, open:null, reqOpen:false};
+function aRow(r){
+  const sug=suggestion(r);
+  return `<tr><td class="e">${r.video?`<a href="${esc(r.video)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${r.cue?`<div class="cue">${esc(r.cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td><td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
+}
+function renderAthlete(){
+  const c=A.plan?.contenido, el=$('#athleteApp');
+  const head=`<header class="top"><div class="brand"><div class="bar"></div><h1>Mi plan</h1></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
+  if(!c){ el.innerHTML = head+`<section class="card"><h3 class="sec">Hola${A.p?.nombre?', '+esc(A.p.nombre):''}</h3><p>Tu fisioterapeuta aún no ha publicado tu plan. Cuando lo haga, aparecerá aquí.</p></section>`; return; }
+  const est={pendiente:'<span class="pill y">Pendiente</span>',aprobada:'<span class="pill g">Aprobada</span>',rechazada:'<span class="pill r">Rechazada</span>'};
+  const mine = sessions.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  el.innerHTML = head + `
+  <div class="phead"><div class="acc"></div><div><div class="in">
+    <div style="min-width:0;flex:1 1 260px"><div class="trainer">Fisioterapeuta Manuel Celis</div><div class="client">${esc(c.nombre)}</div>
+      <div class="meta">${esc(c.condicion)} · rodilla ${esc(c.rodilla)}${c.deporte?' · '+esc(c.deporte):''}</div></div>
+    <div class="badges"><span class="badge">Semana ${esc(c.semana)}</span><span class="badge lt">S${esc(c.meso?.w)} · ${esc(c.meso?.l)}</span></div>
+  </div><div class="in" style="padding-top:0;display:block"><div class="phase"><h2>${esc((c.fase||'').split(' · ').slice(1).join(' · ')||c.fase)}</h2><p>${esc(c.objetivo)}</p></div></div></div></div>
+  <section class="card"><h3 class="sec">Regla de dolor</h3><p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>
+    <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
+    ${c.tools?.length?`<ul class="small" style="margin:6px 0 0;padding-left:18px">${c.tools.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}</section>
+  ${c.dias.map((d,di)=>`<section class="card day" style="padding:12px"><div class="dayhead"><h3>${esc(d.name.toUpperCase())}</h3><button class="lbtn" data-alog="${di}">${A.open===di?'Cerrar':'Registrar sesión'}</button></div>
+    ${A.open===di?logForm(d,di).replace('id="lfSave"','id="aSave"').replace('id="lfCancel"','id="aCancel"'):''}
+    ${d.segs.map(sg=>`<div class="blk t-${sg.type}"><div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(sg.sub||'')}</i></div>
+      <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th><th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th></tr></thead><tbody>${sg.rows.map(aRow).join('')}</tbody></table></div></div>`).join('')}
+  </section>`).join('')}
+  <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 class="sec" style="margin:0">Pedir un cambio</h3>${!A.reqOpen?'<button class="dark" id="aReq">Nueva solicitud</button>':''}</div>
+    ${A.reqOpen?`<div class="logf"><label class="f">¿Qué necesitas cambiar y por qué?<textarea id="aReqTxt" maxlength="2000" placeholder="Ej.: la sentadilla búlgara me da dolor 6/10 en la rótula"></textarea></label><div class="actions"><button class="primary" id="aReqSend">Enviar</button><button id="aReqCancel">Cancelar</button></div></div>`:''}
+    ${solicitudes.length?solicitudes.map(r=>`<div class="req"><div class="reqh">${est[r.estado]||''}<span class="small">${esc((r.created_at||'').slice(0,10))}</span></div><p>${esc(r.texto)}</p>${r.respuesta?`<p class="small"><b>Respuesta:</b> ${esc(r.respuesta)}</p>`:''}</div>`).join(''):'<p class="small">No has enviado solicitudes.</p>'}
+  </section>
+  <section class="card"><h3 class="sec">Mis sesiones</h3>
+    ${mine.length?`<div class="tbl"><table class="data"><thead><tr><th>Fecha</th><th>Día</th><th>Min</th><th>RPE</th><th>Dolor</th><th>24 h</th><th></th></tr></thead><tbody>
+    ${mine.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.dia||'')}</td><td>${esc(x.min??'')}</td><td>${esc(x.srpe??'')}</td><td>${x.dolor!=null?esc(x.dolor)+'/10':'—'}</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td>${x.autor==='deportista'?`<button class="xbtn" data-adel="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
+    </tbody></table></div>`:'<p class="small">Aún no has registrado sesiones. Usa "Registrar sesión" en el día que entrenaste.</p>'}
+  </section>
+  <footer class="foot">Tus datos solo los ves tú y tu fisioterapeuta.</footer>`;
+}
+async function startAthlete(p){
+  A.p=p; $('#login').hidden=true; $('#fisioApp').hidden=true; $('#athleteApp').hidden=false;
+  const [pl, se, so] = await Promise.all([
+    sb.from('planes').select('*').eq('paciente_id',p.id).order('publicado_at',{ascending:false}).limit(1),
+    sb.from('sesiones').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}),
+    sb.from('solicitudes').select('*').eq('paciente_id',p.id).order('created_at',{ascending:false})
+  ]);
+  A.plan=(pl.data||[])[0]||null; sessions=se.data||[]; solicitudes=so.data||[]; st.dolor=0;
+  renderAthlete();
+}
+$('#athleteApp').addEventListener('click', async e=>{
+  const q=s=>e.target.closest(s); let b;
+  if(q('#aOut')){ await sb.auth.signOut(); location.reload(); return; }
+  if((b=q('[data-alog]'))){ const d=+b.dataset.alog; A.open = A.open===d?null:d; renderAthlete(); return; }
+  if(q('#aCancel')){ A.open=null; renderAthlete(); return; }
+  if(q('#aSave')){
+    const day=A.plan.contenido.dias[A.open];
+    const row=Object.assign(collectLog(day), {paciente_id:A.p.id, semana:A.plan.contenido.semana, fase:(A.plan.contenido.fase||'').split(' · ')[0], autor:'deportista', created_by:me.uid});
+    const {data,error}=await sb.from('sesiones').insert(row).select('*').single();
+    if(error){ toast('No se pudo guardar la sesión. Inténtalo de nuevo.'); return; }
+    sessions.unshift(data); A.open=null; renderAthlete(); toast('Sesión guardada. ¡Buen trabajo!'); return;
+  }
+  if((b=q('[data-adel]'))){ const id=b.dataset.adel; const {error}=await sb.from('sesiones').delete().eq('id',id); if(error){ toast('No se pudo borrar.'); return; } sessions=sessions.filter(x=>x.id!==id); renderAthlete(); return; }
+  if(q('#aReq')){ A.reqOpen=true; renderAthlete(); $('#aReqTxt')?.focus(); return; }
+  if(q('#aReqCancel')){ A.reqOpen=false; renderAthlete(); return; }
+  if(q('#aReqSend')){
+    const t=($('#aReqTxt').value||'').trim(); if(!t){ toast('Escribe qué necesitas cambiar.'); return; }
+    const {data,error}=await sb.from('solicitudes').insert({paciente_id:A.p.id, plan_id:A.plan?.id||null, texto:t.slice(0,2000)}).select('*').single();
+    if(error){ toast('No se pudo enviar la solicitud.'); return; }
+    solicitudes.unshift(data); A.reqOpen=false; renderAthlete(); toast('Solicitud enviada a tu fisioterapeuta'); return;
+  }
+});
+
+/* ===================== ACCESO ===================== */
+function showLogin(msg){
+  $('#login').hidden=false; $('#fisioApp').hidden=true; $('#athleteApp').hidden=true;
+  if(msg) $('#loginMsg').innerHTML=msg;
+}
+$('#loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const email=($('#loginEmail').value||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('#loginMsg').textContent='Escribe un correo válido.'; return; }
+  $('#loginBtn').disabled=true; $('#loginMsg').textContent='Enviando…';
+  const {error}=await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin+location.pathname}});
+  $('#loginBtn').disabled=false;
+  $('#loginMsg').textContent = error ? (/rate/i.test(error.message)?'Se enviaron demasiados correos. Espera unos minutos e inténtalo de nuevo.':'No se pudo enviar el enlace. Inténtalo de nuevo.') : `Listo. Revisa ${email} y abre el enlace desde este mismo dispositivo.`;
+});
+async function route(session){
+  me.email=(session.user.email||'').toLowerCase(); me.uid=session.user.id;
+  const {data:f}=await sb.from('fisios').select('email,nombre').maybeSingle();
+  if(f){ me.role='fisio'; $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
+    await Promise.all([loadPatients(), loadLib()]);
+    if(patients.length) openPatient(patients[0].id); else { render(); renderSel(); }
+    return; }
+  const {data:p}=await sb.from('pacientes').select('id,nombre').maybeSingle();
+  if(p){ me.role='deportista'; startAthlete(p); return; }
+  showLogin(`Entraste como <b>${esc(me.email)}</b>, pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo. <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
+  const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+}
+$('#fOut').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+let routed=false;
+async function boot(){
+  sb.auth.onAuthStateChange((ev, session)=>{ if(session && !routed && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')){ routed=true; route(session); } });
+  const {data:{session}} = await sb.auth.getSession();
+  if(session && !routed){ routed=true; route(session); } else if(!session) showLogin();
+}
+
+/* ===================== PDF ===================== */
+const clean = t => String(t??'').replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/→/g,'->').replace(/×/g,'x').replace(/[–—]/g,'-').replace(/≈/g,'~').replace(/·/g,'-').replace(/[“”]/g,'"');
+async function pdf(){
+  if(!window.jspdf){ toast('No se pudo cargar el generador de PDF.'); return; }
+  const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)], days=applyMeso(baseWeek(st).days, st), m=mesoWeek(st);
+  const doc=new jspdf.jsPDF({unit:'mm',format:'a4'}); const W=210, H=297, M=14; let y=0;
+  const C={cream:[240,238,233], ink:[28,27,25], mut:[107,104,98], line:[224,221,214], coral:[204,77,44], green:[61,138,106], gold:[160,120,40], purple:[107,66,184], blue:[47,111,159], dark:[36,35,31], white:[255,255,255]};
+  const TC={ter:C.green, afe:C.purple, esp:C.blue, sano:C.coral, sup:C.coral, core:C.ink, cardio:C.gold};
+  const bg=()=>{ doc.setFillColor(...C.cream); doc.rect(0,0,W,H,'F'); };
+  const newPage=()=>{ doc.addPage(); bg(); y=14; };
+  const need=h=>{ if(y+h>H-12) newPage(); };
+  bg();
+  doc.setFillColor(...C.dark); doc.rect(0,0,W,30,'F'); doc.setFillColor(...C.coral); doc.rect(0,30,W,1.6,'F');
+  doc.setTextColor(...C.white); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.text('FISIOTERAPEUTA MANUEL CELIS', M, 9);
+  doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.text(clean((st.nombre||'Deportista').toUpperCase()), M, 18);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(clean(`${subLabel(st,P0)} - rodilla ${st.lado==='der'?'derecha':'izquierda'}${st.deporte?' - '+st.deporte:''} - ${days.length} dias por semana`), M, 25);
+  const badge=`SEMANA ${num(st.semPlan)||1}`; doc.setFont('helvetica','bold'); doc.setFontSize(10); const bw=doc.getTextWidth(badge)+8;
+  doc.setFillColor(...C.coral); doc.roundedRect(W-M-bw, 8, bw, 8, 1.5, 1.5, 'F'); doc.setTextColor(...C.white); doc.text(badge, W-M-bw+4, 13.4);
+  const b2=clean(`S${m.w} - ${m.l}`.toUpperCase()); doc.setFontSize(8); const bw2=doc.getTextWidth(b2)+6; doc.setDrawColor(...C.white); doc.roundedRect(W-M-bw2, 19, bw2, 6.5, 1.2, 1.2, 'S'); doc.text(b2, W-M-bw2+3, 23.4);
+  y=40;
+  const para=(t,size,style,color,indent=0,gap=1.2)=>{ doc.setFont('helvetica',style); doc.setFontSize(size); doc.setTextColor(...color); doc.splitTextToSize(clean(t), W-2*M-indent).forEach(l=>{ need(size*0.45); doc.text(l, M+indent, y); y+=size*0.42; }); y+=gap; };
+  para(ph.name.toUpperCase(),12,'bold',C.ink); para(ph.goal,9.5,'normal',C.mut,0,2.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.8);
+  const rl=doc.splitTextToSize(clean(`Regla de dolor: dolor durante <= 3/10 y vuelta a basal a las 24 h -> progresar. 4-5/10 -> mantener. Mas de 5/10 o peor al dia siguiente -> bajar carga. RPE 8 = podria hacer 2 repeticiones mas. Esta semana: ${m.l.toLowerCase()} (${m.d})`), W-2*M-8);
+  const rb=y; doc.setFillColor(...C.white); doc.setDrawColor(...C.line); doc.rect(M, rb, W-2*M, rl.length*3.8+5, 'FD'); doc.setFillColor(...C.coral); doc.rect(M, rb, 1.5, rl.length*3.8+5, 'F'); doc.setTextColor(...C.ink); rl.forEach((l,k)=>doc.text(l, M+5, rb+5+k*3.8)); y=rb+rl.length*3.8+10;
+  if(ph.avoid) para('Evitar: '+ph.avoid,8.8,'italic',C.mut,0,3);
+  const cols=[{k:'e',t:'EJERCICIO',w:58},{k:'s',t:'SERIES',w:15},{k:'r',t:'REPS',w:26},{k:'c',t:'CARGA',w:24},{k:'n',t:'NOTA',w:W-2*M-123}];
+  days.forEach(d=>{
+    need(30);
+    doc.setFillColor(...C.dark); doc.roundedRect(M, y, W-2*M, 9, 1.5, 1.5, 'F'); doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(clean(d.name.toUpperCase()), M+4, y+6.2); y+=13;
+    d.segs.forEach(sg=>{
+      if(!sg.rows.length) return;
+      need(22);
+      const col=TC[sg.type]||C.ink;
+      doc.setFillColor(...col); doc.rect(M, y, 1.8, 6, 'F'); doc.setTextColor(...col); doc.setFont('helvetica','bold'); doc.setFontSize(9.2);
+      doc.text(clean((SEGS[sg.type]||sg.type).toUpperCase()), M+4, y+4.3);
+      if(sg.sub){ doc.setFont('helvetica','normal'); doc.setTextColor(...C.mut); doc.setFontSize(8); doc.text(clean(sg.sub), W-M, y+4.3, {align:'right'}); }
+      y+=8;
+      doc.setFillColor(...C.white); doc.rect(M, y, W-2*M, 6, 'F'); doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...C.mut);
+      let x=M; cols.forEach(c=>{ doc.text(c.t, x+2, y+4); x+=c.w; }); y+=6;
+      sg.rows.forEach((r,ri)=>{
+        const cue=cueOf(r.e); const vid=videoOf(r.e);
+        const vals={...r, n:[r.n, cue && sg.type!=='ter' ? 'Clave: '+cue : ''].filter(Boolean).join(' ')};
+        const cell = cols.map(c=>{ doc.setFont('helvetica', c.k==='e'||c.k==='c'?'bold':'normal'); doc.setFontSize(c.k==='n'?7.6:8.4); return doc.splitTextToSize(clean(vals[c.k]||''), c.w-4); });
+        const h=Math.max(...cell.map(l=>l.length))*3.5+3.2;
+        need(h);
+        doc.setFillColor(...(ri%2?[250,249,246]:C.white)); doc.rect(M, y, W-2*M, h, 'F');
+        doc.setDrawColor(...C.line); doc.setLineWidth(0.2); doc.line(M, y, W-M, y);
+        let xx=M; cols.forEach((c,ci)=>{ doc.setFont('helvetica', c.k==='e'||c.k==='c'?'bold':'normal'); doc.setFontSize(c.k==='n'?7.6:8.4);
+          doc.setTextColor(...(c.k==='c'?C.coral:c.k==='n'?C.mut:(c.k==='e'&&vid?C.blue:C.ink)));
+          cell[ci].forEach((l,li)=>doc.text(l, xx+2, y+4.2+li*3.5));
+          if(c.k==='e'&&vid){ doc.link(xx, y, c.w, h, {url:vid}); }
+          xx+=c.w; });
+        y+=h;
+      });
+      y+=4;
+    });
+    y+=3;
+  });
+  const tools=[];
+  if(ph.tools.includes('iso')) tools.push('Isometria: 5 x 45 s con la rodilla a 60 grados (RPE 6-7), antes de entrenar o si duele.');
+  if(ph.tools.includes('bfr')) tools.push('BFR (solo supervisado y con manguito): 30-15-15-15 reps con carga muy ligera, 30 s de pausa.');
+  if(ph.tools.includes('mi')) tools.push('Imagineria y observacion de video: 10-15 min, 3-5 veces por semana en casa.');
+  if(tools.length){ need(16); para('COMPLEMENTOS',10,'bold',C.ink,0,1); tools.forEach(t=>para('- '+t,8.8,'normal',C.ink,0,0.6)); y+=2; }
+  if(st.notas){ need(14); para('NOTAS',10,'bold',C.ink,0,1); para(st.notas,8.8,'normal',C.ink); }
+  if(days.some(d=>d.segs.some(sg=>sg.rows.some(r=>videoOf(r.e))))) para('Los ejercicios en azul tienen video: toca el nombre para abrirlo.',8,'italic',C.mut,0,1);
+  const blob = doc.output('blob');
+  const fname = `Plan rodilla - ${(st.nombre||'deportista').replace(/[^\p{L}\p{N} _-]/gu,'')} - semana ${num(st.semPlan)||1}.pdf`;
+  try{
+    saveBlob(blob, fname); toast('PDF listo');
+  }catch(e){ if(e?.code!=='declined') toast('No se pudo descargar el PDF.'); }
+}
+
+
+/* ===================== EXCEL ===================== */
+async function excel(){
+  if(!window.XLSX){ toast('No se pudo cargar el generador de Excel.'); return; }
+  const key=pkey(st), P0=P[key], i=phaseIdx(st), ph=P0.phases[i], days=applyMeso(baseWeek(st).days, st), m=mesoWeek(st);
+  const COLOR={ter:'#3D8A6A',afe:'#6B42B8',esp:'#2F6F9F',sano:'#CC4D2C',sup:'#CC4D2C',core:'#1C1B19',cardio:'#A07828'};
+  // Hoja 1: plan en formato tabla
+  const rows=[['Día','Bloque','Detalle del bloque','Color del bloque','Ejercicio','Series','Reps','Carga','Nota','Clave técnica','Video']];
+  days.forEach(d=>d.segs.forEach(sg=>sg.rows.forEach(r=>{
+    rows.push([d.name, SEGS[sg.type]||sg.type, sg.sub||'', COLOR[sg.type]||'', r.e, r.s, r.r, r.c, r.n, cueOf(r.e), videoOf(r.e)]);
+  })));
+  const ws1=XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols']=[{wch:8},{wch:30},{wch:26},{wch:11},{wch:42},{wch:8},{wch:22},{wch:12},{wch:50},{wch:45},{wch:30}];
+  ws1['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length-1,c:10}})};
+  // Hoja 2: datos del deportista y de la fase
+  const crit = ph.next.map(id=>{ const v=critVal(id,st); return [CR[id].t, v===true?'Cumple':v===false?'No cumple':'Sin dato']; });
+  const info=[
+    ['Campo','Valor'],
+    ['Fisioterapeuta','Manuel Celis'],
+    ['Deportista', st.nombre||''],
+    ['Deporte', st.deporte||''],
+    ['Condición', subLabel(st,P0)],
+    ['Rodilla', st.lado==='der'?'Derecha':'Izquierda'],
+    ['Fase', ph.name],
+    ['Objetivo de la fase', ph.goal],
+    ['Semana del plan', num(st.semPlan)||1],
+    ['Semana del mesociclo', `S${m.w} · ${m.l} — ${m.d}`],
+    ['Días por semana', days.length],
+    ['Regla de dolor','Dolor ≤ 3/10 y vuelta a basal a las 24 h → progresar. 4–5/10 → mantener. Más de 5/10 o peor al día siguiente → bajar carga.'],
+    ['Escala de carga','RPE 8 = podría hacer 2 repeticiones más; RPE 7 = 3 más.'],
+    ['Evitar en esta fase', ph.avoid||''],
+    ['Notas', st.notas||''],
+    [],
+    [ph.nextLabel,'Estado'],
+    ...crit
+  ];
+  const ws2=XLSX.utils.aoa_to_sheet(info); ws2['!cols']=[{wch:28},{wch:90}];
+  // Hoja 3: guía de diseño para Claude Design
+  const guide=[
+    ['Elemento','Valor'],
+    ['Fondo','#F0EEE9 (crema)'],
+    ['Barra lateral y acento','#CC4D2C (coral)'],
+    ['Cabecera de día','#24231F (oscuro), texto blanco'],
+    ['Tipografía de títulos','Oswald, mayúsculas'],
+    ['Tipografía de texto','DM Sans'],
+    ['Columnas de la tabla','Ejercicio / Series / Reps / Carga / Nota'],
+    ['Días','Día 1, Día 2… sin fechas'],
+    ['Insignia','SEMANA '+(num(st.semPlan)||1)],
+    [],
+    ['Bloque','Color'],
+    ...Object.keys(COLOR).map(k=>[SEGS[k], COLOR[k]])
+  ];
+  const ws3=XLSX.utils.aoa_to_sheet(guide); ws3['!cols']=[{wch:30},{wch:50}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws1, 'Plan');
+  XLSX.utils.book_append_sheet(wb, ws2, 'Deportista y fase');
+  XLSX.utils.book_append_sheet(wb, ws3, 'Guía de diseño');
+  const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const fname=`Plan rodilla - ${(st.nombre||'deportista').replace(/[^\p{L}\p{N} _-]/gu,'')} - semana ${num(st.semPlan)||1}.xlsx`;
+  try{
+    saveBlob(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), fname); toast('Excel listo');
+  }catch(e){ if(e?.code!=='declined') toast(e?.code==='extension_not_enabled'?'La descarga de Excel no está habilitada en esta vista.':'No se pudo descargar el Excel.'); }
+}
+
+/* ===================== INICIO ===================== */
+collectBase(); sessions=clone(EX_SESSIONS); evals=clone(EX_EVALS);
+renderLib(); fillForm(); boot();
+
+</script>
+
+</body>
+</html>
