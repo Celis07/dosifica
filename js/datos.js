@@ -51,7 +51,7 @@ function getP(o, p){ return p.split('.').reduce((a,k)=> a==null?undefined:a[k], 
 function setP(o, p, v){ const ks=p.split('.'); let a=o; ks.slice(0,-1).forEach(k=>{ if(a[k]==null||typeof a[k]!=='object') a[k]={}; a=a[k]; }); a[ks[ks.length-1]]=v; }
 
 function blank(){
-  return {nombre:'',deporte:'',lado:'der',cond:'lca',tendSub:'rot',perfil:'',consent:false,menSub:'cons',cargaSut:'restringida',lcaSub:'post',injerto:'hth',suturaAsoc:false,semanas:0,fase:'auto',dias:'3',semPlan:1,
+  return {modulo:'rodilla',deporteP:'gimnasio',nivel:'int',poblacion:'sed',torneos:[],inicio:'',nombre:'',deporte:'',lado:'der',cond:'lca',tendSub:'rot',perfil:'',consent:false,menSub:'cons',cargaSut:'restringida',lcaSub:'post',injerto:'hth',suturaAsoc:false,semanas:0,fase:'auto',dias:'3',semPlan:1,
     dolor:0,resp24:'igual',derrame:0,extDef:'',flexL:'',flexS:'',slr:false,marcha:false,chk:{},plans:{},notas:''};
 }
 const EXAMPLE = Object.assign(blank(), {nombre:'Ejemplo · LCA HTH',deporte:'Rugby subacuático',perfil:'uwr',cond:'lca',lcaSub:'post',injerto:'hth',semanas:18,semPlan:10,dolor:2,resp24:'igual',derrame:0,extDef:0,flexL:138,flexS:142,slr:true,marcha:true});

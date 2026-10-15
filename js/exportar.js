@@ -13,18 +13,20 @@ async function pdf(){
   doc.setFillColor(...C.dark); doc.rect(0,0,W,30,'F'); doc.setFillColor(...C.coral); doc.rect(0,30,W,1.6,'F');
   doc.setTextColor(...C.white); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.text('FISIOTERAPEUTA MANUEL CELIS', M, 9);
   doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.text(clean((st.nombre||'Deportista').toUpperCase()), M, 18);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(clean(`${subLabel(st,P0)} - rodilla ${st.lado==='der'?'derecha':'izquierda'}${st.deporte?' - '+st.deporte:''} - ${days.length} dias por semana`), M, 25);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.text(clean(`${subLabel(st,P0)}${isRod(st)?` - rodilla ${st.lado==='der'?'derecha':'izquierda'}`:''}${st.deporte?' - '+st.deporte:''} - ${days.length} dias por semana`), M, 25);
   const badge=`SEMANA ${num(st.semPlan)||1}`; doc.setFont('helvetica','bold'); doc.setFontSize(10); const bw=doc.getTextWidth(badge)+8;
   doc.setFillColor(...C.coral); doc.roundedRect(W-M-bw, 8, bw, 8, 1.5, 1.5, 'F'); doc.setTextColor(...C.white); doc.text(badge, W-M-bw+4, 13.4);
-  const b2=clean(`S${m.w} - ${m.l}`.toUpperCase()); doc.setFontSize(8); const bw2=doc.getTextWidth(b2)+6; doc.setDrawColor(...C.white); doc.roundedRect(W-M-bw2, 19, bw2, 6.5, 1.2, 1.2, 'S'); doc.text(b2, W-M-bw2+3, 23.4);
+  const b2=clean(m.l.toUpperCase()); doc.setFontSize(8); const bw2=doc.getTextWidth(b2)+6; doc.setDrawColor(...C.white); doc.roundedRect(W-M-bw2, 19, bw2, 6.5, 1.2, 1.2, 'S'); doc.text(b2, W-M-bw2+3, 23.4);
   y=40;
   const para=(t,size,style,color,indent=0,gap=1.2)=>{ doc.setFont('helvetica',style); doc.setFontSize(size); doc.setTextColor(...color); doc.splitTextToSize(clean(t), W-2*M-indent).forEach(l=>{ need(size*0.45); doc.text(l, M+indent, y); y+=size*0.42; }); y+=gap; };
   para(ph.name.toUpperCase(),12,'bold',C.ink); para(ph.goal,9.5,'normal',C.mut,0,2.5);
   doc.setFont('helvetica','normal'); doc.setFontSize(8.8);
-  const rl=doc.splitTextToSize(clean(`Regla de dolor: dolor durante <= 3/10 y vuelta a basal a las 24 h -> progresar. 4-5/10 -> mantener. Mas de 5/10 o peor al dia siguiente -> bajar carga. RPE 8 = podria hacer 2 repeticiones mas. Esta semana: ${m.l.toLowerCase()} (${m.d})`), W-2*M-8);
+  const nt=tourns(st).find(t=>t.w>=curWeek(st));
+  const rl=doc.splitTextToSize(clean(`${isRod(st)?'Regla de dolor: dolor durante <= 3/10 y vuelta a basal a las 24 h -> progresar. 4-5/10 -> mantener. Mas de 5/10 o peor al dia siguiente -> bajar carga. ':'Elige el peso para quedar en el RPE indicado; "Max. intencion" = lo mas rapido posible, sin fatiga. '}RPE 8 = podria hacer 2 repeticiones mas. Esta semana: ${m.l.toLowerCase()} (${m.d})${nt?` Proximo torneo: ${nt.n||'torneo'} (${nt.p}) el ${fmtD(nt.f)}.`:''}`), W-2*M-8);
   const rb=y; doc.setFillColor(...C.white); doc.setDrawColor(...C.line); doc.rect(M, rb, W-2*M, rl.length*3.8+5, 'FD'); doc.setFillColor(...C.coral); doc.rect(M, rb, 1.5, rl.length*3.8+5, 'F'); doc.setTextColor(...C.ink); rl.forEach((l,k)=>doc.text(l, M+5, rb+5+k*3.8)); y=rb+rl.length*3.8+10;
   if(ph.avoid) para('Evitar: '+ph.avoid,8.8,'italic',C.mut,0,3);
-  const cols=[{k:'e',t:'EJERCICIO',w:52},{k:'lado',t:'LADO',w:18},{k:'s',t:'SERIES',w:13},{k:'r',t:'REPS',w:24},{k:'c',t:'CARGA',w:20},{k:'n',t:'NOTA',w:W-2*M-127}];
+  const cols= isRod(st) ? [{k:'e',t:'EJERCICIO',w:52},{k:'lado',t:'LADO',w:18},{k:'s',t:'SERIES',w:13},{k:'r',t:'REPS',w:24},{k:'c',t:'CARGA',w:20},{k:'n',t:'NOTA',w:W-2*M-127}]
+    : [{k:'e',t:'EJERCICIO',w:60},{k:'s',t:'SERIES',w:13},{k:'r',t:'REPS',w:26},{k:'c',t:'CARGA',w:24},{k:'n',t:'NOTA',w:W-2*M-123}];
   days.forEach(d=>{
     need(30);
     doc.setFillColor(...C.dark); doc.roundedRect(M, y, W-2*M, 9, 1.5, 1.5, 'F'); doc.setTextColor(...C.white); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(clean(d.name.toUpperCase()), M+4, y+6.2); y+=13;
@@ -65,7 +67,7 @@ async function pdf(){
   if(st.notas){ need(14); para('NOTAS',10,'bold',C.ink,0,1); para(st.notas,8.8,'normal',C.ink); }
   if(days.some(d=>d.segs.some(sg=>sg.rows.some(r=>videoOf(r.e))))) para('Los ejercicios en azul tienen video: toca el nombre para abrirlo.',8,'italic',C.mut,0,1);
   const blob = doc.output('blob');
-  const fname = `Plan rodilla - ${(st.nombre||'deportista').replace(/[^\p{L}\p{N} _-]/gu,'')} - semana ${num(st.semPlan)||1}.pdf`;
+  const fname = `Plan ${isRod(st)?'rodilla':modOf(st)} - ${(st.nombre||'deportista').replace(/[^\p{L}\p{N} _-]/gu,'')} - semana ${num(st.semPlan)||1}.pdf`;
   try{
     saveBlob(blob, fname); toast('PDF listo');
   }catch(e){ if(e?.code!=='declined') toast('No se pudo descargar el PDF.'); }
@@ -92,14 +94,16 @@ async function excel(){
     ['Fisioterapeuta','Manuel Celis'],
     ['Deportista', st.nombre||''],
     ['Deporte', st.deporte||''],
-    ['Condición', subLabel(st,P0)],
-    ['Rodilla', st.lado==='der'?'Derecha':'Izquierda'],
+    ['Módulo', MODULOS[modOf(st)]],
+    ['Condición o perfil', subLabel(st,P0)],
+    ['Rodilla', isRod(st)?(st.lado==='der'?'Derecha':'Izquierda'):'—'],
     ['Fase', ph.name],
     ['Objetivo de la fase', ph.goal],
     ['Semana del plan', num(st.semPlan)||1],
-    ['Semana del mesociclo', `S${m.w} · ${m.l} — ${m.d}`],
+    ['Tipo de semana', `${m.l} — ${m.d}`],
+    ['Torneos', tourns(st).map(t=>`${t.p} · ${t.n||'Torneo'} · ${t.f}`).join(' | ')||'—'],
     ['Días por semana', days.length],
-    ['Regla de dolor','Dolor ≤ 3/10 y vuelta a basal a las 24 h → progresar. 4–5/10 → mantener. Más de 5/10 o peor al día siguiente → bajar carga.'],
+    [isRod(st)?'Regla de dolor':'Regla de dolor (si hay molestias)','Dolor ≤ 3/10 y vuelta a basal a las 24 h → progresar. 4–5/10 → mantener. Más de 5/10 o peor al día siguiente → bajar carga.'],
     ['Escala de carga','RPE 8 = podría hacer 2 repeticiones más; RPE 7 = 3 más.'],
     ['Evitar en esta fase', ph.avoid||''],
     ['Notas', st.notas||''],
@@ -131,7 +135,7 @@ async function excel(){
   XLSX.utils.book_append_sheet(wb, ws2, 'Deportista y fase');
   XLSX.utils.book_append_sheet(wb, ws3, 'Guía de diseño');
   const buf=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  const fname=`Plan rodilla - ${(st.nombre||'deportista').replace(/[^\p{L}\p{N} _-]/gu,'')} - semana ${num(st.semPlan)||1}.xlsx`;
+  const fname=`Plan ${isRod(st)?'rodilla':modOf(st)} - ${(st.nombre||'deportista').replace(/[^\p{L}\p{N} _-]/gu,'')} - semana ${num(st.semPlan)||1}.xlsx`;
   try{
     saveBlob(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), fname); toast('Excel listo');
   }catch(e){ if(e?.code!=='declined') toast(e?.code==='extension_not_enabled'?'La descarga de Excel no está habilitada en esta vista.':'No se pudo descargar el Excel.'); }

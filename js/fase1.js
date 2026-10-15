@@ -118,7 +118,7 @@ async function loadPlantillas(){
 function tplCard(){
   const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)];
   return `<section class="card tplcard"><div class="rowhead"><h3 class="sec" style="margin:0">Plantillas</h3><button id="tplClose">Cerrar</button></div>
-    <div class="tplsave"><input id="tplName" placeholder="Nombre, p. ej. LCA HTH fase 3 · 3 días" value="${esc(`${subLabel(st,P0)} · ${ph.name.split(' · ')[0]} · ${st.dias==='4'?4:3} días`)}"><button class="primary" id="tplSave">Guardar semana actual como plantilla</button></div>
+    <div class="tplsave"><input id="tplName" placeholder="Nombre, p. ej. LCA HTH fase 3 · 3 días" value="${esc(`${subLabel(st,P0)} · ${ph.name.split(' · ')[0]} · ${nDias(st)} días`)}"><button class="primary" id="tplSave">Guardar semana actual como plantilla</button></div>
     ${plantillas.length?`<div class="tbl"><table class="data"><thead><tr><th>Plantilla</th><th>Condición</th><th>Fase</th><th>Días</th><th></th></tr></thead><tbody>
     ${plantillas.map(t=>`<tr><td><b>${esc(t.nombre)}</b></td><td>${esc(t.condicion||'')}</td><td>${esc((t.fase||'').split(' · ')[0])}</td><td>${esc(t.dias||'')}</td><td><button class="mini-btn" data-tpl-apply="${esc(t.id)}">Aplicar</button><button class="xbtn" data-tpl-del="${esc(t.id)}" aria-label="Eliminar plantilla">×</button></td></tr>`).join('')}
     </tbody></table></div>`:'<p class="small">Aún no tienes plantillas. Ajusta una semana a tu gusto y guárdala aquí para reutilizarla con otros pacientes.</p>'}
@@ -128,7 +128,7 @@ function tplCard(){
 async function saveTpl(){
   const nombre=($('#tplName').value||'').trim().slice(0,120); if(!nombre){ toast('Ponle un nombre a la plantilla.'); return; }
   const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)];
-  const {data,error}=await sb.from('plantillas').insert({nombre, condicion:subLabel(st,P0), fase:ph.name, dias:st.dias==='4'?4:3, contenido:{days:clone(baseWeek(st).days)}}).select('*').single();
+  const {data,error}=await sb.from('plantillas').insert({nombre, condicion:subLabel(st,P0), fase:ph.name, dias:nDias(st), contenido:{days:clone(baseWeek(st).days)}}).select('*').single();
   if(error){ toast('No se pudo guardar la plantilla.'); return; }
   plantillas.unshift(data); render(); toast('Plantilla guardada');
 }

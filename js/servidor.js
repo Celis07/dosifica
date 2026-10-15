@@ -24,7 +24,8 @@ async function loadPatients(){
   ]);
   sumBy={}; (ses||[]).forEach(x=>{ const s=sumBy[x.paciente_id]||(sumBy[x.paciente_id]={last:x.fecha, dolor:x.dolor, byWeek:{}}); s.byWeek[x.semana]=(s.byWeek[x.semana]||0)+1; });
   pendingBy={}; (sol||[]).forEach(x=>{ pendingBy[x.paciente_id]=(pendingBy[x.paciente_id]||0)+1; });
-  patients.forEach(p=>{ const s=sumBy[p.id]; const w=num(p.st?.semPlan)||1, n=p.st?.dias==='4'?4:3; p.sum = s ? {last:s.last, dolor:s.dolor, adh:`${s.byWeek[w]||0}/${n}`} : {adh:`0/${n}`}; p.pend = pendingBy[p.id]||0; });
+  patients.forEach(p=>{ const s=sumBy[p.id]; const w=num(p.st?.semPlan)||1, n=nDias(p.st||{}); p.sum = s ? {last:s.last, dolor:s.dolor, adh:`${s.byWeek[w]||0}/${n}`} : {adh:`0/${n}`}; p.pend = pendingBy[p.id]||0; });
+  await loadWellBy();
   renderSel();
 }
 async function loadLib(){
@@ -109,8 +110,9 @@ async function publishPlan(){
   await save(true);
   const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)], m=mesoWeek(st);
   const dias = applyMeso(baseWeek(st).days, st).map(d=>({name:d.name, segs:d.segs.map(sg=>({type:sg.type, sub:sg.sub, fmt:sg.fmt, rows:sg.rows.map(r=>Object.assign({}, r, {cue:cueOf(r.e), video:videoOf(r.e)}))}))}));
+  const wk=[]; for(let w=curWeek(st); w<curWeek(st)+6; w++){ const k=weekKind(st,w); wk.push({w, ini:weekStart(st,w), l:k.wt.l, k:k.wt.k, t:k.t.map(t=>({n:t.n,f:t.f,p:t.p}))}); }
   const tools=[]; if(ph.tools.includes('iso')) tools.push('Isometría: 5 × 45 s con la rodilla a 60° (RPE 6–7), antes de entrenar o si duele.'); if(ph.tools.includes('bfr')) tools.push('BFR solo supervisado y con manguito: 30-15-15-15 reps con carga muy ligera.'); if(ph.tools.includes('mi')) tools.push('Imaginería y observación de video: 10–15 min, 3–5 veces por semana.');
-  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{w:m.w,l:m.l,d:m.d}, dias, tools};
+  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), modulo:modOf(st), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{l:m.l,d:m.d,k:m.k}, semanas:wk, dias, tools};
   const {error}=await sb.from('planes').insert({paciente_id:curId, semana:contenido.semana, fase:ph.name, titulo:`Semana ${contenido.semana}`, contenido});
   if(error){ toast('No se pudo publicar el plan.'); return; }
   toast(`Plan de la semana ${contenido.semana} publicado: ya lo ve ${st.email}`);
@@ -135,7 +137,8 @@ function openPatient(id, toView){
   const p=patients.find(x=>x.id===id); if(!p) return;
   st = Object.assign(blank(), clone(p.st||{})); curId=id; isExample=false; editMode=false; logOpen=null; evalOpen=false; subOpen=null;
   sessions=[]; evals=[]; solicitudes=[]; if(toView) view=toView;
-  fillForm(); render(); renderSel(); $('#saveState').textContent=''; loadSubs(); loadHistoria();
+  wellness=[]; wellOpen=false;
+  fillForm(); render(); renderSel(); $('#saveState').textContent=''; loadSubs(); loadHistoria(); loadWellness().then(()=>{ if(curId===id) render(); });
 }
 $('#psel').addEventListener('change', e=>{ if(e.target.value) openPatient(e.target.value); });
 $('#bNew').onclick=()=>{ st=blank(); curId=null; isExample=false; editMode=false; sessions=[]; evals=[]; solicitudes=[]; view='plan'; fillForm(); render(); renderSel(); $('#saveState').textContent=''; $('#nombre').focus(); };
@@ -159,28 +162,36 @@ $('#out').addEventListener('click', e=>{
 let A = {p:null, plan:null, open:null, reqOpen:false};
 function aRow(r){
   const sug=suggestion(r);
-  return `<tr><td class="e">${r.video?`<a href="${esc(r.video)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${r.cue?`<div class="cue">${esc(r.cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td><td class="ld">${ladoTag(r.lado)}</td><td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
+  const rod = (A.plan?.contenido?.modulo||'rodilla')==='rodilla';
+  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${r.video?`<a href="${esc(r.video)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${r.cue?`<div class="cue">${esc(r.cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td>${rod?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
 }
 function renderAthlete(){
   const c=A.plan?.contenido, el=$('#athleteApp');
-  const head=`<header class="top"><div class="brand"><div class="bar"></div><div class="lt"><h1>Fisio Celis</h1><span class="sig">Mi plan</span></div></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
+  const head=`<header class="top"><div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Dosifica</h1><span class="sig">Fisio Celis · Mi plan</span></div></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
   if(!A.consent){ el.innerHTML = head + consentGate(); return; }
   if(!c){ el.innerHTML = head+`<section class="card"><h3 class="sec">Hola${A.p?.nombre?', '+esc(A.p.nombre):''}</h3><p>Tu fisioterapeuta aún no ha publicado tu plan. Cuando lo haga, aparecerá aquí.</p></section>`; return; }
   const est={pendiente:'<span class="pill y">Pendiente</span>',aprobada:'<span class="pill g">Aprobada</span>',rechazada:'<span class="pill r">Rechazada</span>'};
   const mine = sessions.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
+  const rod = (c.modulo||'rodilla')==='rodilla', wl = wellLight(wellness), hoy = wellness.some(x=>x.fecha===todayISO());
+  const wkHTML = (c.semanas||[]).length ? `<div class="tl">${c.semanas.map((x,k)=>`<div class="tw k-${esc(x.k)}${k===0?' now':''}"><b>S${esc(x.w)} · ${esc(x.l)}</b><span>${esc(fmtD(x.ini))}</span>${(x.t||[]).map(t=>`<span class="tn">${esc(t.p)} · ${esc(t.n||'Torneo')} · ${esc(fmtD(t.f))}</span>`).join('')}</div>`).join('')}</div>` : '';
   el.innerHTML = head + `
   <div class="phead"><div class="acc"></div><div><div class="in">
     <div style="min-width:0;flex:1 1 260px"><div class="trainer">Fisioterapeuta Manuel Celis</div><div class="client">${esc(c.nombre)}</div>
-      <div class="meta">${esc(c.condicion)} · rodilla ${esc(c.rodilla)}${c.deporte?' · '+esc(c.deporte):''}</div></div>
-    <div class="badges"><span class="badge">Semana ${esc(c.semana)}</span><span class="badge lt">S${esc(c.meso?.w)} · ${esc(c.meso?.l)}</span></div>
+      <div class="meta">${esc(c.condicion)}${rod?' · rodilla '+esc(c.rodilla):''}${c.deporte?' · '+esc(c.deporte):''}</div></div>
+    <div class="badges"><span class="badge">Semana ${esc(c.semana)}</span><span class="badge lt">${esc(c.meso?.l)}</span></div>
   </div><div class="in" style="padding-top:0;display:block"><div class="phase"><h2>${esc((c.fase||'').split(' · ').slice(1).join(' · ')||c.fase)}</h2><p>${esc(c.objetivo)}</p></div></div></div></div>
-  <section class="card"><h3 class="sec">Regla de dolor</h3><p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>
+  <section class="card"><div class="rowhead"><h3 class="sec" style="margin:0">Bienestar de hoy</h3>${hoy&&!A.wOpen?'<button id="awOpen">Editar</button>':''}</div>
+    ${(!hoy||A.wOpen)?wellForm('aw'):''}
+    ${wl&&hoy&&!A.wOpen?`<div class="light ${wl.c}"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc({g:'Entrena según tu plan.',y:'Entrena lo planificado, sin subir peso hoy.',r:'Hoy baja 1–2 puntos de RPE o haz menos series, y cuéntale a tu fisioterapeuta.'}[wl.c])}</p></div></div>`:''}
+  </section>
+  ${wkHTML?`<section class="card"><h3 class="sec">Mis próximas semanas</h3>${wkHTML}</section>`:''}
+  <section class="card"><h3 class="sec">${rod?'Regla de dolor':'Cómo dosificar'}</h3>${rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
     <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
     ${c.tools?.length?`<ul class="small" style="margin:6px 0 0;padding-left:18px">${c.tools.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}</section>
   ${c.dias.map((d,di)=>`<section class="card day" style="padding:12px"><div class="dayhead"><h3>${esc(d.name.toUpperCase())}</h3><button class="lbtn" data-alog="${di}">${A.open===di?'Cerrar':'Registrar sesión'}</button></div>
     ${A.open===di?logForm(d,di).replace('id="lfSave"','id="aSave"').replace('id="lfCancel"','id="aCancel"'):''}
     ${d.segs.map(sg=>`<div class="blk t-${sg.type}"><div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(fmtLabel(sg.fmt))}</i></div>
-      <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th><th>Lado</th><th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th></tr></thead><tbody>${sg.rows.map(aRow).join('')}</tbody></table></div></div>`).join('')}
+      <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${rod?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th></tr></thead><tbody>${sg.rows.map(aRow).join('')}</tbody></table></div></div>`).join('')}
   </section>`).join('')}
   <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 class="sec" style="margin:0">Pedir un cambio</h3>${!A.reqOpen?'<button class="dark" id="aReq">Nueva solicitud</button>':''}</div>
     ${A.reqOpen?`<div class="logf"><label class="f">¿Qué necesitas cambiar y por qué?<textarea id="aReqTxt" maxlength="2000" placeholder="Ej.: la sentadilla búlgara me da dolor 6/10 en la rótula"></textarea></label><div class="actions"><button class="primary" id="aReqSend">Enviar</button><button id="aReqCancel">Cancelar</button></div></div>`:''}
@@ -202,6 +213,7 @@ async function startAthlete(p){
   ]);
   const {data:cs}=await sb.from('consentimientos').select('id').eq('paciente_id',p.id).limit(1); A.consent=!!(cs&&cs.length);
   A.plan=(pl.data||[])[0]||null; sessions=se.data||[]; solicitudes=so.data||[]; st.dolor=0;
+  const {data:wb}=await sb.from('bienestar').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}).limit(60); wellness=wb||[];
   renderAthlete();
 }
 $('#athleteApp').addEventListener('click', async e=>{
@@ -209,6 +221,8 @@ $('#athleteApp').addEventListener('click', async e=>{
   if(q('#aOut')){ await sb.auth.signOut(); location.reload(); return; }
   if((b=q('[data-alog]'))){ const d=+b.dataset.alog; A.open = A.open===d?null:d; renderAthlete(); return; }
   if(q('#aCancel')){ A.open=null; renderAthlete(); return; }
+  if(q('#awOpen')){ A.wOpen=true; renderAthlete(); return; }
+  if(q('#awSave')){ if(await saveWell(A.p.id,'aw',{created_by:me.uid})){ A.wOpen=false; renderAthlete(); toast('Bienestar guardado'); } return; }
   if(q('#aSave')){
     const day=A.plan.contenido.dias[A.open];
     const row=Object.assign(collectLog(day), {paciente_id:A.p.id, semana:A.plan.contenido.semana, fase:(A.plan.contenido.fase||'').split(' · ')[0], autor:'deportista', created_by:me.uid});

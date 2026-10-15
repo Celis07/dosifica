@@ -1,10 +1,10 @@
 /* ===================== ESTADO ===================== */
-const VERSION = 'Protocolos v1.2 · evidencia revisada en octubre de 2026';
-function pkey(s){ if(s.cond==='tend') return 'tend'; if(s.cond==='pfp') return 'pfp'; if(s.cond==='men') return 'men-'+s.menSub; return 'lca-'+s.lcaSub; }
-function suggested(s){ const P0=P[pkey(s)]; if(!P0.weeks) return 0; const w=num(s.semanas)||0; let i=0; P0.weeks.forEach((t,k)=>{ if(w>=t) i=k; }); return Math.min(i,P0.phases.length-1); }
+const VERSION = 'Protocolos v1.3 · evidencia revisada en octubre de 2026';
+function pkey(s){ const m=modOf(s); if(m==='deporte') return 'dep'; if(m==='salud') return 'sal'; if(s.cond==='tend') return 'tend'; if(s.cond==='pfp') return 'pfp'; if(s.cond==='men') return 'men-'+s.menSub; return 'lca-'+s.lcaSub; }
+function suggested(s){ if(modOf(s)==='deporte') return autoPhaseDep(s); const P0=P[pkey(s)]; if(!P0.weeks) return 0; const w=num(s.semanas)||0; let i=0; P0.weeks.forEach((t,k)=>{ if(w>=t) i=k; }); return Math.min(i,P0.phases.length-1); }
 function phaseIdx(s){ const n=P[pkey(s)].phases.length; if(s.fase==='auto') return suggested(s); const i=+s.fase; return (i>=0&&i<n)?i:0; }
-function planKey(s){ return pkey(s)+'|'+phaseIdx(s)+'|'+(s.dias==='4'?4:3); }
-function subLabel(s, P0){ return s.cond==='tend' ? (s.tendSub==='quad'?'Tendinopatía cuadricipital':'Tendinopatía rotuliana') : P0.label; }
+function planKey(s){ const m=modOf(s); const extra = m==='deporte' ? '|'+(s.deporteP||'')+'|'+(s.nivel||'') : m==='salud' ? '|'+(s.poblacion||'')+'|'+(s.nivel||'') : ''; return pkey(s)+'|'+phaseIdx(s)+'|'+nDias(s)+extra; }
+function subLabel(s, P0){ if(modOf(s)==='deporte') return 'Entrenamiento · '+((DEPORTES[s.deporteP]||DEPORTES.gimnasio).l); if(modOf(s)==='salud') return 'Salud · '+((POBL[s.poblacion]||POBL.sed).l); return s.cond==='tend' ? (s.tendSub==='quad'?'Tendinopatía cuadricipital':'Tendinopatía rotuliana') : P0.label; }
 const todayISO = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
 const daysAgo = n => { const d=new Date(Date.now()-n*86400000); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
 
@@ -26,6 +26,7 @@ const EX_EVALS = [
 /* ===================== CONSTRUCTOR DEL PLAN ===================== */
 const STAGES = {tend:['mid','mid','late','late'],pfp:['mid','mid','late'],'men-cons':['early','mid','late','late'],'men-mx':['early','mid','late'],'men-sut':['early','early','mid','late'],'lca-cons':['early','mid','late','late'],'lca-pre':['mid'],'lca-post':['early','early','mid','late','late']};
 function constraints(s){
+  if(!isRod(s)){ const i=phaseIdx(s); const low = modOf(s)==='salud' && (s.poblacion!=='act' || i===0); return {fx:140, tn:2, im: low?0:1, noKneel:false}; }
   const key=pkey(s), i=phaseIdx(s), stage=STAGES[key][i];
   let fx=140; if(key==='men-sut'&&i===0) fx=90; if(key==='men-sut'&&i===1) fx=70; if(key==='lca-post'&&s.suturaAsoc&&i<=1) fx=90;
   if(key==='lca-post'&&i===0) fx=Math.min(fx,60);
@@ -174,6 +175,8 @@ function fromBank(row, c){
 }
 
 function genWeek(s){
+  if(modOf(s)==='deporte') return genWeekDep(s);
+  if(modOf(s)==='salud') return genWeekSal(s);
   const key=pkey(s), i=phaseIdx(s), ph=P[key].phases[i];
   const n = s.dias==='4' ? 4 : 3, stage = STAGES[key][i];
   const c = constraints(s);
@@ -217,7 +220,7 @@ const MESO = [
   {w:3, l:'Sobrecarga', d:'Una serie más en los ejercicios principales, mismo RPE.', rpe:0, ser:1},
   {w:4, l:'Descarga', d:'≈ 40–50 % menos series y un punto menos de RPE para consolidar.', rpe:-1, ser:-0.4}
 ];
-const mesoWeek = s => MESO[((Math.max(1,num(s.semPlan)||1)-1)%4)];
+const mesoWeek = s => { const wt=weekKind(s, curWeek(s)).wt; return (wt.k==='sob' && modOf(s)==='deporte' && phaseIdx(s)>=2) ? WT.car : wt; };
 function adjSeries(str, ser, main){
   if(!str || !ser) return str;
   return str.replace(/\d+/g, x=>{ const v=+x; if(ser<0) return String(Math.max(1, Math.round(v*(1+ser)))); return main && v>=2 ? String(Math.min(6, v+ser)) : x; });
@@ -229,12 +232,14 @@ function adjRPE(str, d){
 function applyMeso(days, s){
   const m = mesoWeek(s);
   if(!m.rpe && !m.ser) return days;
+  const taperPh = modOf(s)==='deporte' && phaseIdx(s)===3 && ['taper','torneo'].includes(m.k);
   const out = clone(days);
   out.forEach(d=>d.segs.forEach(sg=>{
     sg.rows.forEach(r=>{
       if(r.ter) return;
       const main = /RPE\s*(8|9|10)/.test(r.c) && sg.type==='central';
-      r.s = adjSeries(r.s, m.ser, main);
+      const noAdd = m.ser>0 && modOf(s)==='deporte' && phaseIdx(s)>=2;
+      if(!taperPh && !noAdd) r.s = adjSeries(r.s, m.ser, main);
       if(!/RPE 10/.test(r.c)) r.c = adjRPE(r.c, m.rpe);
     });
   }));
@@ -264,6 +269,8 @@ function collectBase(){
   ['early','mid','late'].forEach(sg=>{ ['A','B'].forEach(t=>{ upperItems(t,sg).forEach(i=>BASE.add(i.n)); coreItems(t,sg).forEach(i=>BASE.add(i.n)); }); });
   ['cx','late'].forEach(k=>[true,false].forEach(l=>sanoItems(k,l).forEach(i=>BASE.add(i.n))));
   Object.values(PERFILES).forEach(p=>(p.items||[]).forEach(i=>BASE.add(i.n)));
+  Object.values(DEPORTES).forEach(p=>[...p.prev,...p.neuro,...p.acc].forEach(i=>BASE.add(i.n)));
+  Object.values(POOL).forEach(a=>a.forEach(i=>BASE.add(i.n)));
   BANCO_BASE.forEach(r=>BASE.add(r[0]));
 }
 function renderLib(){ const all=[...new Set([...myLib, ...BASE])].sort((a,b)=>a.localeCompare(b,'es')); $('#exlib').innerHTML = all.map(n=>`<option value="${esc(n)}"></option>`).join(''); }

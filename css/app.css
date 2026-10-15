@@ -1,12 +1,12 @@
 /* Layout: herramienta clínica con la identidad aprobada — negro, blanco, grises técnicos y naranja de señal; Archivo para títulos, IBM Plex Sans para texto y Plex Mono para datos. Un solo tema claro, deliberado. */
 :root{
-  /* Identidad aprobada: negro, blanco, grises técnicos y naranja solo como señal o énfasis. Estética de laboratorio de rendimiento. */
-  --cream:#F3F3F1; --paper:#FFFFFF; --ink:#0A0A0A; --muted:#5E5E5E; --line:#E6E6E6; --soft:#F8F8F7;
-  --coral:#FF5A1F; --coral-soft:#FFE9E0; --green:#2E7D5B; --green-soft:#E3F1EA; --gold:#9A6B10; --gold-soft:#F6EEDB;
-  --purple:#242424; --purple-soft:#EDEDED; --blue:#1F5F8B; --blue-soft:#E2ECF4; --dark:#0A0A0A;
-  --tech:#8A8A8A;
-  --c-act:#8A8A8A; --c-act-soft:#F1F1F1; --c-neuro:#242424; --c-neuro-soft:#E9E9E9; --c-central:#FF5A1F; --c-central-soft:#FFEDE5;
-  --ok:#2E7D5B; --warn:#9A6B10; --bad:#C2341B;
+  /* Marca v2: negro de potencia, rojo de señal (solo para lo que importa: carga, alertas, acción) y grises técnicos. */
+  --cream:#F1F1EF; --paper:#FFFFFF; --ink:#0E0E10; --muted:#5C5C62; --line:#E3E3E1; --soft:#F7F7F6;
+  --coral:#D71A28; --red:#E5202E; --coral-soft:#FCE6E7; --green:#2E7D5B; --green-soft:#E3F1EA; --gold:#9A6B10; --gold-soft:#F6EEDB;
+  --purple:#26262A; --purple-soft:#ECECEC; --blue:#1F5F8B; --blue-soft:#E2ECF4; --dark:#0E0E10; --dark2:#1B1B1F;
+  --tech:#8A8A90;
+  --c-act:#8A8A90; --c-act-soft:#F1F1F1; --c-neuro:#26262A; --c-neuro-soft:#E9E9EA; --c-central:#E5202E; --c-central-soft:#FCE9EA;
+  --ok:#2E7D5B; --warn:#9A6B10; --bad:#C2141F;
   --display:"Archivo","Arial Narrow",Helvetica,sans-serif; --body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   color-scheme:light;
 }
@@ -228,3 +228,53 @@ table.banco tr.ocu td{opacity:.5}
 .consent h4{margin:14px 0 4px;font-size:.95rem}
 .consent p{margin:0;max-width:75ch}
 .consent .chk{margin-top:12px;align-items:flex-start}
+
+/* ---------- Marca v2: negro y rojo ---------- */
+h1,.client,.dayhead h3,.phase h2,.kpi b,.badge{font-stretch:78%}
+.brand .mark{width:40px;height:40px;border-radius:9px;flex:none}
+.brand h1{font-weight:900;font-size:1.6rem;letter-spacing:.01em;text-transform:uppercase;font-stretch:72%}
+header.top{background:var(--dark);color:#fff;border-radius:12px;padding:10px 14px;margin-bottom:14px;border-bottom:3px solid var(--red)}
+header.top .sig{color:#A9A9AF}
+header.top .savestate,header.top .small{color:#C9C9CE}
+header.top button,header.top select{background:var(--dark2);border-color:#3A3A40;color:#fff}
+header.top button:hover{border-color:var(--red)}
+header.top select option{color:#0E0E10;background:#fff}
+.phead .acc{background:var(--red)}
+.client{font-weight:900;font-size:2rem}
+.badge{background:var(--ink)} .badge.dk{background:var(--red)}
+button.primary{background:var(--red);border-color:var(--red);color:#fff}
+button.primary:hover{background:#B3121F;border-color:#B3121F}
+.lbtn{background:var(--red);border-color:var(--red)}
+.dayhead{border-left:6px solid var(--red)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+legend{color:var(--ink)}
+.mw.on{border-color:var(--red);background:var(--coral-soft)}
+.login{background:var(--dark)}
+.logcard .brand h1{color:var(--ink)}
+.l-l{background:var(--coral-soft);color:#A3101B}
+/* ---------- Módulos ---------- */
+.modsel{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.modsel button{padding:8px 6px;font-size:.78rem;line-height:1.2;text-transform:uppercase;letter-spacing:.04em;font-family:var(--display);font-stretch:85%}
+.modsel button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:inset 0 -3px 0 var(--red)}
+/* ---------- Calendario ---------- */
+.tl{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.tw{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:.78rem;background:var(--paper);display:flex;flex-direction:column;gap:1px;min-width:0}
+.tw b{font-family:var(--display);font-stretch:85%;font-size:.9rem;letter-spacing:.03em}
+.tw span{color:var(--muted)}
+.tw.now{outline:2px solid var(--ink);outline-offset:-1px}
+.tw.k-desc,.tw.k-recup{background:var(--green-soft);border-color:#BFDCCB} .tw.k-desc b,.tw.k-recup b{color:var(--green)}
+.tw.k-taper,.tw.k-mini{background:var(--gold-soft);border-color:#E7D3A6} .tw.k-taper b,.tw.k-mini b{color:var(--gold)}
+.tw.k-torneo{background:var(--red);border-color:var(--red);color:#fff} .tw.k-torneo span{color:#FFE3E5}
+.tw .tn{font-weight:600;color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trow{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;align-items:end}
+@media (max-width:640px){.trow{grid-template-columns:1fr 1fr}}
+.prio{font-family:var(--mono);font-weight:700;font-size:.72rem;padding:1px 7px;border-radius:4px;background:var(--soft);border:1px solid var(--line)}
+.prio.A{background:var(--red);color:#fff;border-color:var(--red)} .prio.B{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* ---------- Bienestar ---------- */
+.well{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.well label{display:flex;flex-direction:column;gap:3px;font-size:.84rem;color:var(--muted)}
+.well input[type=range]{accent-color:var(--red)}
+.well output{font-family:var(--display);font-weight:700;color:var(--ink)}
+.wl{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}
+.wl.g{background:var(--ok)} .wl.y{background:var(--warn)} .wl.r{background:var(--bad)}
+.row2:has(> [hidden]){grid-template-columns:1fr}

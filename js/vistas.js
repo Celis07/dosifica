@@ -20,12 +20,12 @@ const ladoTag = l => l ? `<span class="lado l-${l==='Sana'?'s':l==='Lesionada'?'
 
 function rowView(r){
   const cue=cueOf(r.e), vid=videoOf(r.e), sug=suggestion(r);
-  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td><td class="ld">${ladoTag(r.lado)}</td><td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
+  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td>${isRod(st)?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
 }
 function rowEdit(r, di, gi, ri){
   const a=(f,w)=>`<input value="${esc(r[f])}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}"${w?` style="width:${w}"`:''} aria-label="${f}">`;
   let html = `<tr><td class="e"><input list="exlib" value="${esc(r.e)}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="e" aria-label="Ejercicio"></td>
-    <td class="ld"><select data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="lado" aria-label="Lado"><option value="">—</option>${LADOS.map(l=>`<option${r.lado===l?' selected':''}>${l}</option>`).join('')}</select><label class="tchk"><input type="checkbox" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="ter"${r.ter?' checked':''}> Terapia</label></td>
+    ${isRod(st)?`<td class="ld"><select data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="lado" aria-label="Lado"><option value="">—</option>${LADOS.map(l=>`<option${r.lado===l?' selected':''}>${l}</option>`).join('')}</select><label class="tchk"><input type="checkbox" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="ter"${r.ter?' checked':''}> Terapia</label></td>`:''}
     <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="c">${a('c','7em')}</td><td class="n">${a('n')}</td>
     <td class="v"><input value="${esc(myMeta[r.e]?.video||'')}" data-vid="${esc(r.e)}" placeholder="https://…" aria-label="Enlace del video"></td>
     <td class="x"><button class="mini-btn" data-sub="${di}|${gi}|${ri}">Sustituir</button><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
@@ -60,8 +60,8 @@ function dayHTML(day, di){
   ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
     <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(fmtLabel(sg.fmt))}</i></div>
     ${editMode?fmtEditor(sg.fmt,di,gi):''}
-    ${sg.type==='act'&&gi===0?'<div class="bn">Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.</div>':''}
-    <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th><th>Lado</th><th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th>Video</th><th></th>':''}</tr></thead><tbody>
+    ${sg.type==='act'&&gi===0?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
+    <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th>Video</th><th></th>':''}</tr></thead><tbody>
     ${sg.rows.map((r,ri)=> editMode ? rowEdit(r,di,gi,ri) : rowView(r)).join('')}
     </tbody></table></div>
     ${editMode?`<div class="addrow"><button class="ghost" data-add="${di}|${gi}">+ Añadir ejercicio</button></div>`:''}
@@ -76,9 +76,9 @@ function fmtEditor(f,di,gi){
 }
 function mesoCard(s){
   const m=mesoWeek(s), w=num(s.semPlan)||1, blk=Math.floor((w-1)/4)+1;
-  return `<section class="card"><h3 class="sec">Mesociclo ${blk} · semana ${m.w} de 4</h3>
-    <div class="meso">${MESO.map(x=>`<div class="mw${x.w===m.w?' on':''}${x.w===4?' dl':''}"><b>S${x.w} · ${x.l}</b><span>${esc(x.d)}</span></div>`).join('')}</div>
-    <p class="small" style="margin:8px 0 0">El plan se ajusta solo según la semana del plan. Al terminar la descarga, reevalúa criterios antes de empezar el siguiente bloque. ${editMode?'Estás editando la semana base; la progresión se aplica encima.':''}</p>
+  return `<section class="card"><h3 class="sec">Semana ${w} · ${esc(m.l)}</h3><p class="small" style="margin:0 0 8px">${esc(m.d)}</p>
+    ${timelineHTML(s, w-1, 8)}
+    <p class="small" style="margin:8px 0 0">El plan se ajusta solo según la semana y los torneos del calendario. Al terminar la descarga, reevalúa criterios antes de empezar el siguiente bloque. ${editMode?'Estás editando la semana base; la progresión se aplica encima.':''}</p>
     ${refList(['helms','exp'])}</section>`;
 }
 function fundamentos(ph, s){
@@ -111,6 +111,7 @@ function allRefs(){
 
 /* ===================== VISTA: PLAN ===================== */
 function planView(){
+  if(!isRod(st)) return genPlanView();
   const key=pkey(st), P0=P[key], i=phaseIdx(st), ph=P0.phases[i];
   const {days, custom} = viewWeek(st);
   const light = painLight(st);
@@ -157,7 +158,7 @@ const PROMS = {
   aclrsi:{l:'ACL-RSI', ref:'webster08'}, ikdc:{l:'IKDC subjetivo', ref:'irrgang01'}, koos:{l:'KOOS deporte', ref:'roos98'},
   visap:{l:'VISA-P', ref:'visentini98'}, akps:{l:'AKPS (Kujala)', ref:'kujala93'}
 };
-function promsFor(s){ if(s.cond==='lca') return ['aclrsi','ikdc','koos']; if(s.cond==='men') return ['koos','ikdc']; if(s.cond==='tend') return ['visap']; return ['akps']; }
+function promsFor(s){ if(!isRod(s)) return []; if(s.cond==='lca') return ['aclrsi','ikdc','koos']; if(s.cond==='men') return ['koos','ikdc']; if(s.cond==='tend') return ['visap']; return ['akps']; }
 function weeklyLoad(){
   const by={}; sessions.forEach(x=>{ const w=num(x.semana)||0; if(!by[w]) by[w]={load:0,n:0,pain:[]}; by[w].load+=(num(x.min)||0)*(num(x.srpe)||0); by[w].n++; if(num(x.dolor)!=null) by[w].pain.push(+x.dolor); });
   return Object.keys(by).map(Number).sort((a,b)=>a-b).slice(-8).map(w=>({w, ...by[w]}));
@@ -177,7 +178,7 @@ function loadChart(){
   </svg></div>`;
 }
 function adherence(){
-  const w=num(st.semPlan)||1, n=st.dias==='4'?4:3;
+  const w=num(st.semPlan)||1, n=nDias(st);
   const cur=sessions.filter(x=>num(x.semana)===w).length;
   const last4=[w-3,w-2,w-1,w].filter(x=>x>=1); const done=sessions.filter(x=>last4.includes(num(x.semana))).length;
   return {cur, n, pct4: last4.length? Math.round(done/(last4.length*n)*100) : null};
@@ -200,8 +201,10 @@ function sessionsView(){
     <div class="kpi"><span>Adherencia 4 semanas</span><b>${ad.pct4==null?'—':ad.pct4+' %'}</b><i>sesiones hechas / planificadas</i></div>
     <div class="kpi"><span>Último dolor</span><b>${ses[0]?.dolor??'—'}${ses[0]?'/10':''}</b><i>${ses[0]?esc(ses[0].fecha):'sin registros'}</i></div>
   </div></section>
+  ${monoCard()}
   <section class="card"><h3 class="sec">Carga interna semanal (minutos × RPE de la sesión)</h3>${loadChart()}
-    <p class="small">Úsala para ver tendencias y saltos bruscos de carga entre semanas, no como predictor aislado de lesión.</p>${refList(['foster01','haddad17'])}</section>
+    <p class="small">Úsala para ver tendencias y saltos bruscos de carga entre semanas, no como predictor aislado de lesión. No uso la relación aguda:crónica (ACWR) por sus problemas conceptuales.</p>${refList(['foster01','haddad17','impellizzeri20'])}</section>
+  ${wellCard()}
   <section class="card"><h3 class="sec">Sesiones registradas</h3>
     ${ses.length?`<div class="tbl"><table class="data"><thead><tr><th>Fecha</th><th>Semana</th><th>Día</th><th>Min</th><th>RPE</th><th>Carga</th><th>Dolor</th><th>24 h</th><th>Ejercicios</th><th></th></tr></thead><tbody>
     ${ses.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.semana)}</td><td>${esc(x.dia)}</td><td>${esc(x.min)}</td><td>${esc(x.srpe)}</td><td>${Math.round((num(x.min)||0)*(num(x.srpe)||0))}</td><td>${esc(x.dolor)}/10</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td class="wrap">${(x.ex||[]).filter(e=>e.kg||e.rpe).map(e=>esc(`${e.e} ${e.kg?e.kg+' kg':''}${e.reps?'×'+e.reps:''}${e.rpe?' @'+e.rpe:''}`)).join('<br>')||'—'}</td><td>${curId?`<button class="xbtn" data-delses="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
@@ -225,13 +228,14 @@ function panelView(){
     <div class="kpi"><span>Pacientes</span><b>${rows.length}</b><i>guardados</i></div>
     <div class="kpi"><span>Con sesión en los últimos 7 días</span><b>${rows.filter(p=>p.sum?.last && p.sum.last>=daysAgo(7)).length}</b><i>activos</i></div>
     <div class="kpi"><span>Solicitudes pendientes</span><b>${Object.values(pendingBy).reduce((a,b)=>a+b,0)}</b><i>por responder</i></div>
+    <div class="kpi"><span>Bienestar en rojo</span><b>${rows.filter(p=>{ const wl=wellLight(wellBy[p.id]||[]); return wl && wl.c==='r' && wl.e.fecha>=daysAgo(1); }).length}</b><i>hoy o ayer</i></div>
     <div class="kpi"><span>Sin consentimiento</span><b>${rows.filter(p=>!p.st?.consent && !consentBy[p.id]).length}</b><i>pendientes</i></div>
   </div>
   ${Object.keys(by).length?`<div class="legend" style="margin-top:10px">${Object.entries(by).map(([k,v])=>`<span>${esc(k)}: <b>${v}</b></span>`).join('')}</div>`:''}</section>
   <section class="card"><h3 class="sec">Pacientes</h3>
-  ${rows.length?`<div class="tbl"><table class="data"><thead><tr><th>Paciente</th><th>Condición</th><th>Fase</th><th>Semana</th><th>Adherencia semana</th><th>Último dolor</th><th>Última sesión</th><th>Consentimiento</th></tr></thead><tbody>
+  ${rows.length?`<div class="tbl"><table class="data"><thead><tr><th>Paciente</th><th>Condición</th><th>Fase</th><th>Semana</th><th>Adherencia semana</th><th>Último dolor</th><th>Bienestar</th><th>Próximo torneo</th><th>Última sesión</th><th>Consentimiento</th></tr></thead><tbody>
   ${rows.map(p=>{ const s=Object.assign(blank(),p.st||{}); const k=pkey(s); const P0=P[k]; const ph=P0.phases[phaseIdx(s)]; const sm=p.sum||{};
-    return `<tr class="click" data-open="${esc(p.id)}"><td><b>${esc(p.nombre)}</b></td><td>${esc(subLabel(s,P0))}</td><td>${esc(ph.name.split(' · ')[0])}</td><td>${esc(s.semPlan)}</td><td>${sm.adh??'—'}</td><td>${sm.dolor!=null?esc(sm.dolor)+'/10':'—'}</td><td>${esc(sm.last||'—')}</td><td>${consentBy[p.id]?'<span class="pill g">Firmado</span>':s.consent?'<span class="pill g">En papel</span>':'<span class="pill r">No</span>'}</td></tr>`; }).join('')}
+    return `<tr class="click" data-open="${esc(p.id)}"><td><b>${esc(p.nombre)}</b></td><td>${esc(subLabel(s,P0))}</td><td>${esc(ph.name.split(' · ')[0])}</td><td>${esc(s.semPlan)}</td><td>${sm.adh??'—'}</td><td>${sm.dolor!=null?esc(sm.dolor)+'/10':'—'}</td><td>${(()=>{ const wl=wellLight(wellBy[p.id]||[]); return wl?`<span class="wl ${wl.c}"></span>${wl.sum}/28 · ${esc(wl.e.fecha.slice(5))}`:'—'; })()}</td><td>${(()=>{ const t=tourns(s).find(t=>t.f>=todayISO()); return t?`<span class="prio ${esc(t.p)}">${esc(t.p)}</span> ${esc(fmtD(t.f))}`:'—'; })()}</td><td>${esc(sm.last||'—')}</td><td>${consentBy[p.id]?'<span class="pill g">Firmado</span>':s.consent?'<span class="pill g">En papel</span>':'<span class="pill r">No</span>'}</td></tr>`; }).join('')}
   </tbody></table></div>`:'<p class="small">Cuando guardes pacientes aparecerán aquí con su fase, adherencia y último dolor.</p>'}
   </section>`;
 }
@@ -239,17 +243,17 @@ function panelView(){
 /* ===================== RENDER PRINCIPAL ===================== */
 function render(){
   const key=pkey(st), P0=P[key], i=phaseIdx(st), ph=P0.phases[i], m=mesoWeek(st);
-  const nd = st.dias==='4'?4:3;
+  const nd = nDias(st);
   const head = `${isExample?'<div class="example">Estás viendo un caso de ejemplo con sesiones de muestra. Crea un paciente nuevo o elige uno guardado; nada se guarda hasta que pulses Guardar.</div>':''}
   <div class="phead"><div class="acc"></div><div>
     <div class="in">
       <div style="min-width:0;flex:1 1 300px">
         <div class="trainer">Fisioterapeuta Manuel Celis</div>
         <div class="client">${esc(st.nombre||'Sin nombre')}</div>
-        <div class="meta">${esc(subLabel(st,P0))} · rodilla ${st.lado==='der'?'derecha':'izquierda'}${st.deporte?' · '+esc(st.deporte):''} · ${nd} días por semana</div>
+        <div class="meta">${esc(subLabel(st,P0))}${isRod(st)?` · rodilla ${st.lado==='der'?'derecha':'izquierda'}`:` · ${esc((NIVELES[st.nivel]||NIVELES.int).l.split(' · ')[0].toLowerCase())}`}${st.deporte?' · '+esc(st.deporte):''} · ${nd} días por semana</div>
         ${(!st.consent && !consentBy[curId] && !isExample)?'<div class="warnchip">Falta registrar el consentimiento informado para tratar datos de salud</div>':''}
       </div>
-      <div class="badges"><span class="badge">Semana ${esc(num(st.semPlan)||1)}</span><span class="badge dk">${esc(ph.name.split(' · ')[0])}</span><span class="badge lt">S${m.w} · ${esc(m.l)}</span></div>
+      <div class="badges"><span class="badge">Semana ${esc(num(st.semPlan)||1)}</span><span class="badge dk">${esc(ph.name.split(' · ')[0])}</span><span class="badge lt">${esc(m.l)}</span></div>
     </div>
     <div class="in" style="padding-top:0;display:block">
       <div class="phase"><h2>${esc(ph.name.split(' · ').slice(1).join(' · ')||ph.name)}</h2><p>${esc(ph.goal)}</p><p class="small" style="margin-top:4px">${esc(ph.when)}</p></div>
@@ -266,11 +270,12 @@ function render(){
     <button role="tab" data-view="plan" aria-selected="${view==='plan'}">Plan semanal</button>
     <button role="tab" data-view="ses" aria-selected="${view==='ses'}">Sesiones y evolución</button>
     <button role="tab" data-view="req" aria-selected="${view==='req'}">Solicitudes${(pendingBy[curId]||0)?` (${pendingBy[curId]})`:''}</button>
+    <button role="tab" data-view="cal" aria-selected="${view==='cal'}">Calendario</button>
     <button role="tab" data-view="hist" aria-selected="${view==='hist'}">Historia clínica</button>
     <button role="tab" data-view="panel" aria-selected="${view==='panel'}">Panel de pacientes</button>
     <button role="tab" data-view="banco" aria-selected="${view==='banco'}">Banco</button>
   </nav>`;
-  const body = view==='plan' ? (tplOpen?tplCard():'')+planView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='banco' ? bancoView() : panelView();
+  const body = view==='plan' ? (tplOpen?tplCard():'')+planView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
   $('#out').innerHTML = head + body + `<footer class="foot">Herramienta de apoyo a la decisión clínica; no reemplaza el juicio del fisioterapeuta. ${esc(VERSION)}.</footer>`;
   $('#pidRow').innerHTML = curId ? `ID del paciente: <code>${esc(curId)}</code> <button class="mini-btn" id="bCopyId">Copiar</button>` : 'ID del paciente: se asigna al guardar';
   const cb=$('#bCopyId'); if(cb) cb.onclick=()=>{ try{ navigator.clipboard.writeText(curId).then(()=>toast('ID copiado'),()=>toast(curId)); }catch(e){ toast(curId); } };
@@ -319,15 +324,19 @@ $('#out').addEventListener('click', async e=>{
 
 /* ===================== FORMULARIO ===================== */
 function syncVisibility(){
-  const k=pkey(st);
+  const k=pkey(st), mo=modOf(st);
+  document.querySelectorAll('[data-modshow]').forEach(el=>{ el.hidden = !el.dataset.modshow.split(' ').includes(mo); if(el.tagName==='OPTION') el.disabled = el.hidden; });
+  document.querySelectorAll('.modsel [data-mod]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.mod===mo)));
+  if(!['2','3','4'].includes(String(st.dias)) || (mo==='rodilla' && String(st.dias)==='2')) st.dias='3';
+  $('#dias').value=String(st.dias);
   document.querySelectorAll('[data-show]').forEach(el=>{
     const v=el.dataset.show;
     el.hidden = !( (v==='tend'&&st.cond==='tend') || (v==='men'&&st.cond==='men') || (v==='lca'&&st.cond==='lca') || (v==='sut'&&k==='men-sut') || (v==='lcapost'&&k==='lca-post') || (v==='menpost'&&(k==='men-mx'||k==='men-sut')) );
   });
   const ph=P[k].phases, sel=$('#fase');
-  sel.innerHTML = (P[k].weeks?`<option value="auto">Automática por semanas (${esc(ph[suggested(st)].name.split(' · ')[0])})</option>`:'') + ph.map((p,i)=>`<option value="${i}">${esc(p.name)}</option>`).join('');
-  if(!P[k].weeks && st.fase==='auto') st.fase='0';
-  sel.value = st.fase; if(sel.value!==String(st.fase)){ st.fase = P[k].weeks?'auto':'0'; sel.value=st.fase; }
+  sel.innerHTML = (P[k].weeks?`<option value="auto">Automática por semanas (${esc(ph[suggested(st)].name.split(' · ')[0])})</option>`:P[k].auto?`<option value="auto">Automática por calendario (${esc(ph[suggested(st)].name.split(' · ')[0])})</option>`:'') + ph.map((p,i)=>`<option value="${i}">${esc(p.name)}</option>`).join('');
+  if(!P[k].weeks && !P[k].auto && st.fase==='auto') st.fase='0';
+  sel.value = st.fase; if(sel.value!==String(st.fase)){ st.fase = (P[k].weeks||P[k].auto)?'auto':'0'; sel.value=st.fase; }
 }
 function fillForm(){
   document.querySelectorAll('[data-k]').forEach(el=>{
@@ -345,6 +354,7 @@ $('#form').addEventListener('input', e=>{
   setP(st,k,v);
   if(k==='semanas'){ document.querySelectorAll('[data-k="semanas"]').forEach(x=>{ if(x!==el) x.value=v; }); }
   if(k==='dolor') $('#dolorOut').textContent=v+'/10';
+  if(['semPlan','deporteP','poblacion','nivel','dias'].includes(k)) syncVisibility();
   if(['cond','tendSub','menSub','lcaSub','semanas'].includes(k)){ if(k!=='semanas'&&k!=='tendSub') st.fase = P[pkey(st)].weeks?'auto':'0'; syncVisibility(); }
   clearTimeout(tmr); tmr=setTimeout(render, 120); markDirty();
 });
