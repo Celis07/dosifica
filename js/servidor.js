@@ -112,7 +112,7 @@ async function publishPlan(){
   const dias = applyMeso(baseWeek(st).days, st).map(d=>({name:d.name, segs:d.segs.map(sg=>({type:sg.type, sub:sg.sub, fmt:sg.fmt, rows:sg.rows.map(r=>Object.assign({}, r, {cue:cueOf(r.e), video:videoOf(r.e)}))}))}));
   const wk=[]; for(let w=curWeek(st); w<curWeek(st)+6; w++){ const k=weekKind(st,w); wk.push({w, ini:weekStart(st,w), l:k.wt.l, k:k.wt.k, t:k.t.map(t=>({n:t.n,f:t.f,p:t.p}))}); }
   const tools=[]; if(ph.tools.includes('iso')) tools.push('Isometría: 5 × 45 s con la rodilla a 60° (RPE 6–7), antes de entrenar o si duele.'); if(ph.tools.includes('bfr')) tools.push('BFR solo supervisado y con manguito: 30-15-15-15 reps con carga muy ligera.'); if(ph.tools.includes('mi')) tools.push('Imaginería y observación de video: 10–15 min, 3–5 veces por semana.');
-  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), modulo:modOf(st), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{l:m.l,d:m.d,k:m.k}, semanas:wk, dias, tools};
+  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), modulo:modOf(st), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{l:m.l,d:m.d,k:m.k}, semanas:wk, dias, tools, vivo:!st.vivoOff};
   const {error}=await sb.from('planes').insert({paciente_id:curId, semana:contenido.semana, fase:ph.name, titulo:`Semana ${contenido.semana}`, contenido});
   if(error){ toast('No se pudo publicar el plan.'); return; }
   toast(`Plan de la semana ${contenido.semana} publicado: ya lo ve ${st.email}`);
@@ -184,11 +184,12 @@ function renderAthlete(){
     ${(!hoy||A.wOpen)?wellForm('aw'):''}
     ${wl&&hoy&&!A.wOpen?`<div class="light ${wl.c}"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc({g:'Entrena según tu plan.',y:'Entrena lo planificado, sin subir peso hoy.',r:'Hoy baja 1–2 puntos de RPE o haz menos series, y cuéntale a tu fisioterapeuta.'}[wl.c])}</p></div></div>`:''}
   </section>
+  ${d24Card()}
   ${wkHTML?`<section class="card"><h3 class="sec">Mis próximas semanas</h3>${wkHTML}</section>`:''}
   <section class="card"><h3 class="sec">${rod?'Regla de dolor':'Cómo dosificar'}</h3>${rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
     <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
     ${c.tools?.length?`<ul class="small" style="margin:6px 0 0;padding-left:18px">${c.tools.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}</section>
-  ${c.dias.map((d,di)=>`<section class="card day" style="padding:12px"><div class="dayhead"><h3>${esc(d.name.toUpperCase())}</h3><button class="lbtn" data-alog="${di}">${A.open===di?'Cerrar':'Registrar sesión'}</button></div>
+  ${c.dias.map((d,di)=>`<section class="card day" style="padding:12px"><div class="dayhead"><h3>${esc(d.name.toUpperCase())}</h3><div class="dayact">${c.vivo!==false?`<button class="lbtn live" data-live="${di}"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>Entrenar en vivo</button>`:''}<button class="${c.vivo!==false?'':'lbtn'}" data-alog="${di}">${A.open===di?'Cerrar':(c.vivo!==false?'Registro rápido':'Registrar sesión')}</button></div></div>
     ${A.open===di?logForm(d,di).replace('id="lfSave"','id="aSave"').replace('id="lfCancel"','id="aCancel"'):''}
     ${d.segs.map(sg=>`<div class="blk t-${sg.type}"><div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(fmtLabel(sg.fmt))}</i></div>
       <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${rod?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th></tr></thead><tbody>${sg.rows.map(aRow).join('')}</tbody></table></div></div>`).join('')}
@@ -331,7 +332,7 @@ async function route(session){
   $('#login').hidden=true;
   const {data:f}=await sb.from('fisios').select('email,nombre').maybeSingle();
   if(f){ me.role='fisio'; $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
-    await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]);
+    await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts();
     if(patients.length) openPatient(patients[0].id); else { render(); renderSel(); }
     return; }
   const {data:p}=await sb.from('pacientes').select('id,nombre').maybeSingle();
