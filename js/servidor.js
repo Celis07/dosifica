@@ -180,21 +180,22 @@ function renderAthlete(){
       <div class="meta">${esc(c.condicion)}${rod?' · rodilla '+esc(c.rodilla):''}${c.deporte?' · '+esc(c.deporte):''}</div></div>
     <div class="badges"><span class="badge">Semana ${esc(c.semana)}</span><span class="badge lt">${esc(c.meso?.l)}</span></div>
   </div><div class="in" style="padding-top:0;display:block"><div class="phase"><h2>${esc((c.fase||'').split(' · ').slice(1).join(' · ')||c.fase)}</h2><p>${esc(c.objetivo)}</p></div></div></div></div>
-  <section class="card"><div class="rowhead"><h3 class="sec" style="margin:0">Bienestar de hoy</h3>${hoy&&!A.wOpen?'<button id="awOpen">Editar</button>':''}</div>
-    ${(!hoy||A.wOpen)?wellForm('aw'):''}
+  <section class="card wellc"><div class="rowhead"><h3 class="sec" style="margin:0">Bienestar de hoy</h3>${!A.wOpen?`<button id="awOpen" class="${hoy?'':'primary'}">${hoy?'Editar':'Responder'}</button>`:''}</div>
+    ${!hoy&&!A.wOpen?'<p class="small" style="margin:6px 0 0">4 preguntas rápidas antes de entrenar (30 s).</p>':''}
+    ${A.wOpen?wellForm('aw'):''}
     ${wl&&hoy&&!A.wOpen?`<div class="light ${wl.c}"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc({g:'Entrena según tu plan.',y:'Entrena lo planificado, sin subir peso hoy.',r:'Hoy baja 1–2 puntos de RPE o haz menos series, y cuéntale a tu fisioterapeuta.'}[wl.c])}</p></div></div>`:''}
   </section>
   ${d24Card()}
-  ${pushCard()}
-  ${wkHTML?`<section class="card"><h3 class="sec">Mis próximas semanas</h3>${wkHTML}</section>`:''}
-  <section class="card"><h3 class="sec">${rod?'Regla de dolor':'Cómo dosificar'}</h3>${rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
-    <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
-    ${c.tools?.length?`<ul class="small" style="margin:6px 0 0;padding-left:18px">${c.tools.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}</section>
   ${c.dias.map((d,di)=>`<section class="card day" style="padding:12px"><div class="dayhead"><h3>${esc(d.name.toUpperCase())}</h3><div class="dayact">${c.vivo!==false?`<button class="lbtn live" data-live="${di}"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>Entrenar en vivo</button>`:''}<button class="${c.vivo!==false?'':'lbtn'}" data-alog="${di}">${A.open===di?'Cerrar':(c.vivo!==false?'Registro rápido':'Registrar sesión')}</button></div></div>
     ${A.open===di?logForm(d,di).replace('id="lfSave"','id="aSave"').replace('id="lfCancel"','id="aCancel"'):''}
     ${d.segs.map(sg=>`<div class="blk t-${sg.type}"><div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(fmtLabel(sg.fmt))}</i></div>
       <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${rod?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th></tr></thead><tbody>${sg.rows.map(aRow).join('')}</tbody></table></div></div>`).join('')}
   </section>`).join('')}
+  ${pushCard()}
+  ${wkHTML?`<details class="card fold-d"><summary><h3 class="sec">Mis próximas semanas</h3></summary>${wkHTML}</details>`:''}
+  <details class="card fold-d"><summary><h3 class="sec">${rod?'Regla de dolor':'Cómo dosificar'}</h3></summary>${rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
+    <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
+    ${c.tools?.length?`<ul class="small" style="margin:6px 0 0;padding-left:18px">${c.tools.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}</details>
   <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 class="sec" style="margin:0">Pedir un cambio</h3>${!A.reqOpen?'<button class="dark" id="aReq">Nueva solicitud</button>':''}</div>
     ${A.reqOpen?`<div class="logf"><label class="f">¿Qué necesitas cambiar y por qué?<textarea id="aReqTxt" maxlength="2000" placeholder="Ej.: la sentadilla búlgara me da dolor 6/10 en la rótula"></textarea></label><div class="actions"><button class="primary" id="aReqSend">Enviar</button><button id="aReqCancel">Cancelar</button></div></div>`:''}
     ${solicitudes.length?solicitudes.map(r=>`<div class="req"><div class="reqh">${est[r.estado]||''}<span class="small">${esc((r.created_at||'').slice(0,10))}</span></div><p>${esc(r.texto)}</p>${r.respuesta?`<p class="small"><b>Respuesta:</b> ${esc(r.respuesta)}</p>`:''}</div>`).join(''):'<p class="small">No has enviado solicitudes.</p>'}
