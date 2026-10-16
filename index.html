@@ -25,10 +25,28 @@
 <div id="login" class="login" hidden>
   <div class="logcard">
     <div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Ápex</h1><span class="sig">Fisio Celis · Fisioterapeuta Manuel Celis</span></div></div>
-    <p>Entra con tu correo. Te enviamos un enlace para iniciar sesión, sin contraseña.</p>
-    <form id="loginForm"><label class="f">Correo<input type="email" id="loginEmail" autocomplete="email" required></label>
-    <button class="primary" id="loginBtn" type="submit">Enviarme el enlace</button></form>
-    <p class="small" id="loginMsg"></p>
+    <form id="loginForm" class="lgform" novalidate>
+      <div class="lghead"><h2 id="lgTitle">Entrar</h2><p id="lgSub">Con tu correo y tu contraseña. La sesión queda abierta en este dispositivo.</p></div>
+      <label class="f">Correo<input type="email" id="loginEmail" autocomplete="username" inputmode="email" required></label>
+      <label class="f" id="pwWrap">Contraseña
+        <span class="pw"><input type="password" id="loginPass" autocomplete="current-password">
+        <button type="button" class="eye" id="pwEye" aria-label="Mostrar contraseña" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span>
+      </label>
+      <button class="primary big" id="loginBtn" type="submit">Entrar</button>
+      <button type="button" class="linkbtn" id="lgMode">¿Primera vez u olvidaste tu contraseña?</button>
+      <p class="lgmsg" id="loginMsg" role="status" aria-live="polite"></p>
+    </form>
+    <form id="pwdForm" class="lgform" hidden novalidate>
+      <div class="lghead"><h2>Crea tu contraseña</h2><p>Así entras directo la próxima vez, sin esperar correos.</p></div>
+      <label class="f">Nueva contraseña<span class="pw"><input type="password" id="newPass" autocomplete="new-password" minlength="8">
+        <button type="button" class="eye" id="npEye" aria-label="Mostrar contraseña" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+      <div class="pwmeter" aria-hidden="true"><i id="pwBar"></i></div>
+      <p class="pwhint" id="pwHint">Mínimo 8 caracteres.</p>
+      <label class="f">Repítela<input type="password" id="newPass2" autocomplete="new-password"></label>
+      <button class="primary big" id="pwdBtn" type="submit">Guardar y entrar</button>
+      <button type="button" class="linkbtn" id="pwdSkip">Ahora no</button>
+      <p class="lgmsg" id="pwdMsg" role="status" aria-live="polite"></p>
+    </form>
   </div>
 </div>
 <div id="athleteApp" class="wrap" hidden></div>

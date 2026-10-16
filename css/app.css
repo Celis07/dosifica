@@ -391,3 +391,35 @@ code{background:var(--soft)}
 .logcard{background:var(--paper);border-color:var(--line);border-radius:16px}
 header.top .pbar{justify-content:flex-end}
 header.top .pbar select{width:auto;min-width:200px;max-width:100%}
+
+/* ---------- Acceso (diseño A) ---------- */
+.login{min-height:100vh;min-height:100dvh;padding:24px 16px;background:radial-gradient(120% 60% at 50% 0%,#1A0F11 0%,var(--cream) 60%)}
+.logcard{max-width:400px;padding:28px 24px;gap:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.logcard .brand{gap:12px}
+.lgform{display:flex;flex-direction:column;gap:14px}
+.lghead h2{font-family:var(--display);font-weight:800;font-size:1.9rem;line-height:1;text-transform:uppercase;margin:0 0 6px}
+.lghead p{margin:0;color:var(--muted);font-size:.9rem}
+.lgform label.f{font-size:.84rem;gap:6px}
+.lgform input[type=email],.lgform input[type=password],.lgform input[type=text]{height:50px;font-size:16px;padding:0 14px;border-radius:12px;background:var(--field);border:1px solid var(--line);transition:border-color .15s}
+.lgform input:focus{border-color:var(--ink);outline:none}
+.pw{position:relative;display:block}
+.pw input{padding-right:52px!important}
+.eye{position:absolute;right:4px;top:3px;width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:10px;display:grid;place-items:center;color:var(--muted);background:transparent}
+.eye:hover{color:var(--ink)}
+.eye[aria-pressed="true"]{color:var(--sig)}
+button.big{height:52px;font-size:1rem;border-radius:12px;margin-top:4px;position:relative}
+button.busy{color:transparent!important;pointer-events:none}
+button.busy::after{content:"";position:absolute;inset:0;margin:auto;width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.linkbtn{border:0;background:transparent;color:var(--muted);font-weight:500;font-size:.88rem;padding:6px;min-height:44px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:hover{color:var(--ink);border:0}
+.lgmsg{margin:0;font-size:.88rem;color:var(--muted);min-height:1.2em}
+.lgmsg.err{color:#FF8A90}
+.lgmsg.ok{color:#7FD6AE}
+.pwmeter{height:5px;border-radius:999px;background:var(--soft);overflow:hidden;margin-top:-6px}
+.pwmeter i{display:block;height:100%;width:0;border-radius:999px;transition:width .2s,background .2s;background:var(--bad)}
+.pwmeter i.mid{background:var(--warn)} .pwmeter i.hi{background:var(--ok)}
+.pwhint{margin:-6px 0 0;font-size:.8rem;color:var(--muted)}
+.shake{animation:shake .32s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@media (prefers-reduced-motion: reduce){.shake{animation:none}}

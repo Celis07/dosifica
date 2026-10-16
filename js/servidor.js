@@ -242,21 +242,93 @@ $('#athleteApp').addEventListener('click', async e=>{
 });
 
 /* ===================== ACCESO ===================== */
+/* Acceso: correo + contraseña. El enlace por correo solo se usa la primera vez o si se olvida la contraseña.
+   La sesión se guarda en el dispositivo (supabase-js persistSession) y se renueva sola; el correo se recuerda. */
+const LS = { get:k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set:(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} } };
+let lgMode='pass';
+function lgMsg(t, kind){ const m=$('#loginMsg'); m.innerHTML=t||''; m.className='lgmsg'+(kind?' '+kind:''); }
+function setLgMode(m){
+  lgMode=m; const link=m==='link';
+  $('#lgTitle').textContent = link ? 'Recibir enlace' : 'Entrar';
+  $('#lgSub').textContent = link ? 'Te enviamos un enlace de acceso. Al abrirlo creas tu contraseña y no vuelves a necesitar correos.' : 'Con tu correo y tu contraseña. La sesión queda abierta en este dispositivo.';
+  $('#pwWrap').hidden = link;
+  $('#loginBtn').textContent = link ? 'Enviarme el enlace' : 'Entrar';
+  $('#lgMode').textContent = link ? 'Ya tengo contraseña' : '¿Primera vez u olvidaste tu contraseña?';
+  lgMsg('');
+  (link || !$('#loginEmail').value ? $('#loginEmail') : $('#loginPass')).focus();
+}
 function showLogin(msg){
   $('#login').hidden=false; $('#fisioApp').hidden=true; $('#athleteApp').hidden=true;
-  if(msg) $('#loginMsg').innerHTML=msg;
+  $('#loginForm').hidden=false; $('#pwdForm').hidden=true;
+  const saved=LS.get('apex_email'); if(saved && !$('#loginEmail').value) $('#loginEmail').value=saved;
+  if(msg) lgMsg(msg);
+  setTimeout(()=>($('#loginEmail').value?$('#loginPass'):$('#loginEmail')).focus(), 30);
 }
+function eyeToggle(btn, input){
+  btn.onclick=()=>{ const show=input.type==='password'; input.type=show?'text':'password'; btn.setAttribute('aria-pressed', String(show)); btn.setAttribute('aria-label', show?'Ocultar contraseña':'Mostrar contraseña'); input.focus(); };
+}
+eyeToggle($('#pwEye'), $('#loginPass')); eyeToggle($('#npEye'), $('#newPass'));
+$('#lgMode').onclick=()=>setLgMode(lgMode==='link'?'pass':'link');
+function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
 $('#loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const email=($('#loginEmail').value||'').trim().toLowerCase();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $('#loginMsg').textContent='Escribe un correo válido.'; return; }
-  $('#loginBtn').disabled=true; $('#loginMsg').textContent='Enviando…';
-  const {error}=await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin+location.pathname}});
-  $('#loginBtn').disabled=false;
-  $('#loginMsg').textContent = error ? (/rate/i.test(error.message)?'Se enviaron demasiados correos. Espera unos minutos e inténtalo de nuevo.':'No se pudo enviar el enlace. Inténtalo de nuevo.') : `Listo. Revisa ${email} y abre el enlace desde este mismo dispositivo.`;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ lgMsg('Escribe un correo válido.','err'); shake($('#loginEmail')); $('#loginEmail').focus(); return; }
+  LS.set('apex_email', email);
+  const btn=$('#loginBtn'); btn.disabled=true; btn.classList.add('busy');
+  if(lgMode==='link'){
+    lgMsg('Enviando…');
+    LS.set('apex_setpwd','1');
+    const {error}=await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin+location.pathname}});
+    btn.disabled=false; btn.classList.remove('busy');
+    if(error) lgMsg(/rate/i.test(error.message)?'Se enviaron demasiados correos. Espera unos minutos e inténtalo de nuevo.':'No se pudo enviar el enlace. Inténtalo de nuevo.','err');
+    else lgMsg(`Listo. Revisa <b>${esc(email)}</b> y abre el enlace en <b>este mismo navegador</b>. Luego creas tu contraseña.`,'ok');
+    return;
+  }
+  const pass=$('#loginPass').value||'';
+  if(!pass){ btn.disabled=false; btn.classList.remove('busy'); lgMsg('Escribe tu contraseña.','err'); shake($('#loginPass')); $('#loginPass').focus(); return; }
+  lgMsg('Entrando…');
+  const {error}=await sb.auth.signInWithPassword({email, password:pass});
+  btn.disabled=false; btn.classList.remove('busy');
+  if(error){
+    shake($('#loginForm'));
+    lgMsg(/invalid|credentials/i.test(error.message)
+      ? 'Correo o contraseña incorrectos. Si aún no tienes contraseña, toca <b>¿Primera vez u olvidaste tu contraseña?</b>'
+      : /rate|many/i.test(error.message) ? 'Demasiados intentos. Espera un momento.' : 'No se pudo entrar. Revisa tu conexión e inténtalo de nuevo.','err');
+    $('#loginPass').select();
+  } else { $('#loginPass').value=''; lgMsg('Listo.','ok'); }
 });
+/* Crear contraseña la primera vez (o tras "olvidé mi contraseña") */
+function needsPwd(session){ return LS.get('apex_setpwd')==='1' || !(session.user.user_metadata && session.user.user_metadata.pwd); }
+function askPwd(session){
+  return new Promise(resolve=>{
+    $('#login').hidden=false; $('#fisioApp').hidden=true; $('#athleteApp').hidden=true;
+    $('#loginForm').hidden=true; $('#pwdForm').hidden=false; $('#pwdMsg').textContent='';
+    setTimeout(()=>$('#newPass').focus(), 30);
+    const meter=()=>{ const v=$('#newPass').value; let s=0; if(v.length>=8)s++; if(v.length>=12)s++; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++; if(/\d/.test(v))s++; if(/[^A-Za-z0-9]/.test(v))s++;
+      const pct=Math.min(100,s*20), lbl=v.length<8?'Mínimo 8 caracteres.':s<=2?'Aceptable.':s<=3?'Buena.':'Muy buena.';
+      $('#pwBar').style.width=pct+'%'; $('#pwBar').className=s<=2?'lo':s<=3?'mid':'hi'; $('#pwHint').textContent=lbl; };
+    $('#newPass').oninput=meter; meter();
+    const done=()=>{ LS.set('apex_setpwd',null); $('#pwdForm').hidden=true; $('#loginForm').hidden=false; resolve(); };
+    $('#pwdSkip').onclick=()=>{ LS.set('apex_setpwd',null); done(); };
+    $('#pwdForm').onsubmit=async e=>{
+      e.preventDefault();
+      const a=$('#newPass').value, b=$('#newPass2').value;
+      if(a.length<8){ $('#pwdMsg').textContent='Usa al menos 8 caracteres.'; $('#pwdMsg').className='lgmsg err'; shake($('#newPass')); return; }
+      if(a!==b){ $('#pwdMsg').textContent='Las dos contraseñas no coinciden.'; $('#pwdMsg').className='lgmsg err'; shake($('#newPass2')); return; }
+      const btn=$('#pwdBtn'); btn.disabled=true; btn.classList.add('busy');
+      const {error}=await sb.auth.updateUser({password:a, data:{pwd:true}});
+      btn.disabled=false; btn.classList.remove('busy');
+      if(error){ $('#pwdMsg').textContent=/should be different|same/i.test(error.message)?'Esa ya es tu contraseña actual. Elige otra o toca "Ahora no".':/weak|short|length/i.test(error.message)?'Contraseña muy débil. Prueba una más larga.':'No se pudo guardar. Inténtalo de nuevo.'; $('#pwdMsg').className='lgmsg err'; return; }
+      $('#newPass').value=''; $('#newPass2').value=''; toast('Contraseña guardada. La próxima vez entra con ella.'); done();
+    };
+  });
+}
 async function route(session){
   me.email=(session.user.email||'').toLowerCase(); me.uid=session.user.id;
+  LS.set('apex_email', me.email);
+  if(needsPwd(session)) await askPwd(session);
+  $('#login').hidden=true;
   const {data:f}=await sb.from('fisios').select('email,nombre').maybeSingle();
   if(f){ me.role='fisio'; $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
     await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]);
