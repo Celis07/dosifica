@@ -107,7 +107,7 @@ function bancoEdit(el){
   else if(k==='video'){ const v=el.value.trim(); if(v && !/^https?:\/\//i.test(v)){ toast('El enlace debe empezar por http:// o https://'); return; } m.video=v; }
   else if(k==='oculto') m.oculto=el.checked;
   else m[k]=num(el.value);
-  myMeta[n]=m; buildBanco(); saveLib(n); $('#saveState').textContent='Banco guardado';
+  m.revisado=true; myMeta[n]=m; buildBanco(); saveLib(n); $('#saveState').textContent='Banco guardado';
 }
 
 /* ---------- Plantillas ---------- */

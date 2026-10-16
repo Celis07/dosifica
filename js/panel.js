@@ -97,7 +97,7 @@ $('#home').addEventListener('click', e=>{
   if((b=q('[data-open-h]'))){ openPatient(b.dataset.openH, b.dataset.v||'plan'); return; }
   if((b=q('[data-h]'))){ const h=b.dataset.h;
     if(h==='new'){ showWork(); $('#bNew').click(); }
-    if(h==='banco'){ showWork(); view='banco'; render(); }
+    if(h==='banco'){ showWork(); view='banco'; render(); setTimeout(()=>document.querySelector('.rvban,.rvdone,#bq')?.scrollIntoView({block:'start'}),50); }
     if(h==='alertas'){ $('#bAlert').click(); }
   }
 });

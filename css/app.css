@@ -689,3 +689,27 @@ details.fold-d[open]>summary{margin-bottom:10px}
   #athleteApp .phead .in{padding:14px 16px}
   .wellc .rowhead button{min-height:38px}
 }
+
+/* ---------- Revisión del banco uno por uno ---------- */
+.rvban .rvbh{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+.rvban .rvbh>div{display:flex;flex-direction:column;gap:2px}
+.rvban b,.rvdone b{font-family:var(--display);font-weight:800;font-size:1.05rem;text-transform:uppercase;letter-spacing:.04em}
+.rvdone{border-color:#21503A}
+.rvbar{height:6px;border-radius:999px;background:var(--soft);overflow:hidden;margin-top:12px}
+.rvbar i{display:block;height:100%;background:var(--green);border-radius:999px;transition:width .25s}
+.rvcard{display:flex;flex-direction:column;gap:14px}
+.rvtop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.rvn{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+.rvcard .rvbar{margin-top:0}
+.rvname{font-family:var(--display);font-weight:800;font-size:1.7rem;line-height:1.05;text-transform:uppercase;margin:4px 0 0;overflow-wrap:anywhere}
+.rvf{display:flex;flex-direction:column;gap:6px}
+.rvl{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rvh{font-size:.76rem;color:var(--muted);margin-top:-2px}
+.rvchips{display:flex;flex-wrap:wrap;gap:6px}
+.rvc{min-height:42px;padding:0 14px;border-radius:10px;border:1px solid #3A3A40;background:transparent;color:var(--ink);font-weight:600;font-size:.86rem}
+.rvc.on{background:var(--ink);border-color:var(--ink);color:#0B0B0D}
+.rvact{display:flex;gap:8px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--paper);padding:10px 0 4px;margin-top:4px}
+.rvact .grow{flex:1 1 200px}
+.rvact button{min-height:52px;border-radius:12px;font-size:.95rem}
+.ghostb{background:var(--field);border:1px solid var(--line);color:var(--ink);padding:0 16px}
+.ghostb.danger{color:#FF8A90;border-color:#5A1C20}

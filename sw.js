@@ -2,10 +2,10 @@
    - Archivos propios (HTML, CSS, JS): primero la red (para recibir cambios al instante), si falla, la copia guardada.
    - Librerías y fuentes de CDN (con versión fija): copia guardada primero y se renueva en segundo plano.
    - Supabase (datos y acceso) nunca pasa por aquí: lo maneja la app con su propia cola. */
-const V = 'apex-v4';
+const V = 'apex-v5';
 const CORE = ['./', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/favicon-32.png',
   'js/datos.js', 'js/banco.js', 'js/plan.js', 'js/modulos.js', 'js/bienestar.js', 'js/vistas.js', 'js/servidor.js',
-  'js/fase1.js', 'js/exportar.js', 'js/vivo.js', 'js/panel.js', 'js/push.js', 'js/offline.js', 'js/movil.js', 'js/inicio.js'];
+  'js/fase1.js', 'js/revision.js', 'js/exportar.js', 'js/vivo.js', 'js/panel.js', 'js/push.js', 'js/offline.js', 'js/movil.js', 'js/inicio.js'];
 const CDN = /^(https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.googleapis\.com|fonts\.gstatic\.com))\//;
 
 self.addEventListener('install', e => {

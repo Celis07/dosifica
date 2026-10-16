@@ -29,15 +29,15 @@ async function loadPatients(){
   renderSel();
 }
 async function loadLib(){
-  const {data} = await sb.from('biblioteca').select('nombre,cue,video,bloque,region,fx,im,tn,kneel,uni,oculto');
+  const {data} = await sb.from('biblioteca').select('nombre,cue,video,bloque,region,fx,im,tn,kneel,uni,oculto,revisado');
   const baseNames = new Set(BANCO_BASE.map(r=>r[0]));
   myLib=(data||[]).filter(r=>!baseNames.has(r.nombre)).map(r=>r.nombre);
-  myMeta=Object.fromEntries((data||[]).map(r=>[r.nombre,{cue:r.cue||'',video:r.video||'',bloque:r.bloque,region:r.region,fx:r.fx,im:r.im,tn:r.tn,kneel:r.kneel,uni:r.uni,oculto:r.oculto}]));
+  myMeta=Object.fromEntries((data||[]).map(r=>[r.nombre,{cue:r.cue||'',video:r.video||'',bloque:r.bloque,region:r.region,fx:r.fx,im:r.im,tn:r.tn,kneel:r.kneel,uni:r.uni,oculto:r.oculto,revisado:r.revisado}]));
   buildBanco(); renderLib();
 }
 async function saveLib(only){
   const names=(only?[only]:[...new Set([...myLib, ...Object.keys(myMeta)])]).filter(Boolean);
-  const rows=names.map(n=>{ const m=myMeta[n]||{}; return {nombre:n, cue:m.cue||null, video:(m.video||'').trim()||null, bloque:m.bloque||null, region:m.region||null, fx:m.fx??null, im:m.im??null, tn:m.tn??null, kneel:m.kneel??null, uni:m.uni??null, oculto:!!m.oculto, updated_at:new Date().toISOString()}; });
+  const rows=names.map(n=>{ const m=myMeta[n]||{}; return {nombre:n, cue:m.cue||null, video:(m.video||'').trim()||null, bloque:m.bloque||null, region:m.region||null, fx:m.fx??null, im:m.im??null, tn:m.tn??null, kneel:m.kneel??null, uni:m.uni??null, oculto:!!m.oculto, revisado:!!m.revisado, updated_at:new Date().toISOString()}; });
   if(!rows.length) return;
   const {error}=await sb.from('biblioteca').upsert(rows,{onConflict:'fisio_email,nombre'});
   if(error) toast(/video/.test(error.message)?'El enlace del video debe empezar por http:// o https://':'No se pudo guardar la biblioteca.');
