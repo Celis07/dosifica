@@ -188,10 +188,10 @@ async function lvFinish(){
     nota:[(S.nota||'').trim(), ...amr, 'Registrada en modo en vivo'].filter(Boolean).join(' · ').slice(0,2000), ex,
     paciente_id:A.p.id, semana:c.semana, fase:(c.fase||'').split(' · ')[0], autor:'deportista', created_by:me.uid};
   const btn=$('#live [data-save]'); if(btn){ btn.disabled=true; btn.classList.add('busy'); }
-  const {data,error}=await sb.from('sesiones').insert(row).select('*').single();
+  const {data,error,queued}=await sbWrite('insert','sesiones',row);
   if(btn){ btn.disabled=false; btn.classList.remove('busy'); }
-  if(error){ toast('No se pudo guardar. Revisa tu conexión: tu progreso sigue aquí.'); return; }
-  sessions.unshift(data); closeLive(false); renderAthlete(); toast('Sesión guardada. ¡Buen trabajo!');
+  if(error){ toast('No se pudo guardar. Tu progreso sigue aquí; inténtalo de nuevo.'); return; }
+  sessions.unshift(data); closeLive(false); cacheAthlete(); renderAthlete(); toast(queued?'Sesión guardada en el teléfono; se envía sola al volver la conexión':'Sesión guardada. ¡Buen trabajo!');
 }
 
 /* Pregunta del día siguiente: ¿cómo amaneció la rodilla? (alimenta la alerta "peor a las 24 h") */
@@ -207,9 +207,9 @@ $('#athleteApp').addEventListener('click', async e=>{
   const lb=e.target.closest('[data-live]'); if(lb){ startLive(+lb.dataset.live); return; }
   const b=e.target.closest('[data-d24]'); if(!b) return;
   const [id,v]=b.dataset.d24.split('|');
-  const {error}=await sb.from('sesiones').update({d24:v}).eq('id',id);
+  const {error}=await sbWrite('update','sesiones',{d24:v},{id});
   if(error){ toast('No se pudo guardar.'); return; }
-  const s=sessions.find(x=>x.id===id); if(s) s.d24=v; renderAthlete();
+  const s=sessions.find(x=>x.id===id); if(s) s.d24=v; cacheAthlete(); renderAthlete();
   toast(v==='peor'?'Anotado. Tu fisioterapeuta recibirá un aviso; hoy baja la carga.':'¡Gracias! Anotado.');
 });
 

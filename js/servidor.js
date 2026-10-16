@@ -200,37 +200,43 @@ function renderAthlete(){
   </section>
   <section class="card"><h3 class="sec">Mis sesiones</h3>
     ${mine.length?`<div class="tbl"><table class="data"><thead><tr><th>Fecha</th><th>Día</th><th>Min</th><th>RPE</th><th>Dolor</th><th>24 h</th><th></th></tr></thead><tbody>
-    ${mine.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.dia||'')}</td><td>${esc(x.min??'')}</td><td>${esc(x.srpe??'')}</td><td>${x.dolor!=null?esc(x.dolor)+'/10':'—'}</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td>${x.autor==='deportista'?`<button class="xbtn" data-adel="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
+    ${mine.map(x=>`<tr><td>${esc(x.fecha)}${x._local?' <span class="pill y">Por enviar</span>':''}</td><td>${esc(x.dia||'')}</td><td>${esc(x.min??'')}</td><td>${esc(x.srpe??'')}</td><td>${x.dolor!=null?esc(x.dolor)+'/10':'—'}</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td>${x.autor==='deportista'?`<button class="xbtn" data-adel="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
     </tbody></table></div>`:'<p class="small">Aún no has registrado sesiones. Usa "Registrar sesión" en el día que entrenaste.</p>'}
   </section>
   <footer class="foot">Tus datos solo los ves tú y tu fisioterapeuta.</footer>`;
 }
 async function startAthlete(p){
   A.p=p; $('#login').hidden=true; $('#fisioApp').hidden=true; $('#athleteApp').hidden=false;
-  const [pl, se, so] = await Promise.all([
-    sb.from('planes').select('*').eq('paciente_id',p.id).order('publicado_at',{ascending:false}).limit(1),
-    sb.from('sesiones').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}),
-    sb.from('solicitudes').select('*').eq('paciente_id',p.id).order('created_at',{ascending:false})
-  ]);
-  const {data:cs}=await sb.from('consentimientos').select('id').eq('paciente_id',p.id).limit(1); A.consent=!!(cs&&cs.length);
-  A.plan=(pl.data||[])[0]||null; sessions=se.data||[]; solicitudes=so.data||[]; st.dolor=0;
-  const {data:wb}=await sb.from('bienestar').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}).limit(60); wellness=wb||[];
-  renderAthlete();
+  try{
+    const [pl, se, so, cs, wb] = await Promise.all([
+      sb.from('planes').select('*').eq('paciente_id',p.id).order('publicado_at',{ascending:false}).limit(1),
+      sb.from('sesiones').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}),
+      sb.from('solicitudes').select('*').eq('paciente_id',p.id).order('created_at',{ascending:false}),
+      sb.from('consentimientos').select('id').eq('paciente_id',p.id).limit(1),
+      sb.from('bienestar').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}).limit(60)
+    ]);
+    if([pl,se,so,cs,wb].some(r=>r.error && isNetErr(r.error))) throw new Error('network');
+    A.consent=!!(cs.data&&cs.data.length); A.plan=(pl.data||[])[0]||null; solicitudes=so.data||[];
+    sessions=[...pendingRows('sesiones'), ...(se.data||[])]; wellness=[...pendingRows('bienestar'), ...(wb.data||[])];
+    cacheAthlete();
+  }catch(e){ const c=loadAthleteCache(me.uid); if(c) applyAthleteCache(c); else { A.plan=null; A.consent=true; toast('Sin conexión. Abre la app una vez con internet para guardar tu plan en el teléfono.'); } }
+  st.dolor=0; renderAthlete(); netBadge(); flushOutbox();
 }
 $('#athleteApp').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s); let b;
-  if(q('#aOut')){ await sb.auth.signOut(); location.reload(); return; }
+  if(q('#aOut')){ if(obGet().length){ toast('Tienes registros sin enviar. Conéctate a internet antes de salir.'); return; } LS.set(CA_KEY(),null); LS.set('apex_last',null); await sb.auth.signOut(); location.reload(); return; }
   if((b=q('[data-alog]'))){ const d=+b.dataset.alog; A.open = A.open===d?null:d; renderAthlete(); return; }
   if(q('#aCancel')){ A.open=null; renderAthlete(); return; }
   if(q('#awOpen')){ A.wOpen=true; renderAthlete(); return; }
-  if(q('#awSave')){ if(await saveWell(A.p.id,'aw',{created_by:me.uid})){ A.wOpen=false; renderAthlete(); toast('Bienestar guardado'); } return; }
+  if(q('#awSave')){ if(await saveWell(A.p.id,'aw',{created_by:me.uid})){ A.wOpen=false; cacheAthlete(); renderAthlete(); toast(navigator.onLine?'Bienestar guardado':'Bienestar guardado en el teléfono; se envía al volver la conexión'); } return; }
   if(q('#aSave')){
     const day=A.plan.contenido.dias[A.open];
     const row=Object.assign(collectLog(day), {paciente_id:A.p.id, semana:A.plan.contenido.semana, fase:(A.plan.contenido.fase||'').split(' · ')[0], autor:'deportista', created_by:me.uid});
-    const {data,error}=await sb.from('sesiones').insert(row).select('*').single();
+    const {data,error,queued}=await sbWrite('insert','sesiones',row);
     if(error){ toast('No se pudo guardar la sesión. Inténtalo de nuevo.'); return; }
-    sessions.unshift(data); A.open=null; renderAthlete(); toast('Sesión guardada. ¡Buen trabajo!'); return;
+    sessions.unshift(data); A.open=null; cacheAthlete(); renderAthlete(); toast(queued?'Sesión guardada en el teléfono; se envía al volver la conexión':'Sesión guardada. ¡Buen trabajo!'); return;
   }
+  if((b=q('[data-adel]'))&&String(b.dataset.adel).startsWith('local-')){ const id=b.dataset.adel; obSet(obGet().filter(x=>!(x.row&&x.row._lid===id))); sessions=sessions.filter(x=>x.id!==id); renderAthlete(); return; }
   if((b=q('[data-adel]'))){ const id=b.dataset.adel; const {error}=await sb.from('sesiones').delete().eq('id',id); if(error){ toast('No se pudo borrar.'); return; } sessions=sessions.filter(x=>x.id!==id); renderAthlete(); return; }
   if(q('#aReq')){ A.reqOpen=true; renderAthlete(); $('#aReqTxt')?.focus(); return; }
   if(q('#aReqCancel')){ A.reqOpen=false; renderAthlete(); return; }
@@ -330,7 +336,9 @@ async function route(session){
   LS.set('apex_email', me.email);
   if(needsPwd(session)) await askPwd(session);
   $('#login').hidden=true;
-  const {data:f}=await sb.from('fisios').select('email,nombre').maybeSingle();
+  const fr=await sb.from('fisios').select('email,nombre').maybeSingle();
+  if(fr.error && isNetErr(fr.error)){ if(startAthleteOffline(me.uid, me.email)) return; showLogin('Sin conexión. Conéctate a internet para entrar.'); return; }
+  const f=fr.data;
   if(f){ me.role='fisio'; $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
     await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts();
     if(patients.length) openPatient(patients[0].id); else { render(); renderSel(); }
@@ -345,5 +353,7 @@ let routed=false;
 async function boot(){
   sb.auth.onAuthStateChange((ev, session)=>{ if(session && !routed && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')){ routed=true; route(session); } });
   const {data:{session}} = await sb.auth.getSession();
-  if(session && !routed){ routed=true; route(session); } else if(!session) showLogin();
+  if(session && !routed){ routed=true; route(session); }
+  else if(!session){ let last=null; try{ last=JSON.parse(LS.get('apex_last')||'null'); }catch(e){}
+    if(last && !navigator.onLine && startAthleteOffline(last.uid, last.email)) return; showLogin(); }
 }

@@ -514,3 +514,10 @@ header.top{position:relative}
 .alt span{color:#FF8A90;font-weight:600;font-size:.88rem}
 .alt i{font-style:normal;font-size:.78rem;color:var(--muted)}
 .ala{display:flex;flex-direction:column;gap:4px}
+
+/* ---------- Estado de conexión ---------- */
+#netState{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:70;padding:8px 14px;border-radius:999px;font-size:.82rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.45);max-width:calc(100vw - 32px);text-align:center}
+#netState.off{background:#2A2213;color:#F2C46B;border:1px solid #5A4517}
+#netState.sync{background:#132A20;color:#7FD6AE;border:1px solid #21503A}
+#netState[hidden]{display:none}
+.toast{width:max-content;max-width:min(92vw,440px);text-align:center}

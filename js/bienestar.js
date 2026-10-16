@@ -44,7 +44,7 @@ function readWell(pfx){
 }
 async function saveWell(pid, pfx, extra){
   const row = Object.assign(readWell(pfx), {paciente_id:pid}, extra||{});
-  const {data,error} = await sb.from('bienestar').upsert(row,{onConflict:'paciente_id,fecha'}).select('*').single();
+  const {data,error} = await sbWrite('upsert','bienestar',row,{onConflict:'paciente_id,fecha'});
   if(error){ toast('No se pudo guardar el bienestar.'); return false; }
   wellness = [data, ...wellness.filter(x=>x.fecha!==data.fecha)];
   return true;
