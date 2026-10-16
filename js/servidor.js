@@ -167,7 +167,7 @@ function aRow(r){
 }
 function renderAthlete(){
   const c=A.plan?.contenido, el=$('#athleteApp');
-  const head=`<header class="top"><div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Ápex</h1><span class="sig">Fisio Celis · Mi plan</span></div></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
+  const head=`<header class="top"><div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Ápex</h1></div></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
   if(!A.consent){ el.innerHTML = head + consentGate(); return; }
   if(!c){ el.innerHTML = head+`<section class="card"><h3 class="sec">Hola${A.p?.nombre?', '+esc(A.p.nombre):''}</h3><p>Tu fisioterapeuta aún no ha publicado tu plan. Cuando lo haga, aparecerá aquí.</p></section>`; return; }
   const est={pendiente:'<span class="pill y">Pendiente</span>',aprobada:'<span class="pill g">Aprobada</span>',rechazada:'<span class="pill r">Rechazada</span>'};
@@ -252,12 +252,19 @@ $('#athleteApp').addEventListener('click', async e=>{
 /* Acceso: correo + contraseña. El enlace por correo solo se usa la primera vez o si se olvida la contraseña.
    La sesión se guarda en el dispositivo (supabase-js persistSession) y se renueva sola; el correo se recuerda. */
 const LS = { get:k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set:(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} } };
-let lgMode='pass';
+let lgMode='pass', lgRole=LS.get('apex_role')==='fisio'?'fisio':'deportista';
+const LG_SUB={fisio:{pass:'Accede a tus pacientes y planes.', link:'Te enviamos un enlace para crear o cambiar tu contraseña.'},
+  deportista:{pass:'Entra con el correo que registró tu fisioterapeuta.', link:'Te enviamos un enlace para crear o cambiar tu contraseña. Usa el correo que registró tu fisioterapeuta.'}};
+function setRole(r){ lgRole=r; LS.set('apex_role', r);
+  document.querySelectorAll('.rolesel [data-role]').forEach(b=>b.setAttribute('aria-checked', String(b.dataset.role===r)));
+  $('#lgSub').textContent=LG_SUB[r][lgMode==='link'?'link':'pass']; }
+document.querySelectorAll('.rolesel [data-role]').forEach(b=>b.onclick=()=>setRole(b.dataset.role));
+$('.rolesel').addEventListener('keydown', e=>{ if(['ArrowLeft','ArrowRight'].includes(e.key)){ const r=lgRole==='fisio'?'deportista':'fisio'; setRole(r); $(`.rolesel [data-role="${r}"]`).focus(); e.preventDefault(); } });
 function lgMsg(t, kind){ const m=$('#loginMsg'); m.innerHTML=t||''; m.className='lgmsg'+(kind?' '+kind:''); }
 function setLgMode(m){
   lgMode=m; const link=m==='link';
   $('#lgTitle').textContent = link ? 'Recibir enlace' : 'Entrar';
-  $('#lgSub').textContent = link ? 'Te enviamos un enlace de acceso. Al abrirlo creas tu contraseña y no vuelves a necesitar correos.' : 'Con tu correo y tu contraseña. La sesión queda abierta en este dispositivo.';
+  $('#lgSub').textContent = LG_SUB[lgRole][link?'link':'pass'];
   $('#pwWrap').hidden = link;
   $('#loginBtn').textContent = link ? 'Enviarme el enlace' : 'Entrar';
   $('#lgMode').textContent = link ? 'Ya tengo contraseña' : '¿Primera vez u olvidaste tu contraseña?';
@@ -268,7 +275,7 @@ function showLogin(msg){
   $('#login').hidden=false; $('#fisioApp').hidden=true; $('#athleteApp').hidden=true;
   $('#loginForm').hidden=false; $('#pwdForm').hidden=true;
   const saved=LS.get('apex_email'); if(saved && !$('#loginEmail').value) $('#loginEmail').value=saved;
-  if(msg) lgMsg(msg);
+  setRole(lgRole); if(msg) lgMsg(msg);
   setTimeout(()=>($('#loginEmail').value?$('#loginPass'):$('#loginEmail')).focus(), 30);
 }
 function eyeToggle(btn, input){
@@ -339,13 +346,13 @@ async function route(session){
   const fr=await sb.from('fisios').select('email,nombre').maybeSingle();
   if(fr.error && isNetErr(fr.error)){ if(startAthleteOffline(me.uid, me.email)) return; showLogin('Sin conexión. Conéctate a internet para entrar.'); return; }
   const f=fr.data;
-  if(f){ me.role='fisio'; $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
+  if(f){ me.role='fisio'; if(lgRole!=='fisio'){ setRole('fisio'); toast('Este correo es de fisioterapeuta: entraste a tu panel.'); } $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
     await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts();
     if(patients.length) openPatient(patients[0].id); else { render(); renderSel(); }
     return; }
   const {data:p}=await sb.from('pacientes').select('id,nombre').maybeSingle();
-  if(p){ me.role='deportista'; startAthlete(p); return; }
-  showLogin(`Entraste como <b>${esc(me.email)}</b>, pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo. <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
+  if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); return; }
+  showLogin(`Entraste como <b>${esc(me.email)}</b>, ${lgRole==='fisio'?'pero este correo no está registrado como fisioterapeuta.':'pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo.'} <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
   const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
 }
 $('#fOut').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
