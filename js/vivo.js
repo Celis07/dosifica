@@ -214,7 +214,7 @@ $('#athleteApp').addEventListener('click', async e=>{
 });
 
 /* ===================== ALERTAS DE DOLOR (fisio) ===================== */
-let alertas = [], alertChan = null, alertOpen = false;
+let alertas = [], alertChan = null, alertOpen = false, FISIO_PUSH = null;
 const isAlerta = s => s && !s.revisada_at && ((s.dolor!=null && s.dolor>5) || s.d24==='peor');
 async function loadAlerts(){
   const desde=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
@@ -230,12 +230,12 @@ function renderAlerts(){
   $('#alertN').textContent=n>9?'9+':String(n); $('#alertN').hidden=!n;
   b.setAttribute('aria-label', n?`Alertas de dolor: ${n} sin revisar`:'Alertas de dolor: ninguna');
   const p=$('#alertPanel'); if(!p) return; p.hidden=!alertOpen; if(!alertOpen) return;
-  const canN = 'Notification' in window && Notification.permission==='default';
+  const canN = FISIO_PUSH && FISIO_PUSH!=='on' && FISIO_PUSH!=='unsupported';
   p.innerHTML = `<div class="alh"><b>Alertas de dolor</b><span class="small">últimos 30 días</span></div>
     ${n?alertas.map(s=>`<div class="ali"><span class="dot r" aria-hidden="true"></span><div class="alt"><b>${esc(alertName(s.paciente_id))}</b><span>${esc(alertWhy(s))}</span><i>${esc(fmtD?fmtD(s.fecha):s.fecha)}${s.dia?' · '+esc(s.dia):''}${s.nota?' · '+esc(s.nota.slice(0,90)):''}</i></div>
       <div class="ala"><button class="mini-btn" data-aopen="${esc(s.paciente_id)}">Abrir</button><button class="mini-btn" data-aok="${esc(s.id)}">Revisada</button></div></div>`).join('')
       : '<p class="small" style="margin:6px 0">Nada pendiente. Aquí aparece cuando un deportista registra dolor mayor a 5/10 o dice que amaneció peor.</p>'}
-    ${canN?'<button class="mini-btn" id="aNotif" style="margin-top:8px">Avisarme también con notificaciones del navegador</button>':''}`;
+    ${canN?`<div class="alpush"><p class="small" style="margin:0">${FISIO_PUSH==='install'?'En iPhone, instala la app (Compartir → Agregar a inicio) para recibir las alertas con el celular bloqueado.':FISIO_PUSH==='denied'?'Las notificaciones están bloqueadas en este navegador; actívalas en sus ajustes.':'Recibe estas alertas aunque tengas el celular bloqueado.'}</p>${FISIO_PUSH==='off'?'<button class="primary" id="aNotif">Activar notificaciones</button>':''}</div>`:''}`;
 }
 async function markReviewed(id){
   const {error}=await sb.from('sesiones').update({revisada_at:new Date().toISOString()}).eq('id',id);
@@ -253,6 +253,8 @@ function onSesionChange(pl){
   renderAlerts();
 }
 function initAlerts(){
+  pushState().then(s=>{ FISIO_PUSH=s; renderAlerts(); });
+  if(/[?&]alertas=1/.test(location.search)){ alertOpen=true; history.replaceState(null,'',location.pathname); }
   loadAlerts();
   if(!alertChan && sb.channel){ try{ alertChan=sb.channel('alertas-dolor').on('postgres_changes',{event:'*',schema:'public',table:'sesiones'}, onSesionChange).subscribe(); }catch(e){} }
 }
@@ -261,6 +263,6 @@ $('#alertPanel').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s); let b;
   if((b=q('[data-aok]'))) return markReviewed(b.dataset.aok);
   if((b=q('[data-aopen]'))){ alertOpen=false; renderAlerts(); openPatient(b.dataset.aopen, 'ses'); return; }
-  if(q('#aNotif')){ try{ await Notification.requestPermission(); }catch(e){} renderAlerts(); }
+  if(q('#aNotif')){ if(await enablePush('fisio')) FISIO_PUSH='on'; renderAlerts(); }
 });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape' && alertOpen){ alertOpen=false; renderAlerts(); $('#bAlert').focus(); } });

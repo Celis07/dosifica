@@ -528,3 +528,5 @@ header.top{position:relative}
 .rolesel button:hover{color:var(--ink);border:0}
 .rolesel button[aria-checked="true"]{background:var(--ink);color:#0B0B0D;box-shadow:inset 0 -3px 0 var(--red)}
 .logcard .brand .lt{justify-content:center}
+.alpush{margin-top:10px;padding:10px;border-radius:10px;background:var(--field);display:flex;flex-direction:column;gap:8px}
+.pushc{border-color:#3A3A40}

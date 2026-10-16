@@ -2,10 +2,10 @@
    - Archivos propios (HTML, CSS, JS): primero la red (para recibir cambios al instante), si falla, la copia guardada.
    - Librerías y fuentes de CDN (con versión fija): copia guardada primero y se renueva en segundo plano.
    - Supabase (datos y acceso) nunca pasa por aquí: lo maneja la app con su propia cola. */
-const V = 'apex-v1';
+const V = 'apex-v2';
 const CORE = ['./', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/favicon-32.png',
   'js/datos.js', 'js/banco.js', 'js/plan.js', 'js/modulos.js', 'js/bienestar.js', 'js/vistas.js', 'js/servidor.js',
-  'js/fase1.js', 'js/exportar.js', 'js/vivo.js', 'js/offline.js', 'js/inicio.js'];
+  'js/fase1.js', 'js/exportar.js', 'js/vivo.js', 'js/push.js', 'js/offline.js', 'js/inicio.js'];
 const CDN = /^(https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.googleapis\.com|fonts\.gstatic\.com))\//;
 
 self.addEventListener('install', e => {
@@ -40,4 +40,24 @@ self.addEventListener('fetch', e => {
       return hit || (await net) || Response.error();
     })());
   }
+});
+
+/* Notificaciones push */
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = {body: e.data && e.data.text()}; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Ápex', {
+    body: d.body || '', tag: d.tag, renotify: !!d.tag, icon: 'icons/icon-192.png', badge: 'icons/favicon-32.png',
+    data: {url: d.url || self.registration.scope}
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || self.registration.scope;
+  e.waitUntil((async () => {
+    const all = await clients.matchAll({type: 'window', includeUncontrolled: true});
+    const c = all.find(w => w.url.startsWith(self.registration.scope));
+    if (c) { await c.focus(); if (url !== c.url) c.navigate(url).catch(() => {}); return; }
+    return clients.openWindow(url);
+  })());
 });

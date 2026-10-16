@@ -185,6 +185,7 @@ function renderAthlete(){
     ${wl&&hoy&&!A.wOpen?`<div class="light ${wl.c}"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc({g:'Entrena según tu plan.',y:'Entrena lo planificado, sin subir peso hoy.',r:'Hoy baja 1–2 puntos de RPE o haz menos series, y cuéntale a tu fisioterapeuta.'}[wl.c])}</p></div></div>`:''}
   </section>
   ${d24Card()}
+  ${pushCard()}
   ${wkHTML?`<section class="card"><h3 class="sec">Mis próximas semanas</h3>${wkHTML}</section>`:''}
   <section class="card"><h3 class="sec">${rod?'Regla de dolor':'Cómo dosificar'}</h3>${rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
     <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
@@ -224,7 +225,7 @@ async function startAthlete(p){
 }
 $('#athleteApp').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s); let b;
-  if(q('#aOut')){ if(obGet().length){ toast('Tienes registros sin enviar. Conéctate a internet antes de salir.'); return; } LS.set(CA_KEY(),null); LS.set('apex_last',null); await sb.auth.signOut(); location.reload(); return; }
+  if(q('#aOut')){ if(obGet().length){ toast('Tienes registros sin enviar. Conéctate a internet antes de salir.'); return; } LS.set(CA_KEY(),null); LS.set('apex_last',null); await pushOff(); await sb.auth.signOut(); location.reload(); return; }
   if((b=q('[data-alog]'))){ const d=+b.dataset.alog; A.open = A.open===d?null:d; renderAthlete(); return; }
   if(q('#aCancel')){ A.open=null; renderAthlete(); return; }
   if(q('#awOpen')){ A.wOpen=true; renderAthlete(); return; }
@@ -347,15 +348,15 @@ async function route(session){
   if(fr.error && isNetErr(fr.error)){ if(startAthleteOffline(me.uid, me.email)) return; showLogin('Sin conexión. Conéctate a internet para entrar.'); return; }
   const f=fr.data;
   if(f){ me.role='fisio'; if(lgRole!=='fisio'){ setRole('fisio'); toast('Este correo es de fisioterapeuta: entraste a tu panel.'); } $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
-    await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts();
+    await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts(); syncPush('fisio');
     if(patients.length) openPatient(patients[0].id); else { render(); renderSel(); }
     return; }
   const {data:p}=await sb.from('pacientes').select('id,nombre').maybeSingle();
-  if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); return; }
+  if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); syncPush('deportista'); return; }
   showLogin(`Entraste como <b>${esc(me.email)}</b>, ${lgRole==='fisio'?'pero este correo no está registrado como fisioterapeuta.':'pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo.'} <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
   const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
 }
-$('#fOut').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+$('#fOut').onclick=async()=>{ await pushOff(); await sb.auth.signOut(); location.reload(); };
 let routed=false;
 async function boot(){
   sb.auth.onAuthStateChange((ev, session)=>{ if(session && !routed && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')){ routed=true; route(session); } });

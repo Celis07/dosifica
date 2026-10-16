@@ -1,0 +1,98 @@
+// Ápex · envío de notificaciones push.
+// La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
+// tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista),
+//        manana (¿cómo amaneció la rodilla?), tarde (3 días sin registrar), prueba (a un correo).
+import webpush from "npm:web-push@3.6.7";
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+const APP = "https://celis07.github.io/dosifica/";
+const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+let cfg: { pub: string; priv: string; token: string } | null = null;
+
+async function config() {
+  if (cfg) return cfg;
+  const { data, error } = await db.rpc("push_config");
+  if (error) throw error;
+  cfg = data;
+  webpush.setVapidDetails("mailto:celisone1@gmail.com", cfg!.pub, cfg!.priv);
+  return cfg!;
+}
+const hoyCO = (d = 0) => new Date(Date.now() - 5 * 3600e3 + d * 864e5).toISOString().slice(0, 10);
+
+async function enviar(email: string, msg: { title: string; body: string; url?: string; tag?: string }) {
+  const { data: subs } = await db.from("push_subs").select("*").eq("email", email.toLowerCase());
+  let ok = 0;
+  for (const s of subs || []) {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+        JSON.stringify({ ...msg, url: msg.url || APP }), { TTL: 86400, urgency: "high" });
+      ok++; await db.from("push_subs").update({ last_ok: new Date().toISOString() }).eq("endpoint", s.endpoint);
+    } catch (e: any) {
+      if (e?.statusCode === 404 || e?.statusCode === 410) await db.from("push_subs").delete().eq("endpoint", s.endpoint);
+      else console.error("push", e?.statusCode, e?.body || String(e));
+    }
+  }
+  return ok;
+}
+async function tieneSubs(email?: string | null) {
+  if (!email) return false;
+  const { count } = await db.from("push_subs").select("endpoint", { count: "exact", head: true }).eq("email", email.toLowerCase());
+  return (count || 0) > 0;
+}
+async function unaVez(clave: string) {
+  const { error } = await db.from("push_log").insert({ clave });
+  return !error; // false si ya se envió
+}
+
+Deno.serve(async (req) => {
+  try {
+    const c = await config();
+    if (req.headers.get("x-apex-token") !== c.token) return new Response("no", { status: 401 });
+    const b = await req.json().catch(() => ({}));
+    let n = 0;
+
+    if (b.tipo === "alerta") {
+      const { data: s } = await db.from("sesiones").select("id,paciente_id,dolor,d24,dia,fecha").eq("id", b.id).maybeSingle();
+      if (s) {
+        const { data: p } = await db.from("pacientes").select("nombre,fisio_email").eq("id", s.paciente_id).maybeSingle();
+        const por = [s.dolor != null && s.dolor > 5 ? `dolor ${s.dolor}/10` : "", s.d24 === "peor" ? "amaneció peor" : ""].filter(Boolean).join(" · ");
+        if (p?.fisio_email) n = await enviar(p.fisio_email, { title: "Alerta de dolor", body: `${p.nombre || "Paciente"}: ${por}${s.dia ? " · " + s.dia : ""}`, tag: "alerta-" + s.id, url: APP + "?alertas=1" });
+      }
+    }
+    if (b.tipo === "plan") {
+      const { data: pl } = await db.from("planes").select("paciente_id,semana").eq("id", b.id).maybeSingle();
+      const { data: p } = pl ? await db.from("pacientes").select("email").eq("id", pl.paciente_id).maybeSingle() : { data: null };
+      if (p?.email) n = await enviar(p.email, { title: "Tu plan está listo", body: `Tu fisioterapeuta publicó tu plan de la semana ${pl!.semana ?? ""}.`, tag: "plan" });
+    }
+    if (b.tipo === "manana") { // sesiones de ayer sin respuesta de 24 h
+      const { data: ss } = await db.from("sesiones").select("id,paciente_id").eq("fecha", hoyCO(-1)).eq("autor", "deportista").or("d24.is.null,d24.eq.");
+      for (const s of ss || []) {
+        const { data: pl } = await db.from("planes").select("contenido->>modulo").eq("paciente_id", s.paciente_id).order("publicado_at", { ascending: false }).limit(1);
+        const mod = (pl?.[0] as any)?.modulo || "rodilla"; if (mod !== "rodilla") continue;
+        const { data: p } = await db.from("pacientes").select("email").eq("id", s.paciente_id).maybeSingle();
+        if (!(await tieneSubs(p?.email)) || !(await unaVez("d24-" + s.id))) continue;
+        if (p?.email) n += await enviar(p.email, { title: "¿Cómo amaneció tu rodilla?", body: "Cuéntale a tu fisioterapeuta cómo te sientes después de la sesión de ayer. Toma 5 segundos.", tag: "d24" });
+      }
+    }
+    if (b.tipo === "tarde") { // 3+ días sin registrar, una vez por pausa
+      const { data: planes } = await db.from("planes").select("paciente_id,publicado_at").order("publicado_at", { ascending: false });
+      const vistos = new Set<string>();
+      for (const pl of planes || []) {
+        if (vistos.has(pl.paciente_id)) continue; vistos.add(pl.paciente_id);
+        const { data: u } = await db.from("sesiones").select("fecha").eq("paciente_id", pl.paciente_id).order("fecha", { ascending: false }).limit(1);
+        const ult = u?.[0]?.fecha || String(pl.publicado_at).slice(0, 10);
+        if (ult > hoyCO(-3)) continue;
+        if (ult < hoyCO(-21)) continue; // pacientes que ya no entrenan: no insistir
+        const { data: p } = await db.from("pacientes").select("email").eq("id", pl.paciente_id).maybeSingle();
+        if (!(await tieneSubs(p?.email)) || !(await unaVez(`inact-${pl.paciente_id}-${ult}`))) continue;
+        if (p?.email) n += await enviar(p.email, { title: "Tu plan te espera", body: "Llevas unos días sin registrar sesión. Abre Ápex y entrena en modo en vivo.", tag: "inact" });
+      }
+    }
+    if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
+
+    return new Response(JSON.stringify({ ok: true, enviadas: n }), { headers: { "Content-Type": "application/json" } });
+  } catch (e) {
+    console.error(e);
+    return new Response(JSON.stringify({ ok: false }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+});
