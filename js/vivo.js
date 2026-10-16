@@ -226,6 +226,7 @@ function alertName(pid){ return (patients.find(p=>p.id===pid)||{}).nombre || 'Pa
 function alertWhy(s){ return [s.dolor!=null&&s.dolor>5?`Dolor ${s.dolor}/10`:'', s.d24==='peor'?'Peor a las 24 h':''].filter(Boolean).join(' · '); }
 function renderAlerts(){
   const b=$('#bAlert'); if(!b) return;
+  if(typeof homeVisible==='function' && homeVisible()) renderHome();
   const n=alertas.length; b.classList.toggle('has', n>0);
   $('#alertN').textContent=n>9?'9+':String(n); $('#alertN').hidden=!n;
   b.setAttribute('aria-label', n?`Alertas de dolor: ${n} sin revisar`:'Alertas de dolor: ninguna');

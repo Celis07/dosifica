@@ -11,18 +11,18 @@ function markDirty(){ if(!curId) return; $('#saveState').textContent='Cambios si
 function renderSel(){
   const sel=$('#psel');
   const opts = patients.slice().sort((a,b)=> (b.updated||'').localeCompare(a.updated||'')).map(p=>`<option value="${esc(p.id)}">${esc(p.nombre||'Sin nombre')}${pendingBy[p.id]?` (${pendingBy[p.id]} solicitud${pendingBy[p.id]>1?'es':''})`:''}</option>`).join('');
-  sel.innerHTML = (isExample ? '<option value="">Ejemplo (sin guardar)</option>' : (curId ? '' : '<option value="">Paciente sin guardar</option>')) + opts;
-  sel.value = curId||'';
+  sel.innerHTML = ((typeof homeVisible==='function' && homeVisible()) ? '<option value="">Abrir paciente…</option>' : isExample ? '<option value="">Ejemplo (sin guardar)</option>' : (curId ? '' : '<option value="">Paciente sin guardar</option>')) + opts;
+  sel.value = (typeof homeVisible==='function' && homeVisible()) ? '' : (curId||'');
 }
 async function loadPatients(){
   const {data, error} = await sb.from('pacientes').select('id,nombre,email,estado,consent,updated_at').order('updated_at',{ascending:false});
   if(error){ toast('No se pudieron cargar los pacientes.'); return; }
   patients = (data||[]).map(p=>({id:p.id, nombre:p.nombre, email:p.email, st:Object.assign({}, p.estado, {nombre:(p.estado&&p.estado.nombre)||p.nombre, email:p.email||'', consent:p.consent}), updated:p.updated_at}));
   const [{data:ses},{data:sol}] = await Promise.all([
-    sb.from('sesiones').select('paciente_id,fecha,dolor,semana').order('fecha',{ascending:false}).limit(2000),
+    sb.from('sesiones').select('id,paciente_id,fecha,dolor,semana,dia,srpe,autor,created_at').order('fecha',{ascending:false}).limit(2000),
     sb.from('solicitudes').select('paciente_id').eq('estado','pendiente')
   ]);
-  sumBy={}; (ses||[]).forEach(x=>{ const s=sumBy[x.paciente_id]||(sumBy[x.paciente_id]={last:x.fecha, dolor:x.dolor, byWeek:{}}); s.byWeek[x.semana]=(s.byWeek[x.semana]||0)+1; });
+  allSes=ses||[]; sumBy={}; (ses||[]).forEach(x=>{ const s=sumBy[x.paciente_id]||(sumBy[x.paciente_id]={last:x.fecha, dolor:x.dolor, byWeek:{}}); s.byWeek[x.semana]=(s.byWeek[x.semana]||0)+1; });
   pendingBy={}; (sol||[]).forEach(x=>{ pendingBy[x.paciente_id]=(pendingBy[x.paciente_id]||0)+1; });
   patients.forEach(p=>{ const s=sumBy[p.id]; const w=num(p.st?.semPlan)||1, n=nDias(p.st||{}); p.sum = s ? {last:s.last, dolor:s.dolor, adh:`${s.byWeek[w]||0}/${n}`} : {adh:`0/${n}`}; p.pend = pendingBy[p.id]||0; });
   await loadWellBy();
@@ -134,14 +134,14 @@ function requestsView(){
   </section>`;
 }
 function openPatient(id, toView){
-  const p=patients.find(x=>x.id===id); if(!p) return;
+  const p=patients.find(x=>x.id===id); if(!p) return; showWork();
   st = Object.assign(blank(), clone(p.st||{})); curId=id; isExample=false; editMode=false; logOpen=null; evalOpen=false; subOpen=null;
   sessions=[]; evals=[]; solicitudes=[]; if(toView) view=toView;
   wellness=[]; wellOpen=false;
   fillForm(); render(); renderSel(); $('#saveState').textContent=''; loadSubs(); loadHistoria(); loadWellness().then(()=>{ if(curId===id) render(); });
 }
 $('#psel').addEventListener('change', e=>{ if(e.target.value) openPatient(e.target.value); });
-$('#bNew').onclick=()=>{ st=blank(); curId=null; isExample=false; editMode=false; sessions=[]; evals=[]; solicitudes=[]; view='plan'; fillForm(); render(); renderSel(); $('#saveState').textContent=''; $('#nombre').focus(); };
+$('#bNew').onclick=()=>{ showWork(); st=blank(); curId=null; isExample=false; editMode=false; sessions=[]; evals=[]; solicitudes=[]; view='plan'; fillForm(); render(); renderSel(); $('#saveState').textContent=''; $('#nombre').focus(); };
 $('#bDel').onclick=()=>{ if(!curId){ toast('Este paciente no está guardado'); return; } $('#delTxt').textContent=`¿Eliminar a ${st.nombre||'este paciente'} con sus planes, sesiones y evaluaciones? No se puede deshacer.`; $('#delConfirm').hidden=false; };
 $('#bDelNo').onclick=()=>{ $('#delConfirm').hidden=true; };
 $('#bDelYes').onclick=async()=>{
@@ -349,7 +349,7 @@ async function route(session){
   const f=fr.data;
   if(f){ me.role='fisio'; if(lgRole!=='fisio'){ setRole('fisio'); toast('Este correo es de fisioterapeuta: entraste a tu panel.'); } $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
     await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts(); syncPush('fisio');
-    if(patients.length) openPatient(patients[0].id); else { render(); renderSel(); }
+    fisioNombre=f.nombre||''; render(); renderSel(); showHome();
     return; }
   const {data:p}=await sb.from('pacientes').select('id,nombre').maybeSingle();
   if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); syncPush('deportista'); return; }

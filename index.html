@@ -59,6 +59,7 @@
 <header class="top">
   <div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Ápex</h1></div></div>
   <div class="pbar">
+    <button id="bHome" class="homebtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Inicio</button>
     <span class="savestate" id="saveState"></span>
     <span class="small" id="who"></span><button id="bAlert" class="bell" aria-expanded="false" aria-controls="alertPanel" aria-label="Alertas de dolor"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span id="alertN" class="bn" hidden>0</span></button><button id="fOut">Salir</button>
     <div id="alertPanel" class="alpanel" hidden></div>
@@ -68,12 +69,13 @@
   </div>
 </header>
 <div id="delConfirm" hidden class="confirm"><span id="delTxt"></span><button id="bDelYes" class="primary">Sí, eliminar</button><button id="bDelNo">Cancelar</button></div>
+<div id="home" class="home" hidden></div>
 
-<div class="grid">
+<div class="grid" id="work">
 <aside class="form" id="form">
   <fieldset>
     <legend>Módulo</legend>
-    <div class="modsel" role="group" aria-label="Módulo"><button type="button" data-mod="rodilla">Rehab<br>rodilla</button><button type="button" data-mod="deporte">Deporte</button><button type="button" data-mod="salud">Salud</button></div>
+    <div class="modsel" role="group" aria-label="Módulo"><button type="button" data-mod="rodilla">Rehab</button><button type="button" data-mod="deporte">Deporte</button><button type="button" data-mod="salud">Salud</button></div>
   </fieldset>
   <hr class="s">
   <fieldset>
@@ -160,6 +162,7 @@
 <script src="js/fase1.js"></script>
 <script src="js/exportar.js"></script>
 <script src="js/vivo.js"></script>
+<script src="js/panel.js"></script>
 <script src="js/push.js"></script>
 <script src="js/offline.js"></script>
 <script src="js/inicio.js"></script>
