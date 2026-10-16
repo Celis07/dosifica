@@ -723,3 +723,31 @@ details.fold-d[open]>summary{margin-bottom:10px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .tundo{margin-left:10px;min-height:32px;padding:0 12px;border-radius:8px;border:0;background:#0B0B0D;color:#F2F2F0;font-weight:700}
 table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
+
+/* ---------- Chequeo diario ---------- */
+.wform{gap:14px}
+.wq{display:flex;flex-direction:column;gap:6px}
+.wql{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.wql b{font-size:.95rem}
+.wql span{font-size:.72rem;color:var(--muted);font-family:var(--mono)}
+.wch7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.wch10{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.wyn,.wlado{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:6px}
+.wc{min-height:44px;padding:0;border-radius:10px;border:1px solid #3A3A40;background:transparent;color:var(--ink);font-family:var(--mono);font-weight:700;font-size:.95rem}
+.wch10 .wc{min-height:40px;font-size:.82rem;border-radius:8px}
+.wc.on{background:var(--ink);border-color:var(--ink);color:#0B0B0D}
+.wch7 .wc.on.t1,.wch7 .wc.on.t2,.wch7 .wc.on.t3{background:#3DBB85;border-color:#3DBB85;color:#08130E}
+.wch7 .wc.on.t5{background:#D9A23A;border-color:#D9A23A;color:#1A1205}
+.wch7 .wc.on.t6,.wch7 .wc.on.t7{background:var(--red);border-color:var(--red);color:#fff}
+.wch10 .wc.on.i4,.wch10 .wc.on.i5{background:#D9A23A;border-color:#D9A23A;color:#1A1205}
+.wch10 .wc.on.i6,.wch10 .wc.on.i7,.wch10 .wc.on.i8,.wch10 .wc.on.i9,.wch10 .wc.on.i10{background:var(--red);border-color:var(--red);color:#fff}
+.wch10 .wc.on.i1,.wch10 .wc.on.i2,.wch10 .wc.on.i3{background:#3DBB85;border-color:#3DBB85;color:#08130E}
+.wzs{display:flex;flex-wrap:wrap;gap:6px}
+.wz{min-height:40px;padding:0 12px;border-radius:999px;border:1px solid #3A3A40;background:transparent;color:var(--ink);font-weight:600;font-size:.84rem}
+.wz.on{background:var(--ink);border-color:var(--ink);color:#0B0B0D}
+.wmol{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:var(--paper);border:1px solid var(--line)}
+.wint{display:flex;flex-direction:column;gap:6px}
+.wint span{font-size:.76rem;color:var(--muted)}
+.adjbar{margin:8px 4px 0;padding:10px 12px;border-radius:10px;font-size:.84rem;font-weight:600}
+.adjbar.y{background:var(--gold-soft);color:#F2C46B;border:1px solid #5A4517}
+.adjbar.r{background:var(--coral-soft);color:#FF8A90;border:1px solid #5A1C20}

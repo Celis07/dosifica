@@ -180,10 +180,10 @@ function renderAthlete(){
       <div class="meta">${esc(c.condicion)}${rod?' · rodilla '+esc(c.rodilla):''}${c.deporte?' · '+esc(c.deporte):''}</div></div>
     <div class="badges"><span class="badge">Semana ${esc(c.semana)}</span><span class="badge lt">${esc(c.meso?.l)}</span></div>
   </div><div class="in" style="padding-top:0;display:block"><div class="phase"><h2>${esc((c.fase||'').split(' · ').slice(1).join(' · ')||c.fase)}</h2><p>${esc(c.objetivo)}</p></div></div></div></div>
-  <section class="card wellc"><div class="rowhead"><h3 class="sec" style="margin:0">Bienestar de hoy</h3>${!A.wOpen?`<button id="awOpen" class="${hoy?'':'primary'}">${hoy?'Editar':'Responder'}</button>`:''}</div>
-    ${!hoy&&!A.wOpen?'<p class="small" style="margin:6px 0 0">4 preguntas rápidas antes de entrenar (30 s).</p>':''}
+  <section class="card wellc"><div class="rowhead"><h3 class="sec" style="margin:0">Chequeo de hoy</h3>${!A.wOpen?`<button id="awOpen" class="${hoy?'':'primary'}">${hoy?'Editar':'Responder'}</button>`:''}</div>
+    ${!hoy&&!A.wOpen?'<p class="small" style="margin:6px 0 0">Sueño, estrés, fatiga y dolor: 30 segundos. Tu plan de hoy se ajusta según tus respuestas.</p>':''}
     ${A.wOpen?wellForm('aw'):''}
-    ${wl&&hoy&&!A.wOpen?`<div class="light ${wl.c}"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc({g:'Entrena según tu plan.',y:'Entrena lo planificado, sin subir peso hoy.',r:'Hoy baja 1–2 puntos de RPE o haz menos series, y cuéntale a tu fisioterapeuta.'}[wl.c])}</p></div></div>`:''}
+    ${wl&&hoy&&!A.wOpen?`<div class="light ${wl.c}"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc({g:'Entrena tu plan completo.',y:'Tu plan de hoy viene con RPE 1 punto menos: no subas peso.',r:'Tu plan de hoy viene recortado y sin saltos ni potencia. Tu fisioterapeuta recibe un aviso.'}[wl.c]+(wl.why&&wl.why.length?' ('+wl.why.join(', ')+')':''))}</p></div></div>`:''}
   </section>
   ${d24Card()}
   ${c.dias.map((d,di)=>`<section class="card day" style="padding:12px"><div class="dayhead"><h3>${esc(d.name.toUpperCase())}</h3><div class="dayact">${c.vivo!==false?`<button class="lbtn live" data-live="${di}"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>Entrenar en vivo</button>`:''}<button class="${c.vivo!==false?'':'lbtn'}" data-alog="${di}">${A.open===di?'Cerrar':(c.vivo!==false?'Registro rápido':'Registrar sesión')}</button></div></div>

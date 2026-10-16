@@ -27,7 +27,7 @@ async function loadWellness(){
   wellness = data||[];
 }
 async function loadWellBy(){
-  const {data} = await sb.from('bienestar').select('paciente_id,fecha,sueno,estres,fatiga,dolor').gte('fecha', daysAgo(29)).order('fecha',{ascending:false}).limit(3000);
+  const {data} = await sb.from('bienestar').select('paciente_id,fecha,sueno,estres,fatiga,dolor,molestias').gte('fecha', daysAgo(29)).order('fecha',{ascending:false}).limit(3000);
   wellBy = {}; (data||[]).forEach(x=>{ (wellBy[x.paciente_id] ||= []).push(x); });
 }
 function wellForm(pfx){
@@ -52,13 +52,13 @@ async function saveWell(pid, pfx, extra){
 function wellCard(){
   const wl = wellLight(wellness);
   const L = wellness.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'')).slice(0,14);
-  return `<section class="card"><div class="rowhead"><h3 class="sec" style="margin:0">Bienestar diario (cuestionario de Hooper)</h3>${curId&&!wellOpen?'<button class="dark" id="fwOpen">Registrar hoy</button>':''}</div>
+  return `<section class="card"><div class="rowhead"><h3 class="sec" style="margin:0">Chequeo diario (Hooper + dolor por zona)</h3>${curId&&!wellOpen?'<button class="dark" id="fwOpen">Registrar hoy</button>':''}</div>
     ${wellOpen?wellForm('fw'):''}
     ${wl?`<div class="light ${wl.c}" style="margin-top:8px"><span class="dot"></span><div><b>${esc(wl.t)}</b><p>${esc(wl.p)}</p></div></div>`:''}
-    ${L.length?`<div class="tbl" style="margin-top:10px"><table class="data"><thead><tr><th>Fecha</th><th>Sueño</th><th>Estrés</th><th>Fatiga</th><th>Dolor muscular</th><th>Total</th><th>Comentario</th></tr></thead><tbody>
-      ${L.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${x.sueno}</td><td>${x.estres}</td><td>${x.fatiga}</td><td>${x.dolor}</td><td><b>${wSum(x)}</b>/28</td><td class="wrap">${esc(x.nota||'')}</td></tr>`).join('')}</tbody></table></div>`
+    ${L.length?`<div class="tbl" style="margin-top:10px"><table class="data"><thead><tr><th>Fecha</th><th>Sueño</th><th>Estrés</th><th>Fatiga</th><th>Dolor muscular</th><th>Total</th><th>Dolor por zona</th><th>Comentario</th></tr></thead><tbody>
+      ${L.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${x.sueno}</td><td>${x.estres}</td><td>${x.fatiga}</td><td>${x.dolor}</td><td><b>${wSum(x)}</b>/28</td><td class="wrap">${esc(typeof molTxt==='function'?molTxt(x):'')||'—'}</td><td class="wrap">${esc(x.nota||'')}</td></tr>`).join('')}</tbody></table></div>`
       :'<p class="small">El deportista lo llena desde su portal antes de entrenar (1 = muy bien, 7 = muy mal). Con 7 registros o más, el semáforo compara contra su propia referencia de las últimas 4 semanas.</p>'}
-    <p class="small">Semáforo: rojo si algún ítem es 6–7 o el total sube ≥ 1,5 desviaciones sobre su referencia (sin referencia: total ≥ 18); amarillo si algún ítem es 5 o sube ≥ 1 desviación (sin referencia: ≥ 14). Los umbrales son criterio clínico, no puntos de corte validados.</p>
+    <p class="small">Semáforo: rojo si algún ítem es 6–7, si el total sube ≥ 1,5 desviaciones sobre su referencia (sin referencia: total ≥ 18) o si alguna zona duele ≥ 6/10; amarillo si algún ítem es 5, si sube ≥ 1 desviación (sin referencia: ≥ 14) o si alguna zona duele 4–5/10. El plan del día se ajusta solo en el portal: amarillo = RPE −1; rojo = ≈ 1/3 menos series, RPE −2, sin potencia y sin lo que carga la zona dolorosa. Los umbrales son criterio clínico, no puntos de corte validados.</p>
     ${refList(['hooper95','saw16','exp'])}</section>`;
 }
 function monoStats(list, endISO){

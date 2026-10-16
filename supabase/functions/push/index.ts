@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
-// tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista),
-//        manana (¿cómo amaneció la rodilla?), tarde (3 días sin registrar), prueba (a un correo).
+// tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (chequeo en rojo → fisio),
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -64,6 +64,17 @@ Deno.serve(async (req) => {
       const { data: p } = pl ? await db.from("pacientes").select("email").eq("id", pl.paciente_id).maybeSingle() : { data: null };
       if (p?.email) n = await enviar(p.email, { title: "Tu plan está listo", body: `Tu fisioterapeuta publicó tu plan de la semana ${pl!.semana ?? ""}.`, tag: "plan" });
     }
+    if (b.tipo === "bienestar") { // chequeo diario en rojo → fisio
+      const { data: w } = await db.from("bienestar").select("paciente_id,sueno,estres,fatiga,dolor,molestias").eq("id", b.id).maybeSingle();
+      if (w) {
+        const { data: p } = await db.from("pacientes").select("nombre,fisio_email").eq("id", w.paciente_id).maybeSingle();
+        const Z: Record<string, string> = { cuello: "cuello", hombro: "hombro", codo: "codo o muñeca", dorsal: "espalda alta", lumbar: "zona lumbar", cadera: "cadera", muslo: "muslo", rodilla: "rodilla", pierna: "pierna", tobillo: "tobillo", otra: "otra zona" };
+        const why = [w.sueno >= 6 ? "durmió muy mal" : "", w.estres >= 6 ? "estrés muy alto" : "", w.fatiga >= 6 ? "fatiga muy alta" : "", w.dolor >= 6 ? "dolor muscular alto" : "",
+          ...((w.molestias || []) as any[]).filter((m) => +m.i >= 6).map((m) => `dolor en ${Z[m.z] || m.z} ${m.i}/10`)].filter(Boolean).join(" · ");
+        if (p?.fisio_email) n = await enviar(p.fisio_email, { title: "Chequeo en rojo", body: `${p.nombre || "Paciente"}: ${why}. Su plan de hoy ya salió recortado.`, tag: "chk-" + w.paciente_id, url: APP });
+      }
+    }
+    const avisados = new Set<string>();
     if (b.tipo === "manana") { // sesiones de ayer sin respuesta de 24 h
       const { data: ss } = await db.from("sesiones").select("id,paciente_id").eq("fecha", hoyCO(-1)).eq("autor", "deportista").or("d24.is.null,d24.eq.");
       for (const s of ss || []) {
@@ -71,7 +82,17 @@ Deno.serve(async (req) => {
         const mod = (pl?.[0] as any)?.modulo || "rodilla"; if (mod !== "rodilla" && mod !== "lumbar") continue;
         const { data: p } = await db.from("pacientes").select("email").eq("id", s.paciente_id).maybeSingle();
         if (!(await tieneSubs(p?.email)) || !(await unaVez("d24-" + s.id))) continue;
-        if (p?.email) n += await enviar(p.email, { title: mod === "lumbar" ? "¿Cómo amaneció tu espalda?" : "¿Cómo amaneció tu rodilla?", body: "Cuéntale a tu fisioterapeuta cómo te sientes después de la sesión de ayer. Toma 5 segundos.", tag: "d24" });
+        if (p?.email) { n += await enviar(p.email, { title: mod === "lumbar" ? "¿Cómo amaneció tu espalda?" : "¿Cómo amaneció tu rodilla?", body: "Cuéntaselo a tu fisioterapeuta y haz tu chequeo de hoy: 30 segundos.", tag: "d24" }); avisados.add(s.paciente_id); }
+      }
+      // chequeo diario: a quien tiene plan, notificaciones activas y no lo ha hecho hoy
+      const { data: planes } = await db.from("planes").select("paciente_id").gte("publicado_at", new Date(Date.now() - 60 * 864e5).toISOString());
+      for (const pid of [...new Set((planes || []).map((x: any) => x.paciente_id))] as string[]) {
+        if (avisados.has(pid)) continue;
+        const { count } = await db.from("bienestar").select("id", { count: "exact", head: true }).eq("paciente_id", pid).eq("fecha", hoyCO());
+        if ((count || 0) > 0) continue;
+        const { data: p } = await db.from("pacientes").select("email").eq("id", pid).maybeSingle();
+        if (!(await tieneSubs(p?.email)) || !(await unaVez(`chk-${pid}-${hoyCO()}`))) continue;
+        n += await enviar(p!.email, { title: "Chequeo de hoy", body: "¿Cómo dormiste y cómo amaneces? 30 segundos y tu plan de hoy se ajusta solo.", tag: "chk" });
       }
     }
     if (b.tipo === "tarde") { // 3+ días sin registrar, una vez por pausa
