@@ -16,7 +16,7 @@ const RV_LBL = {bloque:'Bloque', reg:'Región', fx:'Flexión de rodilla con carg
 const RV_HELP = {fx:'Hasta cuántos grados se flexiona la rodilla bajo carga. Sirve para no pasarse en sutura de menisco o fases tempranas.', tn:'Para tendinopatía y dolor patelofemoral.', kn:'Importa en injerto hueso-tendón-hueso y dolor anterior.'};
 
 function rvPending(){
-  return BANCO_BASE.filter(r => r[10] && !(myMeta[r[0]] && (myMeta[r[0]].revisado || myMeta[r[0]].oculto)));
+  return BANCO_BASE.filter(r => r[10] && !(myMeta[r[0]] && (myMeta[r[0]].revisado || myMeta[r[0]].oculto || myMeta[r[0]].eliminado)));
 }
 function rvTotal(){ return BANCO_BASE.filter(r => r[10]).length; }
 function rvLoad(){
@@ -52,17 +52,18 @@ function revCard(){
     ${chips('kn')}${chips('uni')}
     <div class="rvact">
       <button class="ghostb" data-rv="skip">Saltar</button>
-      <button class="ghostb danger" data-rv="hide">Ocultar</button>
+      <button class="ghostb danger" data-rv="del">Eliminar</button>
+      <button class="ghostb" data-rv="hide">Ocultar</button>
       <button class="primary grow" data-rv="ok">Correcto, siguiente →</button>
     </div>
-    <p class="small" style="margin:0">"Ocultar" lo saca de los planes, pero puedes recuperarlo desde la tabla con el filtro "Ocultos".</p>
+    <p class="small" style="margin:0"><b>Eliminar</b>: no es un ejercicio o está repetido. <b>Ocultar</b>: es válido pero no lo quieres en los planes. Ambos se recuperan desde la tabla (filtros "Eliminados" y "Ocultos").</p>
   </section>`;
 }
-function rvSave(hide){
+function rvSave(hide, del){
   const m = Object.assign({}, myMeta[RV.n]);
   m.bloque = {act:'Activación', neuro:'Neuro', central:'Central'}[RV.bloque];
   m.region = RV.reg; m.fx = +RV.fx; m.im = +RV.im; m.tn = +RV.tn; m.kneel = +RV.kn; m.uni = +RV.uni;
-  m.revisado = true; if(hide) m.oculto = true;
+  m.revisado = true; if(hide) m.oculto = true; if(del) m.eliminado = true;
   myMeta[RV.n] = m; buildBanco(); saveLib(RV.n);
   $('#saveState').textContent = 'Banco guardado';
   RV = null; render(); $('.rvcard')?.scrollIntoView({block:'start'});
@@ -79,4 +80,21 @@ $('#out').addEventListener('click', e => {
   if(a === 'reskip'){ rvSkip.clear(); bancoQ.modo = 'uno'; RV = null; render(); }
   if(a === 'ok') rvSave(false);
   if(a === 'hide') rvSave(true);
+  if(a === 'del'){ const n = RV.n; rvSave(false, true); undoToast(`Eliminado: ${n}`, () => bancoSetDel(n, false)); }
+});
+
+/* Eliminar y restaurar desde la tabla, con deshacer */
+function bancoSetDel(n, del){
+  const m = Object.assign({}, myMeta[n]); m.eliminado = del; if(del) m.revisado = true;
+  myMeta[n] = m; buildBanco(); saveLib(n); render();
+}
+function undoToast(msg, undo){
+  const el = $('#toast'); el.innerHTML = `${esc(msg)} <button class="tundo">Deshacer</button>`; el.hidden = false;
+  el.querySelector('.tundo').onclick = () => { undo(); el.hidden = true; };
+  clearTimeout(el._t); el._t = setTimeout(() => el.hidden = true, 5000);
+}
+$('#out').addEventListener('click', e => {
+  let b;
+  if((b = e.target.closest('[data-bdel]'))){ const n = b.dataset.bdel; bancoSetDel(n, true); undoToast(`Eliminado: ${n}`, () => bancoSetDel(n, false)); }
+  if((b = e.target.closest('[data-brest]'))){ bancoSetDel(b.dataset.brest, false); toast('Ejercicio restaurado'); }
 });

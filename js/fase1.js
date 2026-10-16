@@ -65,6 +65,7 @@ function bancoView(){
     const e = BANCO.find(x=>x.n===n) || {n, oculto:true, b:'central', reg:'gen', fx:0, im:0, tn:0, kn:0, uni:0, rev:0};
     const m = myMeta[n]||{}; return Object.assign({}, e, {oculto:!!m.oculto, video:m.video||''});
   });
+  list=list.filter(e=> bancoQ.solo==='eli' ? !!(myMeta[e.n]&&myMeta[e.n].eliminado) : !(myMeta[e.n]&&myMeta[e.n].eliminado));
   if(q) list=list.filter(e=>_N(e.n).includes(q));
   if(bancoQ.b) list=list.filter(e=>e.b===bancoQ.b);
   if(bancoQ.reg) list=list.filter(e=>e.reg===bancoQ.reg);
@@ -81,10 +82,10 @@ function bancoView(){
     <input type="search" id="bq" placeholder="Buscar ejercicio" value="${esc(bancoQ.q)}" aria-label="Buscar ejercicio">
     <select id="bb" aria-label="Bloque"><option value="">Todos los bloques</option>${SEG_ORDER.map(k=>`<option value="${k}"${bancoQ.b===k?' selected':''}>${SEGS[k]}</option>`).join('')}</select>
     <select id="br" aria-label="Región"><option value="">Todas las regiones</option>${Object.entries(REGIONES).map(([k,v])=>`<option value="${k}"${bancoQ.reg===k?' selected':''}>${v}</option>`).join('')}</select>
-    <select id="bs" aria-label="Mostrar"><option value="">Todos</option><option value="rev"${bancoQ.solo==='rev'?' selected':''}>Por revisar</option><option value="prop"${bancoQ.solo==='prop'?' selected':''}>Agregados por mí</option><option value="vid"${bancoQ.solo==='vid'?' selected':''}>Sin video</option><option value="ocu"${bancoQ.solo==='ocu'?' selected':''}>Ocultos</option></select>
+    <select id="bs" aria-label="Mostrar"><option value="">Todos</option><option value="rev"${bancoQ.solo==='rev'?' selected':''}>Por revisar</option><option value="prop"${bancoQ.solo==='prop'?' selected':''}>Agregados por mí</option><option value="vid"${bancoQ.solo==='vid'?' selected':''}>Sin video</option><option value="ocu"${bancoQ.solo==='ocu'?' selected':''}>Ocultos</option><option value="eli"${bancoQ.solo==='eli'?' selected':''}>Eliminados</option></select>
   </div>
   <p class="small">${total} resultados · página ${total?pag+1:0} de ${Math.ceil(total/per)}</p>
-  <div class="tbl"><table class="data banco"><thead><tr><th>Ejercicio</th><th>Bloque</th><th>Región</th><th title="Flexión máxima de rodilla con carga">Flex. °</th><th>Impacto</th><th title="Estrés de tendón o rótula">Tendón</th><th title="Apoyo de rodillas">Rodillas</th><th>Unilat.</th><th>Video</th><th>Oculto</th></tr></thead><tbody>
+  <div class="tbl"><table class="data banco"><thead><tr><th>Ejercicio</th><th>Bloque</th><th>Región</th><th title="Flexión máxima de rodilla con carga">Flex. °</th><th>Impacto</th><th title="Estrés de tendón o rótula">Tendón</th><th title="Apoyo de rodillas">Rodillas</th><th>Unilat.</th><th>Video</th><th>Oculto</th><th><span class="sr">Eliminar</span></th></tr></thead><tbody>
   ${pageItems.map(e=>`<tr data-bn="${esc(e.n)}" class="${e.rev?'rev':''}${e.oculto?' ocu':''}"><td class="bn">${esc(e.n)}${e.rev?' <span class="pill y">revisar</span>':''}${e.reps?`<div class="small">${esc(e.reps)}</div>`:''}</td>
     <td>${sel(e.b,SEG_ORDER.map(k=>[k,SEGS[k]]),'bloque')}</td>
     <td>${sel(e.reg,Object.entries(REGIONES),'region')}</td>
@@ -94,7 +95,8 @@ function bancoView(){
     <td>${sel(e.kn,[[0,'No'],[1,'Sí']],'kneel')}</td>
     <td>${sel(e.uni,[[0,'No'],[1,'Sí']],'uni')}</td>
     <td><input value="${esc(e.video)}" placeholder="https://…" data-bk="video" style="width:11em"></td>
-    <td><input type="checkbox" data-bk="oculto"${e.oculto?' checked':''} aria-label="Ocultar"></td></tr>`).join('')}
+    <td><input type="checkbox" data-bk="oculto"${e.oculto?' checked':''} aria-label="Ocultar"></td>
+    <td>${bancoQ.solo==='eli'?`<button class="mini-btn" data-brest="${esc(e.n)}">Restaurar</button>`:`<button class="xbtn" data-bdel="${esc(e.n)}" aria-label="Eliminar ${esc(e.n)}" title="Eliminar">×</button>`}</td></tr>`).join('')}
   </tbody></table></div>
   <div class="actions"><button id="bPrev"${pag===0?' disabled':''}>Anterior</button><button id="bNext"${(pag+1)*per>=total?' disabled':''}>Siguiente</button></div>
   </section>`;

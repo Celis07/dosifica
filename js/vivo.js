@@ -127,11 +127,11 @@ function lvTimedStep(st){
 }
 const lvSideTxt = l => l==='Lesionada'?'Pierna lesionada':l==='Sana'?'Pierna sana':'';
 function lvEndStep(){
-  const S=L.sum, mins=Math.max(1, Math.round((lvNow()-L.t0)/60000)), rod=(A.plan?.contenido?.modulo||'rodilla')==='rodilla';
+  const S=L.sum, mins=Math.max(1, Math.round((lvNow()-L.t0)/60000)), rod=(A.plan?.contenido?.modulo||'rodilla')==='rodilla', lumb=A.plan?.contenido?.modulo==='lumbar';
   const doneEx=L.steps.filter((s,k)=>s.k!=='end' && (L.done[k]===true || (Array.isArray(L.done[k]) && L.done[k].some(Boolean)))).length, totEx=L.steps.length-1;
   return `<div class="lvex"><h1 class="lvname">Sesión terminada</h1><p class="lvcue">${doneEx} de ${totEx} bloques hechos · ${mins} min</p>
     <div class="lvbox"><b>¿Qué tan dura fue la sesión completa? (RPE 1–10)</b>${lvChips('srpe', S.srpe, 1, 10, 'RPE de la sesión')}</div>
-    <div class="lvbox"><b>${rod?'Dolor de rodilla durante la sesión (0–10)':'Dolor durante la sesión (0–10)'}</b>${lvChips('dolor', S.dolor, 0, 10, 'Dolor')}
+    <div class="lvbox"><b>${rod?'Dolor de rodilla durante la sesión (0–10)':lumb?'Dolor de espalda durante la sesión (0–10)':'Dolor durante la sesión (0–10)'}</b>${lvChips('dolor', S.dolor, 0, 10, 'Dolor')}
       ${S.dolor!=null&&S.dolor>5?'<p class="lvwarn">Dolor alto. Tu fisioterapeuta recibirá un aviso. Mañana baja la carga y cuéntale cómo amaneciste.</p>':S.dolor!=null&&S.dolor>=4?'<p class="lvnote">Dolor moderado: la próxima vez mantén la misma carga.</p>':''}</div>
     <label class="f">Comentario (opcional)<textarea data-sum="nota" maxlength="2000" placeholder="Cómo te sentiste, algo que molestó…">${esc(S.nota||'')}</textarea></label>
     <button type="button" class="lvbtn primary full" data-save="1">Guardar sesión</button></div>`;
@@ -196,11 +196,12 @@ async function lvFinish(){
 
 /* Pregunta del día siguiente: ¿cómo amaneció la rodilla? (alimenta la alerta "peor a las 24 h") */
 function d24Card(){
-  const c=A.plan?.contenido; if(!c || (c.modulo||'rodilla')!=='rodilla') return '';
+  const c=A.plan?.contenido; if(!c || !['rodilla','lumbar'].includes(c.modulo||'rodilla')) return '';
+  const zona = c.modulo==='lumbar' ? 'espalda' : 'rodilla';
   const today=todayISO(), lim=new Date(Date.now()-3*864e5).toISOString().slice(0,10);
   const s=sessions.filter(x=>x.autor==='deportista' && !x.d24 && x.fecha<today && x.fecha>=lim).sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];
   if(!s) return '';
-  return `<section class="card d24"><h3 class="sec">¿Cómo amaneció tu rodilla?</h3><p class="small" style="margin:0 0 10px">Después de la sesión del ${esc(fmtD?fmtD(s.fecha):s.fecha)} (${esc(s.dia||'')}), comparada con antes de entrenar.</p>
+  return `<section class="card d24"><h3 class="sec">¿Cómo amaneció tu ${zona}?</h3><p class="small" style="margin:0 0 10px">Después de la sesión del ${esc(fmtD?fmtD(s.fecha):s.fecha)} (${esc(s.dia||'')}), comparada con antes de entrenar.</p>
     <div class="lvchips three"><button class="lvchip" data-d24="${esc(s.id)}|mejor">Mejor</button><button class="lvchip" data-d24="${esc(s.id)}|igual">Igual</button><button class="lvchip bad" data-d24="${esc(s.id)}|peor">Peor</button></div></section>`;
 }
 $('#athleteApp').addEventListener('click', async e=>{

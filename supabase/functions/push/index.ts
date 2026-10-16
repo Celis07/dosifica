@@ -68,10 +68,10 @@ Deno.serve(async (req) => {
       const { data: ss } = await db.from("sesiones").select("id,paciente_id").eq("fecha", hoyCO(-1)).eq("autor", "deportista").or("d24.is.null,d24.eq.");
       for (const s of ss || []) {
         const { data: pl } = await db.from("planes").select("contenido->>modulo").eq("paciente_id", s.paciente_id).order("publicado_at", { ascending: false }).limit(1);
-        const mod = (pl?.[0] as any)?.modulo || "rodilla"; if (mod !== "rodilla") continue;
+        const mod = (pl?.[0] as any)?.modulo || "rodilla"; if (mod !== "rodilla" && mod !== "lumbar") continue;
         const { data: p } = await db.from("pacientes").select("email").eq("id", s.paciente_id).maybeSingle();
         if (!(await tieneSubs(p?.email)) || !(await unaVez("d24-" + s.id))) continue;
-        if (p?.email) n += await enviar(p.email, { title: "¿Cómo amaneció tu rodilla?", body: "Cuéntale a tu fisioterapeuta cómo te sientes después de la sesión de ayer. Toma 5 segundos.", tag: "d24" });
+        if (p?.email) n += await enviar(p.email, { title: mod === "lumbar" ? "¿Cómo amaneció tu espalda?" : "¿Cómo amaneció tu rodilla?", body: "Cuéntale a tu fisioterapeuta cómo te sientes después de la sesión de ayer. Toma 5 segundos.", tag: "d24" });
       }
     }
     if (b.tipo === "tarde") { // 3+ días sin registrar, una vez por pausa

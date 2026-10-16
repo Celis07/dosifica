@@ -29,15 +29,15 @@ async function loadPatients(){
   renderSel();
 }
 async function loadLib(){
-  const {data} = await sb.from('biblioteca').select('nombre,cue,video,bloque,region,fx,im,tn,kneel,uni,oculto,revisado');
+  const {data} = await sb.from('biblioteca').select('nombre,cue,video,bloque,region,fx,im,tn,kneel,uni,oculto,revisado,eliminado');
   const baseNames = new Set(BANCO_BASE.map(r=>r[0]));
   myLib=(data||[]).filter(r=>!baseNames.has(r.nombre)).map(r=>r.nombre);
-  myMeta=Object.fromEntries((data||[]).map(r=>[r.nombre,{cue:r.cue||'',video:r.video||'',bloque:r.bloque,region:r.region,fx:r.fx,im:r.im,tn:r.tn,kneel:r.kneel,uni:r.uni,oculto:r.oculto,revisado:r.revisado}]));
+  myMeta=Object.fromEntries((data||[]).map(r=>[r.nombre,{cue:r.cue||'',video:r.video||'',bloque:r.bloque,region:r.region,fx:r.fx,im:r.im,tn:r.tn,kneel:r.kneel,uni:r.uni,oculto:r.oculto,revisado:r.revisado,eliminado:r.eliminado}]));
   buildBanco(); renderLib();
 }
 async function saveLib(only){
   const names=(only?[only]:[...new Set([...myLib, ...Object.keys(myMeta)])]).filter(Boolean);
-  const rows=names.map(n=>{ const m=myMeta[n]||{}; return {nombre:n, cue:m.cue||null, video:(m.video||'').trim()||null, bloque:m.bloque||null, region:m.region||null, fx:m.fx??null, im:m.im??null, tn:m.tn??null, kneel:m.kneel??null, uni:m.uni??null, oculto:!!m.oculto, revisado:!!m.revisado, updated_at:new Date().toISOString()}; });
+  const rows=names.map(n=>{ const m=myMeta[n]||{}; return {nombre:n, cue:m.cue||null, video:(m.video||'').trim()||null, bloque:m.bloque||null, region:m.region||null, fx:m.fx??null, im:m.im??null, tn:m.tn??null, kneel:m.kneel??null, uni:m.uni??null, oculto:!!m.oculto, revisado:!!m.revisado, eliminado:!!m.eliminado, updated_at:new Date().toISOString()}; });
   if(!rows.length) return;
   const {error}=await sb.from('biblioteca').upsert(rows,{onConflict:'fisio_email,nombre'});
   if(error) toast(/video/.test(error.message)?'El enlace del video debe empezar por http:// o https://':'No se pudo guardar la biblioteca.');
@@ -193,7 +193,7 @@ function renderAthlete(){
   </section>`).join('')}
   ${pushCard()}
   ${wkHTML?`<details class="card fold-d"><summary><h3 class="sec">Mis próximas semanas</h3></summary>${wkHTML}</details>`:''}
-  <details class="card fold-d"><summary><h3 class="sec">${rod?'Regla de dolor':'Cómo dosificar'}</h3></summary>${rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
+  <details class="card fold-d"><summary><h3 class="sec">${rod||c.modulo==='lumbar'?'Regla de dolor':'Cómo dosificar'}</h3></summary>${c.modulo==='lumbar'?`<p style="margin:0">Dolor de espalda ≤ 3/10 durante el ejercicio y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5, peor al día siguiente o si el dolor baja hacia la pierna: baja la carga, cambia ese ejercicio y avísale a tu fisioterapeuta. Moverte y caminar ayuda; el reposo no.</p>`:rod?`<p style="margin:0">Dolor durante el ejercicio ≤ 3/10 y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.</p>`:`<p style="margin:0">Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" = cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.</p>`}
     <p class="small">RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.</p>${c.evitar?`<p class="small"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>`:''}
     ${c.tools?.length?`<ul class="small" style="margin:6px 0 0;padding-left:18px">${c.tools.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}</details>
   <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 class="sec" style="margin:0">Pedir un cambio</h3>${!A.reqOpen?'<button class="dark" id="aReq">Nueva solicitud</button>':''}</div>

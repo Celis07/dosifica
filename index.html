@@ -76,6 +76,7 @@
   <fieldset>
     <legend>Módulo</legend>
     <div class="modsel" role="group" aria-label="Módulo"><button type="button" data-mod="rodilla">Rehab</button><button type="button" data-mod="deporte">Deporte</button><button type="button" data-mod="salud">Salud</button></div>
+    <div class="regsel" role="group" aria-label="Región de rehabilitación" data-modshow="rodilla lumbar"><button type="button" data-reg="rodilla">Rodilla</button><button type="button" data-reg="lumbar">Lumbar</button></div>
   </fieldset>
   <hr class="s">
   <fieldset>
@@ -89,6 +90,34 @@
     <label class="f" data-modshow="rodilla">Perfil deportivo para el retorno<select id="perfil" data-k="perfil"><option value="">Sin perfil específico</option><option value="uwr">Rugby subacuático</option><option value="futbol">Fútbol</option><option value="cancha">Baloncesto o voleibol</option><option value="carrera">Carrera</option><option value="natacion">Natación</option></select></label>
     <label class="chk"><input type="checkbox" id="consent" data-k="consent"> Consentimiento informado para tratar datos de salud firmado</label>
     <div class="small" id="pidRow"></div>
+  </fieldset>
+  <hr class="s" data-modshow="lumbar">
+  <fieldset data-modshow="lumbar">
+    <legend>Diagnóstico lumbar</legend>
+    <label class="f">Condición<select id="lumCond" data-k="lumCond">
+      <option value="agudo">Dolor lumbar agudo o subagudo (&lt; 12 semanas)</option>
+      <option value="cronico">Dolor lumbar crónico (&gt; 12 semanas)</option>
+      <option value="radic">Con radiculopatía (ciática)</option>
+      <option value="postop">Postoperatorio de discectomía</option>
+      <option value="espond">Espondilólisis en deportista</option></select></label>
+    <div class="row2">
+      <label class="f">Semanas desde el inicio o la cirugía<input type="number" id="lumSem" data-k="lumSem" min="0" max="520"></label>
+      <label class="f">STarT Back<select id="lumStart" data-k="lumStart"><option value="">Sin evaluar</option><option value="bajo">Riesgo bajo</option><option value="medio">Riesgo medio</option><option value="alto">Riesgo alto</option></select></label>
+    </div>
+    <label class="f">Preferencia direccional<select id="lumDP" data-k="lumDP"><option value="">Ninguna o sin evaluar</option><option value="ext">Extensión (centraliza al extender)</option><option value="flex">Flexión</option><option value="lat">Desplazamiento lateral</option></select></label>
+    <label class="chk"><input type="checkbox" id="lumRF" data-k="lumRF"> Banderas rojas descartadas (cauda equina, déficit progresivo, fractura, cáncer, infección)</label>
+  </fieldset>
+  <hr class="s" data-modshow="lumbar">
+  <fieldset data-modshow="lumbar">
+    <legend>Estado clínico hoy</legend>
+    <div class="row2">
+      <label class="f">Dolor lumbar (0–10)<input type="number" id="lumDolor" data-k="lumDolor" min="0" max="10"></label>
+      <label class="f">Dolor en la pierna (0–10)<input type="number" id="lumPierna" data-k="lumPierna" min="0" max="10"></label>
+    </div>
+    <div class="row2">
+      <label class="f">Respuesta a las 24 h<select id="lumResp" data-k="lumResp"><option value="">Sin dato</option><option value="mejor">Mejor que basal</option><option value="igual">Vuelve a basal</option><option value="peor">Peor que basal</option></select></label>
+      <label class="f">Oswestry (ODI %)<input type="number" id="lumOdi" data-k="lumOdi" min="0" max="100"></label>
+    </div>
   </fieldset>
   <hr class="s" data-modshow="rodilla">
   <fieldset data-modshow="rodilla">
@@ -158,6 +187,7 @@
 <script src="js/modulos.js"></script>
 <script src="js/bienestar.js"></script>
 <script src="js/vistas.js"></script>
+<script src="js/lumbar.js"></script>
 <script src="js/servidor.js"></script>
 <script src="js/fase1.js"></script>
 <script src="js/revision.js"></script>

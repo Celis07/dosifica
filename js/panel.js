@@ -2,7 +2,7 @@
    Lo primero que ve el fisio al entrar: resumen, lo que requiere atención,
    actividad reciente y sus pacientes. Al tocar un paciente se abre su plan. */
 let allSes = [], homeQ = '', fisioNombre = '';
-const MOD_L = {rodilla:'Rehab', deporte:'Deporte', salud:'Salud'};
+const MOD_L = {rodilla:'Rehab', lumbar:'Rehab', deporte:'Deporte', salud:'Salud'};
 const homeVisible = () => !$('#home').hidden;
 
 function showHome(){

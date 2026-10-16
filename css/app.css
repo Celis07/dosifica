@@ -713,3 +713,13 @@ details.fold-d[open]>summary{margin-bottom:10px}
 .rvact button{min-height:52px;border-radius:12px;font-size:.95rem}
 .ghostb{background:var(--field);border:1px solid var(--line);color:var(--ink);padding:0 16px}
 .ghostb.danger{color:#FF8A90;border-color:#5A1C20}
+
+/* ---------- Región de Rehab y lumbar ---------- */
+.regsel{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin-top:8px;background:var(--field);border:1px solid var(--line);border-radius:10px}
+.regsel button{min-height:36px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-weight:700;font-size:.82rem}
+.regsel button[aria-pressed="true"]{background:var(--ink);color:#0B0B0D}
+.mod.warnmod{border-color:#5A1C20;background:var(--coral-soft)}
+.m-lumbar{background:#2A1F33;color:#C9A8F0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tundo{margin-left:10px;min-height:32px;padding:0 12px;border-radius:8px;border:0;background:#0B0B0D;color:#F2F2F0;font-weight:700}
+table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}

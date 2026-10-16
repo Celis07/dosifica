@@ -146,10 +146,10 @@ let BANCO = [];   // [{n,b,reg,fx,im,tn,kn,uni,ter,reps,rev,tk}]
 function buildBanco(){
   const over = myMeta || {};
   BANCO = BANCO_BASE.map(r=>{ const o={n:r[0],b:{A:'act',N:'neuro',C:'central'}[r[1]],reg:r[2],fx:r[3],im:r[4],tn:r[5],kn:r[6],uni:r[7],ter:r[8],reps:r[9],rev:r[10]};
-    const m=over[o.n]; if(m){ ['fx','im','tn','uni'].forEach(k=>{ if(m[k]!=null) o[k]=m[k]; }); if(m.kneel!=null) o.kn=m.kneel; if(m.bloque) o.b={'Activación':'act','Neuro':'neuro','Central':'central'}[m.bloque]||o.b; if(m.region) o.reg=m.region; o.oculto=!!m.oculto; if(m.revisado) o.rev=0; }
+    const m=over[o.n]; if(m){ ['fx','im','tn','uni'].forEach(k=>{ if(m[k]!=null) o[k]=m[k]; }); if(m.kneel!=null) o.kn=m.kneel; if(m.bloque) o.b={'Activación':'act','Neuro':'neuro','Central':'central'}[m.bloque]||o.b; if(m.region) o.reg=m.region; o.oculto=!!m.oculto||!!m.eliminado; if(m.revisado) o.rev=0; }
     o.tk=tok(o.n); return o; }).filter(o=>!o.oculto);
   // ejercicios propios agregados por Manuel
-  (myLib||[]).forEach(n=>{ if(!BANCO.find(x=>x.n===n)){ const m=over[n]||{}; BANCO.push({n,b:{'Activación':'act','Neuro':'neuro','Central':'central'}[m.bloque]||'central',reg:m.region||'gen',fx:m.fx??0,im:m.im??0,tn:m.tn??0,kn:m.kneel??0,uni:m.uni??0,ter:0,reps:'',rev:0,tk:tok(n),propio:1}); } });
+  (myLib||[]).forEach(n=>{ if(!BANCO.find(x=>x.n===n) && !(over[n]&&over[n].eliminado)){ const m=over[n]||{}; BANCO.push({n,b:{'Activación':'act','Neuro':'neuro','Central':'central'}[m.bloque]||'central',reg:m.region||'gen',fx:m.fx??0,im:m.im??0,tn:m.tn??0,kn:m.kneel??0,uni:m.uni??0,ter:0,reps:'',rev:0,tk:tok(n),propio:1}); } });
 }
 function okFor(e, c){ return e.fx<=c.fx && e.tn<=c.tn && e.im<=c.im && !(c.noKneel && e.kn); }
 function bankMatch(name, c){
