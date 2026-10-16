@@ -167,7 +167,7 @@ function aRow(r){
 }
 function renderAthlete(){
   const c=A.plan?.contenido, el=$('#athleteApp');
-  const head=`<header class="top"><div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Dosifica</h1><span class="sig">Fisio Celis · Mi plan</span></div></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
+  const head=`<header class="top"><div class="brand"><img class="mark" src="icons/icon.svg" alt=""><div class="lt"><h1>Ápex</h1><span class="sig">Fisio Celis · Mi plan</span></div></div><div class="pbar"><span class="small">${esc(me.email)}</span><button id="aOut">Salir</button></div></header>`;
   if(!A.consent){ el.innerHTML = head + consentGate(); return; }
   if(!c){ el.innerHTML = head+`<section class="card"><h3 class="sec">Hola${A.p?.nombre?', '+esc(A.p.nombre):''}</h3><p>Tu fisioterapeuta aún no ha publicado tu plan. Cuando lo haga, aparecerá aquí.</p></section>`; return; }
   const est={pendiente:'<span class="pill y">Pendiente</span>',aprobada:'<span class="pill g">Aprobada</span>',rechazada:'<span class="pill r">Rechazada</span>'};

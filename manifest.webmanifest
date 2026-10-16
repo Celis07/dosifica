@@ -1,7 +1,7 @@
 {
-  "name": "Dosifica",
-  "short_name": "Dosifica",
-  "description": "Dosificación de ejercicio por RPE: rehabilitación, deporte y salud.",
+  "name": "Ápex",
+  "short_name": "Ápex",
+  "description": "Ápex: dosificación de ejercicio por RPE para rehabilitación, deporte y salud.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",
