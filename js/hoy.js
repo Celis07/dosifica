@@ -238,7 +238,7 @@ function hFisio(){
       <b class="ap-reqt">${esc(r.texto)}</b>${r.respuesta ? `<span>Respuesta: ${esc(r.respuesta)}</span>` : ''}</span></div>`).join('')}</div>` : '';
   return hPage('Mi fisio', 'Fisioterapeuta Manuel Celis') + `<div class="ap-body">
     <section class="ap-sec"><div class="ap-head"><h2>Cambios en tu plan</h2></div>${req}${reqs}</section>
-    ${pushCard()}
+    ${avisosSec()}
     <section class="ap-sec"><div class="ap-head"><h2>Cuenta</h2></div><div class="ap-list">
       <div class="ap-row"><span class="ap-l"><b>${esc(A.p?.nombre || 'Deportista')}</b><span>${esc(me.email || '')}</span></span></div>
       <button type="button" class="ap-row ap-out" id="aOut">Cerrar sesión</button></div></section>

@@ -111,9 +111,10 @@ Deno.serve(async (req) => {
     }
     if (b.tipo === "mensaje") { // mensaje del fisio → deportista
       const { data: m } = await db.from("mensajes").select("paciente_id,texto").eq("id", b.id).maybeSingle();
-      const { data: p } = m ? await db.from("pacientes").select("email").eq("id", m.paciente_id).maybeSingle() : { data: null };
+      const { data: p } = m ? await db.from("pacientes").select("email,avisos").eq("id", m.paciente_id).maybeSingle() : { data: null };
       const t = (m?.texto || "").trim();
-      if (p?.email && t) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: t.length > 140 ? t.slice(0, 137) + "…" : t, tag: "msg-" + b.id });
+      const apagado = (p as any)?.avisos?.mensaje === false; // el deportista los desactivó
+      if (p?.email && t && !apagado) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: t.length > 140 ? t.slice(0, 137) + "…" : t, tag: "msg-" + b.id });
     }
     if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
 

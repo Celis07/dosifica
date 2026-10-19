@@ -66,6 +66,34 @@ function pushCard(){
   return `<section class="card pushc"><div class="rowhead"><h3 class="sec" style="margin:0">Avisos en tu celular</h3><button class="linkbtn" id="pushHide" style="min-height:0;padding:0">Ahora no</button></div>
     <p class="small" style="margin:6px 0 10px">${txt}</p>${A_PUSH==='off'?'<button class="primary" id="pushOn">Activar notificaciones</button>':''}</section>`;
 }
+/* Sección "Notificaciones" en Mi fisio: el deportista prende o apaga cada tipo de aviso.
+   Por ahora: mensajes del fisio. Se guarda en pacientes.avisos ({mensaje:false} = apagado). */
+function avisoOn(t){ return A.p?.avisos?.[t] !== false; }
+function avisosSec(){
+  if(A_PUSH === null){ pushCard(); return ''; }
+  const dev = A_PUSH === 'on', ok = dev || A_PUSH === 'off';
+  const on = dev && avisoOn('mensaje');
+  const nota = A_PUSH === 'install' ? 'En iPhone primero instala la app: Compartir → Agregar a inicio.'
+    : A_PUSH === 'denied' ? 'Están bloqueadas en este celular. Actívalas en los ajustes del navegador.'
+    : A_PUSH === 'unsupported' ? 'Este navegador no permite notificaciones.'
+    : on ? 'Te llega un aviso cuando tu fisioterapeuta te escribe.' : 'Los mensajes igual quedan aquí en la app; solo no te llega el aviso.';
+  return `<section class="ap-sec"><div class="ap-head"><h2>Notificaciones</h2></div><div class="ap-list">
+    <label class="ap-row ap-swrow"><span class="ap-l"><b>Mensajes de tu fisioterapeuta</b><span>${nota}</span></span>
+      <input type="checkbox" class="ap-sw" id="avMsg" role="switch" ${on?'checked':''} ${ok?'':'disabled'}></label></div></section>`;
+}
+async function setAviso(t, v){
+  if(!A.p?.id) return false;
+  const {data, error} = await sb.rpc('set_aviso', {pid:A.p.id, p_tipo:t, p_on:v});
+  if(error){ toast('No se pudo guardar. Revisa tu conexión.'); return false; }
+  A.p.avisos = data || Object.assign({}, A.p.avisos, {[t]:v}); return true;
+}
+$('#athleteApp').addEventListener('change', async e=>{
+  const sw = e.target.closest('#avMsg'); if(!sw) return;
+  const want = sw.checked; sw.disabled = true;
+  if(want && A_PUSH !== 'on'){ if(await enablePush('deportista')) A_PUSH = 'on'; else { renderAthlete(); return; } }
+  if(await setAviso('mensaje', want)) toast(want ? 'Avisos de mensajes activados.' : 'Avisos de mensajes desactivados.');
+  renderAthlete();
+});
 $('#athleteApp').addEventListener('click', async e=>{
   if(e.target.closest('#pushOn')){ if(await enablePush('deportista')){ A_PUSH='on'; renderAthlete(); } return; }
   if(e.target.closest('#pushHide')){ LS.set('apex_push_hide','1'); renderAthlete(); }
