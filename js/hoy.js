@@ -114,7 +114,7 @@ function hChips(k, from, to, label){
     `<button type="button" class="wc${HL[k] === v ? ' on' : ''}" data-hl="${k}|${v}" aria-pressed="${HL[k] === v}">${v}</button>`).join('')}</div></div>`;
 }
 function hLog(day, di){
-  const c = A.plan?.contenido || {}, rod = (c.modulo || 'rodilla') === 'rodilla', lum = c.modulo === 'lumbar';
+  const c = A.plan?.contenido || {}, rod = (c.modulo || 'rodilla') === 'rodilla', lum = c.modulo === 'lumbar', zr = c.rehab?.zona;
   const ex = []; day.segs.forEach(sg => sg.rows.forEach(r => { if(isLoggable(sg, r)) ex.push(r); }));
   const est = typeof tDay === 'function' ? Math.round(tDay(day).total) : '';
   return `<div class="ap-logq" id="logf">
@@ -123,7 +123,7 @@ function hLog(day, di){
     <input type="hidden" id="lf-fecha" value="${todayISO()}"><input type="hidden" id="lf-min" value="${est}"><input type="hidden" id="lf-d24" value="">
     <input type="hidden" id="lf-srpe" value="${HL.srpe ?? ''}"><input type="hidden" id="lf-dolor" value="${HL.dolor ?? ''}">
     ${hChips('srpe', 1, 10, '¿Qué tan dura fue la sesión completa? (1–10)')}
-    ${rod || lum ? hChips('dolor', 0, 10, `Dolor de ${lum ? 'espalda' : 'rodilla'} durante la sesión (opcional)`) : ''}
+    ${rod || lum || c.rehab ? hChips('dolor', 0, 10, `Dolor ${lum ? 'de espalda' : rod ? 'de rodilla' : zr ? 'del ' + zr : 'de la lesión'} durante la sesión (opcional)`) : ''}
     ${ex.length ? `<details class="ap-more"><summary>Agregar pesos por ejercicio (opcional)</summary><div class="ap-exl">${ex.map((r, k) => `<div class="ap-exr"><b>${esc(r.e)}</b>
       <label class="f">kg<input type="number" inputmode="decimal" step="0.5" data-lx="${k}" data-lf="kg"></label>
       <label class="f">Reps<input type="number" inputmode="numeric" data-lx="${k}" data-lf="reps"></label>
@@ -192,7 +192,7 @@ function hHoy(c){
 /* ---------- Pestaña Mi plan ---------- */
 function hPlan(c){
   const rod = (c.modulo || 'rodilla') === 'rodilla', done = hDoneWeek();
-  const regla = c.modulo === 'lumbar'
+  const regla = c.rehab?.regla ? c.rehab.regla : c.modulo === 'lumbar'
     ? 'Dolor de espalda hasta 3/10 durante el ejercicio y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5, peor al día siguiente o si el dolor baja hacia la pierna: baja la carga, cambia ese ejercicio y avísale a tu fisioterapeuta. Moverte y caminar ayuda; el reposo no.'
     : rod ? 'Dolor hasta 3/10 durante el ejercicio y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.'
     : 'Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" es cada repetición lo más rápido y explosivo posible, sin llegar a cansarte.';
@@ -202,8 +202,8 @@ function hPlan(c){
     <section class="ap-card"><h3>${esc(hCap(hPhase(c)))}</h3>${c.objetivo ? `<p>${esc(c.objetivo)}</p>` : ''}${c.evitar ? `<p class="ap-muted"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>` : ''}</section>
     ${(c.dias || []).map(d => `<section class="ap-sec"><div class="ap-head"><h2>${esc(d.name)}</h2>${done.has(d.name) ? `<span class="ap-done">${H_ICON.check} Hecha esta semana</span>` : ''}</div>${hBlocks(d, 'n')}</section>`).join('')}
     ${weeks}
-    <section class="ap-sec"><div class="ap-head"><h2>${rod || c.modulo === 'lumbar' ? 'Regla de dolor' : 'Cómo dosificar'}</h2></div>
-      <div class="ap-card"><p>${esc(regla)}</p><p class="ap-muted">RPE 8 es que podrías hacer 2 repeticiones más. RPE 7, que podrías hacer 3 más.</p>
+    <section class="ap-sec"><div class="ap-head"><h2>${rod || c.modulo === 'lumbar' || c.rehab ? 'Regla de dolor' : 'Cómo dosificar'}</h2></div>
+      <div class="ap-card"><p>${esc(regla)}</p>${c.rehab ? `<p>Elige el peso para quedar en el RPE indicado. "Máx. intención" es cada repetición lo más rápido posible, sin llegar a cansarte. Los ejercicios marcados como terapia no se saltan.</p>` : ''}<p class="ap-muted">RPE 8 es que podrías hacer 2 repeticiones más. RPE 7, que podrías hacer 3 más.</p>
       ${c.tools?.length ? `<ul>${c.tools.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}</div></section>
   </div>`;
 }

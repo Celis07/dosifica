@@ -112,7 +112,7 @@ async function publishPlan(){
   const dias = applyMeso(baseWeek(st).days, st).map(d=>({name:d.name, segs:d.segs.map(sg=>({type:sg.type, sub:sg.sub, fmt:sg.fmt, rows:sg.rows.map(r=>Object.assign({}, r, {cue:cueOf(r.e), video:videoOf(r.e)}))}))}));
   const wk=[]; for(let w=curWeek(st); w<curWeek(st)+6; w++){ const k=weekKind(st,w); wk.push({w, ini:weekStart(st,w), l:k.wt.l, k:k.wt.k, t:k.t.map(t=>({n:t.n,f:t.f,p:t.p}))}); }
   const tools=[]; if(ph.tools.includes('iso')) tools.push('Isometría: 5 × 45 s con la rodilla a 60° (RPE 6–7), antes de entrenar o si duele.'); if(ph.tools.includes('bfr')) tools.push('BFR solo supervisado y con manguito: 30-15-15-15 reps con carga muy ligera.'); if(ph.tools.includes('mi')) tools.push('Imaginería y observación de video: 10–15 min, 3–5 veces por semana.');
-  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), modulo:modOf(st), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{l:m.l,d:m.d,k:m.k}, semanas:wk, dias, tools, vivo:!st.vivoOff};
+  const contenido={nombre:st.nombre, condicion:subLabel(st,P0), modulo:modOf(st), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{l:m.l,d:m.d,k:m.k}, semanas:wk, dias, tools, vivo:!st.vivoOff, rehab:(typeof rehabInfo==='function'?rehabInfo(st):null)};
   const {error}=await sb.from('planes').insert({paciente_id:curId, semana:contenido.semana, fase:ph.name, titulo:`Semana ${contenido.semana}`, contenido});
   if(error){ toast('No se pudo publicar el plan.'); return; }
   toast(`Plan de la semana ${contenido.semana} publicado: ya lo ve ${st.email}`);

@@ -80,7 +80,7 @@ function avisosSec(){
   if(A_PUSH === null){ pushCard(); return ''; }
   const dev = A_PUSH === 'on', ok = dev || A_PUSH === 'off';
   const mod = A.plan?.contenido?.modulo || 'rodilla';
-  const tipos = AV_TIPOS.filter(([t]) => t !== 'd24' || mod === 'rodilla' || mod === 'lumbar');
+  const tipos = AV_TIPOS.filter(([t]) => t !== 'd24' || mod === 'rodilla' || mod === 'lumbar' || A.plan?.contenido?.rehab?.zona);
   const nota = A_PUSH === 'install' ? 'En iPhone primero instala la app: toca Compartir y luego Agregar a inicio. Ábrela desde el ícono.'
     : A_PUSH === 'denied' ? 'Las notificaciones están bloqueadas en este celular. Actívalas en los ajustes del navegador.'
     : A_PUSH === 'unsupported' ? 'Este navegador no permite notificaciones. Prueba con Chrome o con la app instalada.'

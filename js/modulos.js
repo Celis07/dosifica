@@ -272,6 +272,7 @@ function genPlanView(){
     </tbody></table></div><p class="small" style="margin:8px 0 0">Reparto sugerido: ${nd===4?'lunes, martes, jueves y viernes':nd===3?'lunes, miércoles y viernes':'lunes y jueves'}, con al menos 48 h entre sesiones que repiten grupos musculares.</p>`;
   const mods=[];
   if(dep) mods.push(`<div class="mod"><b>${esc(sp.l)}.</b> ${esc(sp.nota)} ${refList(sp.ev)}</div>`);
+  if(dep && typeof rehabMod==='function' && s.rehab) mods.unshift(rehabMod(s));
   if(!dep && s.poblacion==='may') mods.push(`<div class="mod"><b>Adulto mayor.</b> Equilibrio en todas las sesiones y potencia (subida rápida con carga ligera) desde la fase de desarrollo: la potencia cae antes que la fuerza y se relaciona más con caídas y autonomía. ${refList(['fragala19','sherrington19','who20'])}</div>`);
   if(ph.avoid) mods.push(`<div class="mod"><b>Evitar en esta fase.</b> ${esc(ph.avoid)}</div>`);
   if(s.nivel==='ini') mods.push(`<div class="mod"><b>Principiante.</b> Una serie menos en el bloque central y RPE máximo 8: la técnica y la regularidad progresan más que la intensidad al inicio. ${refList(['acsm09'])}</div>`);

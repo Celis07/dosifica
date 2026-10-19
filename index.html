@@ -144,6 +144,13 @@
   <fieldset>
     <legend>Planificación</legend>
     <label class="f" data-modshow="deporte">Deporte para planificar<select id="deporteP" data-k="deporteP"><option value="uwr">Rugby subacuático</option><option value="natacion">Natación</option><option value="futbol">Fútbol</option><option value="carrera">Carrera</option><option value="cancha">Baloncesto o voleibol</option><option value="raqueta">Tenis, pádel o squash</option><option value="gimnasio">Gimnasio o fuerza general</option></select></label>
+    <label class="chk" data-modshow="deporte"><input type="checkbox" id="rehab" data-k="rehab"> Deportista en rehabilitación: entrena con su calendario de torneos y la terapia va en Activación y Neuro</label>
+    <div class="row2" data-rshow="on" hidden>
+      <label class="f">Lesión<select id="rehabCond" data-k="rehabCond"><option value="fp">Fascitis plantar</option><option value="otra">Otra lesión (la terapia la pongo yo)</option></select></label>
+      <label class="f" data-rshow="fp">Lado<select id="rehabLado" data-k="rehabLado"><option value="der">Derecho</option><option value="izq">Izquierdo</option></select></label>
+    </div>
+    <label class="f" data-rshow="fp" hidden>Irritabilidad hoy<select id="rehabIrr" data-k="rehabIrr"><option value="alta">Alta · cojea o duele en reposo</option><option value="mod">Moderada · duele al empezar y cede al calentar</option><option value="baja">Baja · ya tolera trotar y saltos suaves</option></select></label>
+    <label class="f" data-rshow="fp" hidden>Inicio de la rehabilitación<input type="date" id="rehabIni" data-k="rehabIni"></label>
     <label class="f" data-modshow="salud">Población<select id="poblacion" data-k="poblacion"><option value="sed">Adulto sedentario o que empieza</option><option value="act">Adulto activo</option><option value="may">Adulto mayor (65 años o más)</option></select></label>
     <label class="f" data-modshow="deporte salud">Nivel en fuerza<select id="nivel" data-k="nivel"><option value="ini">Principiante · menos de 1 año</option><option value="int">Intermedio · 1–3 años</option><option value="av">Avanzado · más de 3 años</option></select></label>
     <label class="f">Fase<select id="fase" data-k="fase"></select></label>
@@ -192,6 +199,7 @@
 <script src="js/vistas.js"></script>
 <script src="js/lumbar.js"></script>
 <script src="js/rutinas.js"></script>
+<script src="js/rehabdep.js"></script>
 <script src="js/servidor.js"></script>
 <script src="js/fase1.js"></script>
 <script src="js/revision.js"></script>
