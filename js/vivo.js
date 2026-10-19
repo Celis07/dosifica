@@ -69,10 +69,10 @@ function lvTimed(st){
   const p=lvClock()/1000;
   if(st.k==='inter'){
     const cyc=st.on+st.off, n=st.rounds*st.rows.length, total=n*cyc, idx=Math.min(n-1, Math.floor(p/cyc)), w=p-idx*cyc, on=w<st.on;
-    return {done:p>=total, label:p>=total?'TERMINADO':on?'TRABAJO':'PAUSA', on, left:on?st.on-w:cyc-w, row:st.rows[idx%st.rows.length], next:st.rows[(idx+1)%st.rows.length], round:Math.floor(idx/st.rows.length)+1, of:st.rounds, key:p>=total?'end':idx+(on?'a':'b'), pct:Math.min(100,p/total*100)};
+    return {done:p>=total, label:p>=total?'Terminado':on?'Trabajo':'Pausa', on, left:on?st.on-w:cyc-w, row:st.rows[idx%st.rows.length], next:st.rows[(idx+1)%st.rows.length], round:Math.floor(idx/st.rows.length)+1, of:st.rounds, key:p>=total?'end':idx+(on?'a':'b'), pct:Math.min(100,p/total*100)};
   }
-  if(st.k==='amrap'){ const total=st.min*60; return {done:p>=total, label:p>=total?'TERMINADO':'AMRAP', on:true, left:total-p, key:p>=total?'end':'run', pct:Math.min(100,p/total*100)}; }
-  if(st.k==='emom'){ const total=st.min*60, idx=Math.min(st.min-1, Math.floor(p/60)); return {done:p>=total, label:p>=total?'TERMINADO':`MINUTO ${idx+1} DE ${st.min}`, on:true, left:60-(p-idx*60), row:st.rows[idx%st.rows.length], next:st.rows[(idx+1)%st.rows.length], key:p>=total?'end':idx, pct:Math.min(100,p/total*100)}; }
+  if(st.k==='amrap'){ const total=st.min*60; return {done:p>=total, label:p>=total?'Terminado':'AMRAP', on:true, left:total-p, key:p>=total?'end':'run', pct:Math.min(100,p/total*100)}; }
+  if(st.k==='emom'){ const total=st.min*60, idx=Math.min(st.min-1, Math.floor(p/60)); return {done:p>=total, label:p>=total?'Terminado':`Minuto ${idx+1} de ${st.min}`, on:true, left:60-(p-idx*60), row:st.rows[idx%st.rows.length], next:st.rows[(idx+1)%st.rows.length], key:p>=total?'end':idx, pct:Math.min(100,p/total*100)}; }
   return null;
 }
 function lvTickFn(){
@@ -97,7 +97,7 @@ function lvChips(name, val, from, to, label){
 }
 function lvExStep(st){
   const r=st.row, d=L.done[L.i]||[], lg=L.log[r.e]||{};
-  let sets=''; for(let s=0;s<st.sets;s++) sets+=`<button type="button" class="lvset${d[s]?' on':''}" data-set="${s}" aria-pressed="${!!d[s]}"><span>SERIE ${s+1}</span><b>${esc(r.r||'—')}</b><i>${esc(r.c||'')}</i></button>`;
+  let sets=''; for(let s=0;s<st.sets;s++) sets+=`<button type="button" class="lvset${d[s]?' on':''}" data-set="${s}" aria-pressed="${!!d[s]}"><span>Serie ${s+1}</span><b>${esc(r.r||'—')}</b><i>${esc(r.c||'')}</i></button>`;
   const all=d.filter(Boolean).length>=st.sets;
   return `<div class="lvex"><div class="lvmeta">${lvSide(r.lado)}${r.ter?'<span class="lado l-a">Terapia</span>':''}</div>
     <h1 class="lvname">${esc(r.e)}</h1>${r.cue?`<p class="lvcue">${esc(r.cue)}</p>`:''}${r.n?`<p class="lvnote">${esc(r.n)}</p>`:''}${lvVideo(r)}
@@ -143,15 +143,15 @@ function renderLive(){
   const isDone = st.k==='ex' ? (L.done[L.i]||[]).filter(Boolean).length>=st.sets : st.k==='circ' ? (L.done[L.i]||[]).filter(Boolean).length>=st.rows.length : !!L.done[L.i];
   el.innerHTML = `<div class="lvtop">
       <button type="button" class="lvx" data-close="1" aria-label="Salir del modo en vivo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-      <div class="lvtt"><span>${esc(L.day.name.toUpperCase())}${A.plan?.contenido?.semana?' · SEMANA '+esc(A.plan.contenido.semana):''}</span><b>${st.k==='end'?'Cierre':esc(st.seg)}</b></div>
+      <div class="lvtt"><span>${esc(L.day.name)}${A.plan?.contenido?.semana?', semana '+esc(A.plan.contenido.semana):''}</span><b>${st.k==='end'?'Cierre':esc(st.seg)}</b></div>
       <span class="lvpos">${Math.min(L.i+1,n-1)}/${n-1}</span></div>
     <div class="lvprog"><i style="width:${(L.i/(n-1))*100}%"></i></div>
     <div class="lvsegs">${segs.map(t=>`<span class="${t===st.type?'on':L.steps.findIndex(s=>s.type===t)<L.i?'ok':''}">${esc(SEGS[t]||t)}</span>`).join('')}</div>
     <div class="lvmain">${body}</div>
-    ${L.rest?`<div class="lvrest" role="timer" aria-live="off"><span class="lbl">DESCANSO</span><span class="big" id="lvRestT">${fmtT((L.rest.end-lvNow())/1000)}</span><div class="bar"><i id="lvRestBar"></i></div>
+    ${L.rest?`<div class="lvrest" role="timer" aria-live="off"><span class="lbl">Descanso</span><span class="big" id="lvRestT">${fmtT((L.rest.end-lvNow())/1000)}</span><div class="bar"><i id="lvRestBar"></i></div>
       <div class="lvctl"><button type="button" class="lvbtn ghost" data-rest="15">+15 s</button><button type="button" class="lvbtn primary grow" data-rest="skip">Saltar descanso</button></div></div>`:''}
-    ${st.k==='end'?`<div class="lvbot"><button type="button" class="lvbtn ghost grow" data-go="-1">← Volver</button></div>`:
-      `<div class="lvbot"><button type="button" class="lvbtn ghost" data-go="-1" ${L.i===0?'disabled':''} aria-label="Anterior">←</button><button type="button" class="lvbtn ${isDone?'primary':'ghost'} grow" data-go="1">${isDone?'Siguiente →':'Saltar →'}</button></div>`}`;
+    ${st.k==='end'?`<div class="lvbot"><button type="button" class="lvbtn ghost grow" data-go="-1">Volver</button></div>`:
+      `<div class="lvbot"><button type="button" class="lvbtn ghost" data-go="-1" ${L.i===0?'disabled':''} aria-label="Anterior">←</button><button type="button" class="lvbtn ${isDone?'primary':'ghost'} grow" data-go="1">${isDone?'Siguiente':'Saltar'}</button></div>`}`;
 }
 function lvClick(e){
   if(!L) return; const q=s=>e.target.closest(s); let b; const st=L.steps[L.i];

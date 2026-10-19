@@ -751,3 +751,16 @@ table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
 .adjbar{margin:8px 4px 0;padding:10px 12px;border-radius:10px;font-size:.84rem;font-weight:600}
 .adjbar.y{background:var(--gold-soft);color:#F2C46B;border:1px solid #5A4517}
 .adjbar.r{background:var(--coral-soft);color:#FF8A90;border:1px solid #5A1C20}
+
+/* ---------- Banco: lista con crear, editar y eliminar ---------- */
+.bklist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
+.bklist li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 2px;border-top:1px solid var(--line)}
+.bkm{display:flex;flex-direction:column;gap:3px;min-width:0}
+.bkm b{font-weight:600;overflow-wrap:anywhere}
+.bkm span{font-size:.8rem;color:var(--muted)}
+.bka{display:flex;gap:6px;align-items:center;flex:none}
+.bka .mini-btn{min-height:36px;padding:0 12px}
+.bka .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
+.bked .f{display:flex;flex-direction:column;gap:6px}
+.bked .chk{min-height:40px}
+.bk .actions{display:flex;justify-content:space-between;align-items:center;gap:8px}

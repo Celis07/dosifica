@@ -99,7 +99,10 @@ function todayLight(){ const t = wellness.find(x=>x.fecha===todayISO()); return 
 function adjustDay(day, wl){
   if(!wl || wl.c==='g') return {day, info:null};
   const pain = ((wl.e && wl.e.molestias) || []).filter(m=>+m.i>=4);
-  const hits = row => pain.filter(m=>ZONA_RX[m.z] && ZONA_RX[m.z].test(row.e||''));
+  // Lo terapéutico (isometría, TKE sola, ejercicios marcados como terapia) nunca se quita ni se marca por dolor:
+  // es justo lo que se usa para modular el dolor ese día (decisión de Manuel, oct 2026).
+  const terap = row => !!row.ter || /isom[eé]tric|isometr/i.test(row.e||'') || /^TKE\b(?!\s*\+)/i.test(row.e||'');
+  const hits = row => terap(row) ? [] : pain.filter(m=>ZONA_RX[m.z] && ZONA_RX[m.z].test(row.e||''));
   let quit=0, marc=0;
   const segs = day.segs.map(sg=>{
     let rows = sg.rows.map(r=>Object.assign({}, r));
