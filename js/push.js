@@ -67,19 +67,27 @@ function pushCard(){
     <p class="small" style="margin:6px 0 10px">${txt}</p>${A_PUSH==='off'?'<button class="primary" id="pushOn">Activar notificaciones</button>':''}</section>`;
 }
 /* Sección "Notificaciones" en Mi fisio: el deportista prende o apaga cada tipo de aviso.
-   Por ahora: mensajes del fisio. Se guarda en pacientes.avisos ({mensaje:false} = apagado). */
+   Se guarda en pacientes.avisos ({tipo:false} = apagado; sin dato = prendido). La función push lo respeta. */
+const AV_TIPOS = [
+  ['mensaje', 'Mensajes de tu fisioterapeuta', 'Cuando tu fisioterapeuta te escribe.', 'mensajes'],
+  ['plan', 'Plan nuevo', 'Cuando tu fisioterapeuta publica tu plan.', 'plan nuevo'],
+  ['chequeo', 'Recordatorio del chequeo', 'En la mañana, si no has hecho el chequeo del día.', 'recordatorio del chequeo'],
+  ['d24', '¿Cómo amaneciste?', 'La mañana después de entrenar, para contar cómo amaneció la zona.', '“¿cómo amaneciste?”'],
+  ['inactivo', 'Días sin entrenar', 'Si llevas 3 días sin registrar sesión.', 'días sin entrenar']
+];
 function avisoOn(t){ return A.p?.avisos?.[t] !== false; }
 function avisosSec(){
   if(A_PUSH === null){ pushCard(); return ''; }
   const dev = A_PUSH === 'on', ok = dev || A_PUSH === 'off';
-  const on = dev && avisoOn('mensaje');
-  const nota = A_PUSH === 'install' ? 'En iPhone primero instala la app: Compartir → Agregar a inicio.'
-    : A_PUSH === 'denied' ? 'Están bloqueadas en este celular. Actívalas en los ajustes del navegador.'
-    : A_PUSH === 'unsupported' ? 'Este navegador no permite notificaciones.'
-    : on ? 'Te llega un aviso cuando tu fisioterapeuta te escribe.' : 'Los mensajes igual quedan aquí en la app; solo no te llega el aviso.';
-  return `<section class="ap-sec"><div class="ap-head"><h2>Notificaciones</h2></div><div class="ap-list">
-    <label class="ap-row ap-swrow"><span class="ap-l"><b>Mensajes de tu fisioterapeuta</b><span>${nota}</span></span>
-      <input type="checkbox" class="ap-sw" id="avMsg" role="switch" ${on?'checked':''} ${ok?'':'disabled'}></label></div></section>`;
+  const mod = A.plan?.contenido?.modulo || 'rodilla';
+  const tipos = AV_TIPOS.filter(([t]) => t !== 'd24' || mod === 'rodilla' || mod === 'lumbar');
+  const nota = A_PUSH === 'install' ? 'En iPhone primero instala la app: toca Compartir y luego Agregar a inicio. Ábrela desde el ícono.'
+    : A_PUSH === 'denied' ? 'Las notificaciones están bloqueadas en este celular. Actívalas en los ajustes del navegador.'
+    : A_PUSH === 'unsupported' ? 'Este navegador no permite notificaciones. Prueba con Chrome o con la app instalada.'
+    : 'Elige de qué te avisamos. Lo que apagues sigue apareciendo aquí en la app.';
+  return `<section class="ap-sec"><div class="ap-head"><h2>Notificaciones</h2></div><p class="ap-note av-note">${nota}</p><div class="ap-list">${tipos.map(([t, tit, txt]) =>
+    `<label class="ap-row ap-swrow"><span class="ap-l"><b>${tit}</b><span>${txt}</span></span>
+      <input type="checkbox" class="ap-sw" data-av="${t}" role="switch" ${dev && avisoOn(t) ? 'checked' : ''} ${ok ? '' : 'disabled'}></label>`).join('')}</div></section>`;
 }
 async function setAviso(t, v){
   if(!A.p?.id) return false;
@@ -88,10 +96,13 @@ async function setAviso(t, v){
   A.p.avisos = data || Object.assign({}, A.p.avisos, {[t]:v}); return true;
 }
 $('#athleteApp').addEventListener('change', async e=>{
-  const sw = e.target.closest('#avMsg'); if(!sw) return;
-  const want = sw.checked; sw.disabled = true;
-  if(want && A_PUSH !== 'on'){ if(await enablePush('deportista')) A_PUSH = 'on'; else { renderAthlete(); return; } }
-  if(await setAviso('mensaje', want)) toast(want ? 'Avisos de mensajes activados.' : 'Avisos de mensajes desactivados.');
+  const sw = e.target.closest('[data-av]'); if(!sw) return;
+  const t = sw.dataset.av, want = sw.checked, nom = (AV_TIPOS.find(x => x[0] === t) || [])[3] || 'avisos'; sw.disabled = true;
+  if(want && A_PUSH !== 'on'){
+    if(await enablePush('deportista')){ A_PUSH = 'on';
+    } else { renderAthlete(); return; }
+  }
+  if(await setAviso(t, want)) toast(want ? `Avisos de ${nom} activados.` : `Avisos de ${nom} desactivados.`);
   renderAthlete();
 });
 $('#athleteApp').addEventListener('click', async e=>{

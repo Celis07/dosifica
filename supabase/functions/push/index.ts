@@ -39,6 +39,8 @@ async function tieneSubs(email?: string | null) {
   const { count } = await db.from("push_subs").select("endpoint", { count: "exact", head: true }).eq("email", email.toLowerCase());
   return (count || 0) > 0;
 }
+// El deportista puede apagar cada tipo de aviso desde Mi fisio (pacientes.avisos, {tipo:false} = apagado).
+const quiere = (p: any, tipo: string) => p?.avisos?.[tipo] !== false;
 async function unaVez(clave: string) {
   const { error } = await db.from("push_log").insert({ clave });
   return !error; // false si ya se envió
@@ -61,8 +63,8 @@ Deno.serve(async (req) => {
     }
     if (b.tipo === "plan") {
       const { data: pl } = await db.from("planes").select("paciente_id,semana").eq("id", b.id).maybeSingle();
-      const { data: p } = pl ? await db.from("pacientes").select("email").eq("id", pl.paciente_id).maybeSingle() : { data: null };
-      if (p?.email) n = await enviar(p.email, { title: "Tu plan está listo", body: `Tu fisioterapeuta publicó tu plan de la semana ${pl!.semana ?? ""}.`, tag: "plan" });
+      const { data: p } = pl ? await db.from("pacientes").select("email,avisos").eq("id", pl.paciente_id).maybeSingle() : { data: null };
+      if (p?.email && quiere(p, "plan")) n = await enviar(p.email, { title: "Tu plan está listo", body: `Tu fisioterapeuta publicó tu plan de la semana ${pl!.semana ?? ""}.`, tag: "plan" });
     }
     if (b.tipo === "bienestar") { // chequeo diario en rojo → fisio
       const { data: w } = await db.from("bienestar").select("paciente_id,sueno,estres,fatiga,dolor,molestias").eq("id", b.id).maybeSingle();
@@ -80,8 +82,8 @@ Deno.serve(async (req) => {
       for (const s of ss || []) {
         const { data: pl } = await db.from("planes").select("contenido->>modulo").eq("paciente_id", s.paciente_id).order("publicado_at", { ascending: false }).limit(1);
         const mod = (pl?.[0] as any)?.modulo || "rodilla"; if (mod !== "rodilla" && mod !== "lumbar") continue;
-        const { data: p } = await db.from("pacientes").select("email").eq("id", s.paciente_id).maybeSingle();
-        if (!(await tieneSubs(p?.email)) || !(await unaVez("d24-" + s.id))) continue;
+        const { data: p } = await db.from("pacientes").select("email,avisos").eq("id", s.paciente_id).maybeSingle();
+        if (!quiere(p, "d24") || !(await tieneSubs(p?.email)) || !(await unaVez("d24-" + s.id))) continue;
         if (p?.email) { n += await enviar(p.email, { title: mod === "lumbar" ? "¿Cómo amaneció tu espalda?" : "¿Cómo amaneció tu rodilla?", body: "Cuéntaselo a tu fisioterapeuta y haz tu chequeo de hoy: 30 segundos.", tag: "d24" }); avisados.add(s.paciente_id); }
       }
       // chequeo diario: a quien tiene plan, notificaciones activas y no lo ha hecho hoy
@@ -90,8 +92,8 @@ Deno.serve(async (req) => {
         if (avisados.has(pid)) continue;
         const { count } = await db.from("bienestar").select("id", { count: "exact", head: true }).eq("paciente_id", pid).eq("fecha", hoyCO());
         if ((count || 0) > 0) continue;
-        const { data: p } = await db.from("pacientes").select("email").eq("id", pid).maybeSingle();
-        if (!(await tieneSubs(p?.email)) || !(await unaVez(`chk-${pid}-${hoyCO()}`))) continue;
+        const { data: p } = await db.from("pacientes").select("email,avisos").eq("id", pid).maybeSingle();
+        if (!quiere(p, "chequeo") || !(await tieneSubs(p?.email)) || !(await unaVez(`chk-${pid}-${hoyCO()}`))) continue;
         n += await enviar(p!.email, { title: "Chequeo de hoy", body: "¿Cómo dormiste y cómo amaneces? 30 segundos y tu plan de hoy se ajusta solo.", tag: "chk" });
       }
     }
@@ -104,8 +106,8 @@ Deno.serve(async (req) => {
         const ult = u?.[0]?.fecha || String(pl.publicado_at).slice(0, 10);
         if (ult > hoyCO(-3)) continue;
         if (ult < hoyCO(-21)) continue; // pacientes que ya no entrenan: no insistir
-        const { data: p } = await db.from("pacientes").select("email").eq("id", pl.paciente_id).maybeSingle();
-        if (!(await tieneSubs(p?.email)) || !(await unaVez(`inact-${pl.paciente_id}-${ult}`))) continue;
+        const { data: p } = await db.from("pacientes").select("email,avisos").eq("id", pl.paciente_id).maybeSingle();
+        if (!quiere(p, "inactivo") || !(await tieneSubs(p?.email)) || !(await unaVez(`inact-${pl.paciente_id}-${ult}`))) continue;
         if (p?.email) n += await enviar(p.email, { title: "Tu plan te espera", body: "Llevas unos días sin registrar sesión. Abre Ápex y entrena en modo en vivo.", tag: "inact" });
       }
     }
@@ -113,8 +115,7 @@ Deno.serve(async (req) => {
       const { data: m } = await db.from("mensajes").select("paciente_id,texto").eq("id", b.id).maybeSingle();
       const { data: p } = m ? await db.from("pacientes").select("email,avisos").eq("id", m.paciente_id).maybeSingle() : { data: null };
       const t = (m?.texto || "").trim();
-      const apagado = (p as any)?.avisos?.mensaje === false; // el deportista los desactivó
-      if (p?.email && t && !apagado) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: t.length > 140 ? t.slice(0, 137) + "…" : t, tag: "msg-" + b.id });
+      if (p?.email && t && quiere(p, "mensaje")) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: t.length > 140 ? t.slice(0, 137) + "…" : t, tag: "msg-" + b.id });
     }
     if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
 

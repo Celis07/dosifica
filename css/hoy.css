@@ -314,3 +314,4 @@ body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin
 #athleteApp.ath2 .ap-sw:checked{background:#34C759}
 #athleteApp.ath2 .ap-sw:checked::after{transform:translateX(20px)}
 #athleteApp.ath2 .ap-sw:disabled{opacity:.4;cursor:default}
+#athleteApp.ath2 .av-note{margin:0 16px 8px}
