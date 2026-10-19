@@ -259,9 +259,7 @@ function render(){
       <div class="phase"><h2>${esc(ph.name.split(' · ').slice(1).join(' · ')||ph.name)}</h2><p>${esc(ph.goal)}</p><p class="small" style="margin-top:4px">${esc(ph.when)}</p></div>
       <div class="actions">
         <button id="bSave">Guardar</button>
-        ${view==='plan'?`<button id="bEdit">${editMode?'Terminar edición':'Editar ejercicios'}</button><button id="bTpl">Plantillas</button>`:''}
-        <button id="bPdf">Descargar PDF</button>
-        <button id="bXls">Descargar Excel</button>
+        ${view==='plan'?`<button id="bEdit">${editMode?'Terminar edición':'Editar ejercicios'}</button>`:''}
         <button class="primary" id="bPub">Publicar al deportista</button>
       </div>
     </div>
@@ -275,8 +273,11 @@ function render(){
     <button role="tab" data-view="panel" aria-selected="${view==='panel'}">Panel de pacientes</button>
     <button role="tab" data-view="banco" aria-selected="${view==='banco'}">Banco</button>
   </nav>`;
-  const body = view==='plan' ? (tplOpen?tplCard():'')+planView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
-  $('#out').innerHTML = head + body + `<footer class="foot">Herramienta de apoyo a la decisión clínica; no reemplaza el juicio del fisioterapeuta. ${esc(VERSION)}.</footer>`;
+  const body = view==='plan' ? planView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
+  // Descargas y plantillas: al final de la ficha
+  const tail = `${view==='plan' && tplOpen ? tplCard() : ''}<section class="card dlbar"><h3 class="sec">Descargar y plantillas</h3><div class="actions">
+    <button id="bPdf">Descargar PDF</button><button id="bXls">Descargar Excel</button>${view==='plan'?'<button id="bTpl">Plantillas</button>':''}</div></section>`;
+  $('#out').innerHTML = head + body + tail + `<footer class="foot">Herramienta de apoyo a la decisión clínica; no reemplaza el juicio del fisioterapeuta. ${esc(VERSION)}.</footer>`;
   $('#pidRow').innerHTML = curId ? `ID del paciente: <code>${esc(curId)}</code> <button class="mini-btn" id="bCopyId">Copiar</button>` : 'ID del paciente: se asigna al guardar';
   const cb=$('#bCopyId'); if(cb) cb.onclick=()=>{ try{ navigator.clipboard.writeText(curId).then(()=>toast('ID copiado'),()=>toast(curId)); }catch(e){ toast(curId); } };
 }

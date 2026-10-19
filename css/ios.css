@@ -172,3 +172,8 @@ tr.st-r td{background:#FFE4E1} tr.st-y td{background:#FFF1C2} tr.st-g td{backgro
 .md-card textarea{font-size:16px;padding:10px 12px}
 .md-act{display:flex;justify-content:flex-end;gap:8px}
 .md-act button{min-height:44px;padding:0 18px}
+/* Ficha: mensaje junto al nombre; descargas al final */
+.phead .client.has-msg{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px}
+.phead .client .msgbtn{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:4px 12px;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:0;line-height:1.2;background:rgba(0,122,255,.1);color:#007AFF;border:0}
+.phead .client .msgbtn:hover{background:rgba(0,122,255,.16)}
+.dlbar .actions{margin-top:8px}

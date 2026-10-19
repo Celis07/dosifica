@@ -194,7 +194,7 @@ $('#out').addEventListener('click', e=>{
   if(q('#hSave')) return saveHistoria();
   if(q('#bPrev')){ bancoQ.pag=Math.max(0,bancoQ.pag-1); return render(); }
   if(q('#bNext')){ bancoQ.pag++; return render(); }
-  if(q('#bTpl')){ tplOpen=!tplOpen; return render(); }
+  if(q('#bTpl')){ tplOpen=!tplOpen; render(); if(tplOpen){ const c=document.querySelector('.tplcard'); if(c) c.scrollIntoView({behavior:'smooth', block:'start'}); } return; }
   if(q('#tplClose')){ tplOpen=false; return render(); }
   if(q('#tplSave')) return saveTpl();
   if((b=q('[data-tpl-apply]'))) return applyTpl(b.dataset.tplApply);

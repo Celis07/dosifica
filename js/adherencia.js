@@ -128,8 +128,8 @@ $('#home').addEventListener('click', e => { const b = e.target.closest('[data-ms
 const _renderAd = render;
 render = function(){
   _renderAd.apply(this, arguments);
-  const pub = $('#bPub');
-  if(pub && curId && !$('#bMsg')) pub.insertAdjacentHTML('beforebegin', '<button id="bMsg" type="button">Enviar mensaje</button>');
+  const cl = $('#out .phead .client');
+  if(cl && curId && !$('#bMsg')){ cl.classList.add('has-msg'); cl.insertAdjacentHTML('beforeend', '<button id="bMsg" type="button" class="msgbtn" aria-label="Enviar mensaje al deportista"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4 3.5V16h.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Enviar mensaje</button>'); }
 };
 document.addEventListener('click', e => { if(e.target.closest('#bMsg') && curId) adCompose(curId, 'animo'); });
 
