@@ -157,3 +157,18 @@ header.top{color:var(--ink)}
 .slegend span{display:inline-flex;align-items:center;gap:6px}
 tr.st-r td{background:#FFE4E1} tr.st-y td{background:#FFF1C2} tr.st-g td{background:#E1F5E6}
 .pcard.st-r .mtag,.pcard.st-y .mtag,.pcard.st-g .mtag,.pcard.st-r .flag,.pcard.st-y .flag{background:rgba(255,255,255,.75)}
+
+/* ---------- Adherencia en el panel ---------- */
+.ad-pw{font-size:.8rem;font-weight:600;color:var(--muted)}
+.ad-pw.ok{color:var(--green)}
+.hlist .dot.g{background:#34C759}
+#msgDlg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:16px}
+#msgDlg[hidden]{display:none}
+.md-card{width:min(480px,100%);background:var(--paper);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.md-card h2{margin:0;font-size:1.25rem;font-weight:700}
+.md-pre{display:flex;flex-direction:column;gap:6px}
+.md-pre button{text-align:left;font-weight:400;font-size:.9rem;line-height:1.35;padding:10px 12px;min-height:44px}
+.md-card label.f{display:flex;flex-direction:column;gap:6px;font-size:.82rem;color:var(--muted)}
+.md-card textarea{font-size:16px;padding:10px 12px}
+.md-act{display:flex;justify-content:flex-end;gap:8px}
+.md-act button{min-height:44px;padding:0 18px}

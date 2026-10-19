@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
 // tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (chequeo en rojo → fisio),
-//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), prueba (a un correo).
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), mensaje (fisio → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -108,6 +108,12 @@ Deno.serve(async (req) => {
         if (!(await tieneSubs(p?.email)) || !(await unaVez(`inact-${pl.paciente_id}-${ult}`))) continue;
         if (p?.email) n += await enviar(p.email, { title: "Tu plan te espera", body: "Llevas unos días sin registrar sesión. Abre Ápex y entrena en modo en vivo.", tag: "inact" });
       }
+    }
+    if (b.tipo === "mensaje") { // mensaje del fisio → deportista
+      const { data: m } = await db.from("mensajes").select("paciente_id,texto").eq("id", b.id).maybeSingle();
+      const { data: p } = m ? await db.from("pacientes").select("email").eq("id", m.paciente_id).maybeSingle() : { data: null };
+      const t = (m?.texto || "").trim();
+      if (p?.email && t) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: t.length > 140 ? t.slice(0, 137) + "…" : t, tag: "msg-" + b.id });
     }
     if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
 

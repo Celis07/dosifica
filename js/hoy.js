@@ -105,6 +105,41 @@ function hTabbar(){
 }
 function hPage(title, sub){ return `<header class="ap-page"><h1>${esc(title)}</h1>${sub ? `<p>${esc(sub)}</p>` : ''}</header>`; }
 
+/* ---------- Marcar la sesión como hecha ----------
+   Lo único obligatorio es qué tan dura fue la sesión completa (RPE 1–10). El tiempo no se pide
+   (se guarda el estimado del plan) y los pesos por ejercicio son opcionales. */
+const HL = {};
+function hChips(k, from, to, label){
+  return `<div class="wq"><div class="wql"><b>${label}</b></div><div class="${to - from > 6 ? 'wch10' : 'wch7'} ap-chips">${Array.from({length: to - from + 1}, (_, i) => i + from).map(v =>
+    `<button type="button" class="wc${HL[k] === v ? ' on' : ''}" data-hl="${k}|${v}" aria-pressed="${HL[k] === v}">${v}</button>`).join('')}</div></div>`;
+}
+function hLog(day, di){
+  const c = A.plan?.contenido || {}, rod = (c.modulo || 'rodilla') === 'rodilla', lum = c.modulo === 'lumbar';
+  const ex = []; day.segs.forEach(sg => sg.rows.forEach(r => { if(isLoggable(sg, r)) ex.push(r); }));
+  const est = typeof tDay === 'function' ? Math.round(tDay(day).total) : '';
+  return `<div class="ap-logq" id="logf">
+    <h3>¿Hiciste la sesión?</h3>
+    <p class="ap-muted">Márcala aunque te hayas demorado o no alcanzaras a hacer todo.</p>
+    <input type="hidden" id="lf-fecha" value="${todayISO()}"><input type="hidden" id="lf-min" value="${est}"><input type="hidden" id="lf-d24" value="">
+    <input type="hidden" id="lf-srpe" value="${HL.srpe ?? ''}"><input type="hidden" id="lf-dolor" value="${HL.dolor ?? ''}">
+    ${hChips('srpe', 1, 10, '¿Qué tan dura fue la sesión completa? (1–10)')}
+    ${rod || lum ? hChips('dolor', 0, 10, `Dolor de ${lum ? 'espalda' : 'rodilla'} durante la sesión (opcional)`) : ''}
+    ${ex.length ? `<details class="ap-more"><summary>Agregar pesos por ejercicio (opcional)</summary><div class="ap-exl">${ex.map((r, k) => `<div class="ap-exr"><b>${esc(r.e)}</b>
+      <label class="f">kg<input type="number" inputmode="decimal" step="0.5" data-lx="${k}" data-lf="kg"></label>
+      <label class="f">Reps<input type="number" inputmode="numeric" data-lx="${k}" data-lf="reps"></label>
+      <label class="f">RPE<input type="number" inputmode="numeric" min="1" max="10" data-lx="${k}" data-lf="rpe"></label></div>`).join('')}</div></details>` : ''}
+    <label class="f">Comentario (opcional)<input type="text" id="lf-nota" maxlength="300" placeholder="Algo que tu fisioterapeuta deba saber"></label>
+    <div class="actions"><button class="primary" id="aSave">Marcar como hecha</button><button id="aCancel">Cancelar</button></div>
+  </div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-hl]');
+  if(b){ const [k, v] = b.dataset.hl.split('|'); HL[k] = +v; const inp = $('#lf-' + k); if(inp) inp.value = v;
+    b.parentElement.querySelectorAll('.wc').forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); return; }
+  if(e.target.closest('#athleteApp #aSave') && !($('#lf-srpe')?.value)){ e.stopImmediatePropagation(); e.preventDefault(); toast('Elige qué tan dura fue la sesión (1–10).'); }
+}, true);
+document.addEventListener('click', e => { if(e.target.closest('#athleteApp [data-alog]')) Object.keys(HL).forEach(k => delete HL[k]); }, true);
+
 /* ---------- Pestaña Hoy ---------- */
 function hHoy(c){
   const hasW = wellness.some(x => x.fecha === todayISO());
@@ -138,17 +173,17 @@ function hHoy(c){
   const nota = k === 'r' && quit.length
     ? `<p class="ap-note">${hQuit([...new Set(quit)])}: son de potencia o cargan la zona que te duele. En Mi plan ves la sesión completa.</p>`
     : k === 'y' && marc ? `<p class="ap-note">Marcamos ${marc} ejercicio${marc > 1 ? 's' : ''} por tu molestia. Si duele más de 3/10, cámbialo o sáltalo hoy.</p>` : '';
-  const log = A.open === di ? `<section class="ap-card ap-log">${logForm(orig, di).replace('id="lfSave"', 'id="aSave"').replace('id="lfCancel"', 'id="aCancel"')}</section>` : '';
+  const log = A.open === di ? `<section class="ap-card ap-log">${hLog(orig, di)}</section>` : '';
   const session = `<section class="ap-sec">
     ${seg}
     <div class="ap-head"><h2>${esc(orig.name)}</h2><span>Semana ${esc(c.semana)}, ${esc(hLow(hPhase(c)))}</span></div>
     ${hoyHecho ? `<p class="ap-done">${H_ICON.check} Ya registraste esta sesión hoy.</p>` : ''}
     ${vivo ? `<button type="button" class="ap-btn ap-primary" data-live="${di}">${H_ICON.play}Entrenar en vivo</button>`
-           : `<button type="button" class="ap-btn ap-primary" data-alog="${di}">${A.open === di ? 'Cerrar registro' : 'Registrar sesión'}</button>`}
+           : `<button type="button" class="ap-btn ap-primary" data-alog="${di}">${A.open === di ? 'Cerrar' : 'Marcar sesión como hecha'}</button>`}
     ${log}
     ${hBlocks(day, k)}
     ${nota}
-    ${vivo ? `<button type="button" class="ap-btn ap-plain" data-alog="${di}">${A.open === di ? 'Cerrar registro' : 'Registrar sin modo en vivo'}</button>` : ''}
+    ${vivo ? `<button type="button" class="ap-btn ap-plain" data-alog="${di}">${A.open === di ? 'Cerrar' : 'Ya la hice: marcarla como hecha'}</button>` : ''}
   </section>`;
   const d24 = d24Card();
   return hero + `<div class="ap-body">${form}${session}${d24}${pushCard()}</div>`;

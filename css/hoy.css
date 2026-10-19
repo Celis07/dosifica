@@ -260,3 +260,50 @@ body.ath2b #live .lvbot{border-top:.5px solid var(--line);background:var(--cream
 body.ath2b #live .lvrest{background:var(--lv-sheet);border-top:0;border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
 body.ath2b #live .lvrest .lbl,body.ath2b #live .lvrest .bar i{color:var(--lv-rest)}
 body.ath2b #live textarea{background:var(--paper);min-height:96px}
+
+/* ---------- Marcar la sesión como hecha ---------- */
+.ap-logq{display:flex;flex-direction:column;gap:16px}
+#athleteApp.ath2 .ap-logq h3{margin:0;font-size:20px;font-weight:700}
+.ap-logq .ap-muted{margin:-10px 0 0;font-size:15px}
+.ap-more{border-radius:12px;background:var(--h-bg);padding:0 14px}
+.ap-more>summary{min-height:48px;display:flex;align-items:center;font-size:16px;font-weight:500;cursor:pointer;list-style:none}
+.ap-more>summary::-webkit-details-marker{display:none}
+.ap-more>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--h-chev);border-bottom:2px solid var(--h-chev);transform:rotate(45deg);transition:transform .2s}
+.ap-more[open]>summary::after{transform:rotate(-135deg)}
+.ap-exl{display:flex;flex-direction:column;gap:12px;padding:4px 0 14px}
+.ap-exr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ap-exr>b{grid-column:1/-1;font-size:15px;font-weight:600}
+#athleteApp.ath2 .ap-exr input{min-height:40px;padding:8px 10px}
+
+/* ---------- Anillos de la semana ---------- */
+.ad-week{gap:8px}
+.ad-row{display:flex;align-items:center;gap:16px}
+.ad-rings{flex:none}
+.ad-rings circle{fill:none;stroke-width:10;stroke-linecap:round}
+.ad-rings .ad-track{stroke:var(--h-fill);stroke-linecap:butt}
+.ad-rings .ad-val.ses{stroke:var(--h-ink)}
+.ad-rings .ad-val.chk{stroke:#0A84FF}
+.ad-txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ad-l{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--h-2)}
+.ad-l b{color:var(--h-ink);font-weight:600;font-variant-numeric:tabular-nums}
+.ad-l i{width:10px;height:10px;border-radius:5px;flex:none}
+.ad-l i.ses{background:var(--h-ink)} .ad-l i.chk{background:#0A84FF}
+.ad-m{font-size:15px;font-weight:600;color:var(--h-ink);margin-top:2px}
+.ad-racha{margin:0;font-size:14px;color:var(--h-2)}
+.ad-week.big .ad-racha{font-size:15px}
+.ad-hist{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:4px}
+.ad-hist span{aspect-ratio:1;border-radius:8px;background:var(--h-fill);display:flex;align-items:center;justify-content:center;color:#fff}
+.ad-hist span.ok{background:var(--h-ink);color:var(--h-on-act)}
+.ad-hist span.now{box-shadow:inset 0 0 0 2px var(--h-ink);background:transparent}
+.ad-cap{margin:0;font-size:13px;color:var(--h-2)}
+@media (prefers-color-scheme:dark){.ad-rings .ad-val.chk,.ad-l i.chk{stroke:#64A8FF;background:#64A8FF}}
+
+/* ---------- Mensaje del fisio ---------- */
+.ad-msg{background:var(--h-card);box-shadow:inset 0 0 0 1.5px var(--h-ink)}
+.ad-from{font-size:13px;font-weight:600;color:var(--h-2)}
+.ad-msg p{font-size:17px;line-height:1.4}
+.ad-mt{font-weight:400!important;font-size:16px!important}
+
+/* Modo en vivo: terminar y opcional */
+body.ath2b #live .lvend{min-height:40px;padding:0 14px;border:0;border-radius:20px;background:var(--soft);color:var(--ink);font-size:15px;font-weight:600}
+body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin-left:6px}

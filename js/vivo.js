@@ -102,7 +102,7 @@ function lvExStep(st){
   return `<div class="lvex"><div class="lvmeta">${lvSide(r.lado)}${r.ter?'<span class="lado l-a">Terapia</span>':''}</div>
     <h1 class="lvname">${esc(r.e)}</h1>${r.cue?`<p class="lvcue">${esc(r.cue)}</p>`:''}${r.n?`<p class="lvnote">${esc(r.n)}</p>`:''}${lvVideo(r)}
     <div class="lvsets">${sets}</div>
-    ${st.log&&all?`<div class="lvbox"><b>¿Qué RPE sentiste en la última serie?</b>${lvChips('rpe', lg.rpe??null, 5, 10, 'RPE real')}
+    ${st.log&&all?`<div class="lvbox"><b>¿Qué RPE sentiste en la última serie? <span class="lvopt">Opcional</span></b>${lvChips('rpe', lg.rpe??null, 5, 10, 'RPE real')}
       <div class="row2"><label class="f">Peso (kg)<input type="number" inputmode="decimal" step="0.5" data-lg="kg" value="${lg.kg??''}"></label><label class="f">Reps hechas<input type="number" inputmode="numeric" data-lg="reps" value="${lg.reps??''}"></label></div></div>`:''}
   </div>`;
 }
@@ -144,7 +144,7 @@ function renderLive(){
   el.innerHTML = `<div class="lvtop">
       <button type="button" class="lvx" data-close="1" aria-label="Salir del modo en vivo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       <div class="lvtt"><span>${esc(L.day.name)}${A.plan?.contenido?.semana?', semana '+esc(A.plan.contenido.semana):''}</span><b>${st.k==='end'?'Cierre':esc(st.seg)}</b></div>
-      <span class="lvpos">${Math.min(L.i+1,n-1)}/${n-1}</span></div>
+      ${st.k==='end'?`<span class="lvpos">${Math.min(L.i+1,n-1)}/${n-1}</span>`:`<button type="button" class="lvend" data-go="${n-1-L.i}">Terminar</button>`}</div>
     <div class="lvprog"><i style="width:${(L.i/(n-1))*100}%"></i></div>
     <div class="lvsegs">${segs.map(t=>`<span class="${t===st.type?'on':L.steps.findIndex(s=>s.type===t)<L.i?'ok':''}">${esc(SEGS[t]||t)}</span>`).join('')}</div>
     <div class="lvmain">${body}</div>
