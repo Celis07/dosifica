@@ -1,0 +1,201 @@
+/* ==========================================================
+   Portal del deportista · diseño Semáforo, estilo iOS (oct 2026)
+   Claro por defecto y oscuro automático según el celular.
+   El color solo cuenta el estado del día; lo demás es neutro.
+   El panel del fisio y el modo en vivo siguen con su estilo.
+   ========================================================== */
+body.ath2b{background:#F2F2F7}
+#athleteApp.ath2{
+  --h-bg:#F2F2F7; --h-card:#FFFFFF; --h-ink:#1D1D1F; --h-2:#6E6E73; --h-3:#6E6E73; --h-sep:#C6C6C8; --h-fill:rgba(120,120,128,.12); --h-chev:#C4C4C7;
+  --h-act:#1D1D1F; --h-on-act:#FFFFFF; --h-bar:rgba(249,249,249,.94);
+  --h-g:#E1F5E6; --h-g-dot:#34C759; --h-g-ic:#FFFFFF; --h-g-ink:#17391F; --h-g-2:#1E6B33;
+  --h-y:#FFF1C2; --h-y-dot:#FFCC00; --h-y-ic:#1D1D1F; --h-y-ink:#3D3000; --h-y-2:#6B5200; --h-y-txt:#8A6100;
+  --h-r:#FFE4E1; --h-r-dot:#FF3B30; --h-r-ic:#FFFFFF; --h-r-ink:#4A120C; --h-r-2:#8E1F15; --h-r-txt:#C4281C;
+  --h-n:#E8E8ED; --h-n-dot:#8E8E93; --h-n-ic:#FFFFFF; --h-n-ink:#3A3A3C; --h-n-2:#5A5A5E;
+  /* Tokens que leen los componentes heredados (chequeo, registro, consentimiento, avisos) */
+  --cream:#F2F2F7; --paper:#FFFFFF; --soft:#F2F2F7; --line:#D1D1D6; --field:#FFFFFF; --ink:#1D1D1F; --muted:#6E6E73; --tech:#6E6E73;
+  --red:#1D1D1F; --coral:#1D1D1F; --sig:#1D1D1F; --green:#1E6B33; --gold:#8A6100; --bad:#C4281C; --ok:#1E6B33; --warn:#8A6100;
+  --gold-soft:#FFF1C2; --green-soft:#E1F5E6; --coral-soft:#FFE4E1;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif; --mono:var(--body);
+  --gut:max(16px,calc((100% - 600px) / 2));
+  color-scheme:light;
+  max-width:none; margin:0; padding:0; min-height:100vh;
+  background:var(--h-bg); color:var(--h-ink);
+  font-family:var(--body); font-size:17px; line-height:1.4;
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+}
+@media (prefers-color-scheme:dark){
+  body.ath2b{background:#000}
+  #athleteApp.ath2{
+    --h-bg:#000000; --h-card:#1C1C1E; --h-ink:#F5F5F7; --h-2:#98989F; --h-3:#98989F; --h-sep:#38383A; --h-fill:rgba(120,120,128,.28); --h-chev:#5A5A5F;
+    --h-act:#F5F5F7; --h-on-act:#000000; --h-bar:rgba(22,22,24,.92);
+    --h-g:#0F2A17; --h-g-dot:#30D158; --h-g-ic:#000000; --h-g-ink:#D8F5DF; --h-g-2:#7FD99A;
+    --h-y:#2E2406; --h-y-dot:#FFD60A; --h-y-ic:#000000; --h-y-ink:#FFF3C4; --h-y-2:#E6C55A; --h-y-txt:#FFD60A;
+    --h-r:#33100D; --h-r-dot:#FF453A; --h-r-ic:#000000; --h-r-ink:#FFDAD6; --h-r-2:#FF8A80; --h-r-txt:#FF6961;
+    --h-n:#1C1C1E; --h-n-dot:#8E8E93; --h-n-ic:#000000; --h-n-ink:#E5E5EA; --h-n-2:#AEAEB2;
+    --cream:#000000; --paper:#1C1C1E; --soft:#000000; --line:#38383A; --field:#1C1C1E; --ink:#F5F5F7; --muted:#98989F; --tech:#98989F;
+    --red:#F5F5F7; --coral:#F5F5F7; --sig:#F5F5F7; --green:#7FD99A; --gold:#FFD60A; --bad:#FF6961; --ok:#7FD99A; --warn:#FFD60A;
+    --gold-soft:#2E2406; --green-soft:#0F2A17; --coral-soft:#33100D;
+    color-scheme:dark;
+  }
+  #athleteApp.ath2 .ap-seg button[aria-pressed="true"]{background:#636366}
+}
+#athleteApp.ath2 *{box-sizing:border-box}
+#athleteApp.ath2 h1,#athleteApp.ath2 h2,#athleteApp.ath2 h3,#athleteApp.ath2 h4{font-family:var(--display);font-stretch:100%;text-transform:none;letter-spacing:-.01em;color:var(--h-ink)}
+#athleteApp.ath2 a{color:var(--h-ink);text-decoration-thickness:1px;text-underline-offset:3px}
+#athleteApp.ath2 button{font-family:inherit;cursor:pointer}
+#athleteApp.ath2 :focus-visible{outline:2px solid var(--h-ink);outline-offset:2px}
+
+/* ---------- Franja del semáforo ---------- */
+.ap-hero{--tint:var(--h-n);--dot:var(--h-n-dot);--ic:var(--h-n-ic);--ti:var(--h-n-ink);--t2:var(--h-n-2);
+  background:var(--tint);border-radius:0 0 28px 28px;padding:calc(env(safe-area-inset-top,0px) + 16px) var(--gut) 24px;display:flex;flex-direction:column;gap:18px}
+.ap-hero.s-g{--tint:var(--h-g);--dot:var(--h-g-dot);--ic:var(--h-g-ic);--ti:var(--h-g-ink);--t2:var(--h-g-2)}
+.ap-hero.s-y{--tint:var(--h-y);--dot:var(--h-y-dot);--ic:var(--h-y-ic);--ti:var(--h-y-ink);--t2:var(--h-y-2)}
+.ap-hero.s-r{--tint:var(--h-r);--dot:var(--h-r-dot);--ic:var(--h-r-ic);--ti:var(--h-r-ink);--t2:var(--h-r-2)}
+.ap-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ap-date{font-size:15px;font-weight:600;color:var(--t2)}
+#athleteApp.ath2 .ap-avatar{width:36px;height:36px;min-height:36px;padding:0;border-radius:18px;border:0;background:rgba(120,120,128,.16);color:var(--h-ink);font-size:14px;font-weight:600;flex:none}
+.ap-state{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.ap-dot{width:44px;height:44px;border-radius:22px;background:var(--dot);color:var(--ic);display:flex;align-items:center;justify-content:center}
+#athleteApp.ath2 .ap-state h1{margin:0;font-size:34px;font-weight:700;line-height:1.1;letter-spacing:-.022em}
+.ap-state p{margin:0;font-size:17px;line-height:1.4;color:var(--ti);max-width:36ch}
+#athleteApp.ath2 .ap-link{background:transparent;border:0;padding:0;min-height:36px;font-size:15px;font-weight:600;color:var(--t2)}
+.ap-state .ap-btn{margin-top:4px}
+
+/* ---------- Encabezado de las otras pestañas ---------- */
+.ap-page{padding:calc(env(safe-area-inset-top,0px) + 28px) var(--gut) 2px;display:flex;flex-direction:column;gap:2px}
+#athleteApp.ath2 .ap-page h1{margin:0;font-size:34px;font-weight:700;line-height:1.15;letter-spacing:-.022em}
+.ap-page p{margin:0;font-size:15px;color:var(--h-2)}
+
+/* ---------- Cuerpo ---------- */
+.ap-body{display:flex;flex-direction:column;gap:24px;padding:22px var(--gut) calc(104px + env(safe-area-inset-bottom,0px))}
+.ap-sec{display:flex;flex-direction:column;gap:10px}
+.ap-head{display:flex;flex-direction:column;gap:2px;padding:0 4px}
+#athleteApp.ath2 .ap-head h2{margin:0;font-size:22px;font-weight:700;line-height:1.2}
+.ap-head>span{font-size:15px;color:var(--h-2)}
+.ap-done{display:inline-flex;align-items:center;gap:6px;margin:0 4px;font-size:15px;font-weight:500;color:var(--h-g-2)}
+.ap-head .ap-done{margin:0}
+.ap-note{margin:0 16px;font-size:13px;line-height:1.4;color:var(--h-2)}
+.ap-muted{color:var(--h-2)}
+.ap-foot{margin:0;text-align:center;font-size:13px;color:var(--h-2)}
+
+/* Botones */
+#athleteApp.ath2 .ap-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;padding:0 18px;border:0;border-radius:12px;font-size:17px;font-weight:600;line-height:1.2}
+#athleteApp.ath2 .ap-primary{background:var(--h-act);color:var(--h-on-act)}
+#athleteApp.ath2 .ap-secondary{background:var(--h-fill);color:var(--h-ink)}
+#athleteApp.ath2 .ap-plain{background:transparent;color:var(--h-ink);font-weight:400;min-height:44px}
+#athleteApp.ath2 .ap-btn:active{opacity:.7}
+@media (hover:hover){#athleteApp.ath2 .ap-primary:hover{opacity:.88}}
+
+/* Selector de sesión (control segmentado) */
+.ap-seg{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:2px;padding:2px;border-radius:10px;background:var(--h-fill)}
+#athleteApp.ath2 .ap-seg button{min-height:38px;padding:0 6px;border:0;border-radius:8px;background:transparent;color:var(--h-ink);font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:4px}
+#athleteApp.ath2 .ap-seg button[aria-pressed="true"]{background:var(--h-card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.ap-ok{display:inline-flex;color:var(--h-g-2)}
+
+/* Listas agrupadas */
+.ap-list{background:var(--h-card);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.ap-list>*{position:relative}
+.ap-list>*+*::before{content:"";position:absolute;top:0;left:16px;right:0;border-top:.5px solid var(--h-sep);pointer-events:none}
+.ap-blk>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:60px;padding:10px 14px 10px 16px;cursor:pointer}
+.ap-blk>summary::-webkit-details-marker{display:none}
+.ap-l{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ap-l>b{font-size:17px;font-weight:400}
+.ap-l>span{font-size:15px;color:var(--h-2)}
+.ap-r{display:flex;align-items:center;gap:10px;flex:none;color:var(--h-chev)}
+.ap-rpe{font-size:15px;color:var(--h-2)}
+.ap-rpe.k-y{color:var(--h-y-txt);font-weight:600}
+.ap-rpe.k-r{color:var(--h-r-txt);font-weight:600}
+.chev{transition:transform .2s ease}
+.ap-blk[open] .chev{transform:rotate(90deg)}
+.ap-ex{margin-left:16px;border-top:.5px solid var(--h-sep)}
+.ap-x{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:12px 14px 12px 0}
+.ap-x+.ap-x{border-top:.5px solid var(--h-sep)}
+.ap-xm{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ap-xn{font-size:16px;line-height:1.3}
+.ap-xs{font-size:14px;line-height:1.35;color:var(--h-2)}
+.ap-xs.ap-warn{color:var(--h-y-txt);font-weight:500}
+.ap-ter{display:inline-block;margin-right:6px;padding:1px 6px;border-radius:6px;background:var(--h-fill);font-size:11px;font-weight:600;vertical-align:2px}
+.ap-xd{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none;text-align:right;max-width:42%}
+.ap-xd b{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.ap-xd span{font-size:14px;color:var(--h-2)}
+.ap-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:10px 14px 10px 16px}
+#athleteApp.ath2 button.ap-row{width:100%;border:0;border-radius:0;background:transparent;text-align:left;font-size:17px;font-weight:400}
+#athleteApp.ath2 .ap-out{color:var(--h-r-txt);min-height:50px}
+#athleteApp.ath2 .ap-del{background:transparent;border:0;min-height:44px;padding:0 4px;color:var(--h-r-txt);font-size:15px;font-weight:400;flex:none}
+.ap-pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;vertical-align:1px}
+.ap-pill.y{background:var(--h-y);color:var(--h-y-2)} .ap-pill.g{background:var(--h-g);color:var(--h-g-2)} .ap-pill.r{background:var(--h-r);color:var(--h-r-2)}
+.ap-reqh{display:flex;align-items:center;gap:8px;font-size:13px}
+.ap-req .ap-l{gap:4px}
+.ap-req .ap-reqt{font-size:16px;font-weight:400}
+
+/* Tarjetas */
+.ap-card{background:var(--h-card);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+#athleteApp.ath2 .ap-card h3{margin:0;font-size:17px;font-weight:600}
+.ap-card p{margin:0;font-size:16px;line-height:1.45}
+.ap-card ul{margin:0;padding-left:18px;font-size:15px;color:var(--h-2);display:flex;flex-direction:column;gap:4px}
+.ap-acts{display:flex;flex-direction:column;gap:4px}
+.ap-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ap-stats>div{background:var(--h-card);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:2px}
+.ap-stats b{font-size:24px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.ap-stats span{font-size:13px;color:var(--h-2)}
+
+/* ---------- Barra de pestañas ---------- */
+.ap-tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:4px max(8px,calc((100% - 600px) / 2)) calc(4px + env(safe-area-inset-bottom,0px));background:var(--h-bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--h-sep)}
+#athleteApp.ath2 .ap-tabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:50px;padding:0;border:0;border-radius:0;background:transparent;color:var(--h-3);font-size:10px;font-weight:500;letter-spacing:.01em}
+#athleteApp.ath2 .ap-tabs button[aria-current="page"]{color:var(--h-ink);font-weight:600}
+
+/* ---------- Componentes heredados dentro del portal ---------- */
+#athleteApp.ath2 .card{background:var(--h-card);border:0;border-radius:12px;padding:16px;margin:0;box-shadow:none}
+#athleteApp.ath2 h3.sec,#athleteApp.ath2 .logf h4,#athleteApp.ath2 .wform h4{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:-.01em;text-transform:none;margin:0 0 6px;color:var(--h-ink)}
+#athleteApp.ath2 .small,#athleteApp.ath2 .trainer{font-family:var(--body);letter-spacing:normal;color:var(--h-2);font-size:15px}
+#athleteApp.ath2 .logf{background:transparent;border:0;border-radius:0;padding:0;margin:0}
+#athleteApp.ath2 .ap-form .wform,#athleteApp.ath2 .ap-log .logf{gap:16px}
+#athleteApp.ath2 .wfb{display:flex;flex-direction:column;gap:20px}
+#athleteApp.ath2 label.f{font-size:13px;color:var(--h-2);display:flex;flex-direction:column;gap:6px}
+#athleteApp.ath2 input:not([type]),#athleteApp.ath2 input[type=text],#athleteApp.ath2 input[type=number],#athleteApp.ath2 input[type=date],#athleteApp.ath2 select,#athleteApp.ath2 textarea{background:var(--h-card);color:var(--h-ink);border:1px solid var(--line);border-radius:10px;min-height:44px;padding:10px 12px;font-size:16px;font-family:inherit}
+#athleteApp.ath2 textarea{min-height:110px}
+#athleteApp.ath2 input::placeholder,#athleteApp.ath2 textarea::placeholder{color:var(--h-2)}
+#athleteApp.ath2 .actions{display:flex;flex-direction:column;gap:6px}
+#athleteApp.ath2 .actions button,#athleteApp.ath2 button.primary,#athleteApp.ath2 .lvchip{font-family:inherit}
+#athleteApp.ath2 .actions button{width:100%;min-height:50px;border:0;border-radius:12px;background:transparent;color:var(--h-ink);font-size:17px;font-weight:400}
+#athleteApp.ath2 button.primary{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--h-act);color:var(--h-on-act);font-size:17px;font-weight:600}
+#athleteApp.ath2 .linkbtn{background:transparent;border:0;color:var(--h-2);font-size:15px;font-weight:400}
+#athleteApp.ath2 .rowhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#athleteApp.ath2 table.pl{border-collapse:collapse;width:100%}
+#athleteApp.ath2 table.pl th{font-family:var(--body);letter-spacing:normal;text-transform:none;font-size:13px;font-weight:500;color:var(--h-2);text-align:left;padding:6px 6px 6px 0;background:transparent;border:0}
+#athleteApp.ath2 table.pl td{padding:8px 6px 8px 0;border:0;border-top:.5px solid var(--h-sep);font-size:15px;background:transparent}
+#athleteApp.ath2 table.pl input{min-height:40px;padding:6px 8px}
+
+/* Chequeo diario */
+#athleteApp.ath2 .wql b{font-size:16px;font-weight:600}
+#athleteApp.ath2 .wql span{font-family:var(--body);font-size:13px;color:var(--h-2)}
+#athleteApp.ath2 .wc{border:0;background:var(--h-fill);color:var(--h-ink);font-family:var(--body);font-weight:600;font-size:16px;border-radius:10px}
+#athleteApp.ath2 .wch10 .wc{font-size:14px;border-radius:8px}
+#athleteApp.ath2 .wc.on{background:var(--h-act);color:var(--h-on-act)}
+#athleteApp.ath2 .wch7 .wc.on.t1,#athleteApp.ath2 .wch7 .wc.on.t2,#athleteApp.ath2 .wch7 .wc.on.t3,#athleteApp.ath2 .wch10 .wc.on.i1,#athleteApp.ath2 .wch10 .wc.on.i2,#athleteApp.ath2 .wch10 .wc.on.i3{background:#34C759;color:#0B2E15}
+#athleteApp.ath2 .wch7 .wc.on.t5,#athleteApp.ath2 .wch10 .wc.on.i4,#athleteApp.ath2 .wch10 .wc.on.i5{background:#FFCC00;color:#1D1D1F}
+#athleteApp.ath2 .wch7 .wc.on.t6,#athleteApp.ath2 .wch7 .wc.on.t7,#athleteApp.ath2 .wch10 .wc.on.i6,#athleteApp.ath2 .wch10 .wc.on.i7,#athleteApp.ath2 .wch10 .wc.on.i8,#athleteApp.ath2 .wch10 .wc.on.i9,#athleteApp.ath2 .wch10 .wc.on.i10{background:#D70015;color:#FFFFFF}
+#athleteApp.ath2 .wz{border:0;background:var(--h-fill);color:var(--h-ink);font-size:15px;font-weight:500;min-height:40px}
+#athleteApp.ath2 .wz.on{background:var(--h-act);color:var(--h-on-act)}
+#athleteApp.ath2 .wmol{background:var(--h-bg);border:0;border-radius:12px}
+#athleteApp.ath2 .wint span{font-size:13px;color:var(--h-2)}
+
+/* ¿Cómo amaneció? */
+#athleteApp.ath2 .lvchip{border:0;background:var(--h-fill);color:var(--h-ink);font-size:16px;font-weight:600;border-radius:10px;min-height:46px}
+#athleteApp.ath2 .lvchip.bad{color:var(--h-r-txt)}
+
+/* Consentimiento */
+#athleteApp.ath2 .consent h4{font-size:16px;font-weight:600;margin:14px 0 4px}
+#athleteApp.ath2 .consent p{font-size:15px;line-height:1.45;margin:0}
+#athleteApp.ath2 .consent .cg{font-size:22px;font-weight:700;margin:4px 0 6px}
+#athleteApp.ath2 .chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;margin-top:12px}
+#athleteApp.ath2 .chk input{width:20px;height:20px;margin-top:1px;accent-color:var(--h-act)}
+#athleteApp.ath2 .row2{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+
+/* Aviso de conexión arriba, sin chocar con la barra */
+body.ath2b #netState.off{background:#FFF1C2;color:#6B5200;border:0;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+body.ath2b #netState.sync{background:#E1F5E6;color:#1E6B33;border:0;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+body.ath2b .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px));background:#1D1D1F;color:#fff;border-radius:12px;padding:10px 16px;font-size:15px}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
