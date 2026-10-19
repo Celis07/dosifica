@@ -1,7 +1,8 @@
 /* ==========================================================
    Ápex · estilo iOS para toda la app (oct 2026)
-   Reemplaza el modo oscuro "Pista": claro por defecto y oscuro
-   automático según el sistema. Tipografía del sistema, sin
+   Reemplaza el modo oscuro "Pista". El panel del fisio y la entrada
+   van siempre en claro (decisión de Manuel); el portal del deportista
+   sigue el modo del celular (hoy.css). Tipografía del sistema, sin
    mayúsculas forzadas, tarjetas blancas sin borde sobre gris.
    Negro para la acción principal; el rojo queda para carga,
    alertas y dolor. Los PDF y Excel exportados no cambian.
@@ -20,20 +21,6 @@
   --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
   --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
   --mono:var(--body);
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    color-scheme:dark;
-    --cream:#000000; --paper:#1C1C1E; --soft:#2C2C2E; --line:#38383A; --field:#1C1C1E; --sep:#38383A;
-    --ink:#F5F5F7; --muted:#98989F; --tech:#8E8E93; --on-ink:#000000; --fill:rgba(120,120,128,.28); --fill2:rgba(120,120,128,.36);
-    --act:#F5F5F7; --on-act:#000000;
-    --coral:#FF453A; --red:#FF453A; --sig:#FF6961; --coral-soft:#33100D;
-    --green:#7FD99A; --green-soft:#0F2A17; --gold:#FFD60A; --gold-soft:#2E2406;
-    --purple:#E5E5EA; --purple-soft:#2C2C2E; --blue:#64A8FF; --blue-soft:#0B2340;
-    --dark:#F5F5F7; --dark2:#E5E5EA;
-    --c-act:#98989F; --c-act-soft:#2C2C2E; --c-neuro:#E5E5EA; --c-neuro-soft:#2C2C2E; --c-central:#FF453A; --c-central-soft:#33100D;
-    --ok:#7FD99A; --warn:#FFD60A; --bad:#FF6961;
-  }
 }
 html{-webkit-text-size-adjust:100%}
 body{background:var(--cream);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
@@ -137,7 +124,6 @@ button.busy::after{border-color:color-mix(in srgb,var(--on-act) 35%,transparent)
 /* ---------- Entrada ---------- */
 .login{background:var(--cream)}
 .logcard{background:var(--paper);border:0;border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 40px rgba(0,0,0,.08)}
-@media (prefers-color-scheme:dark){.logcard{box-shadow:none}}
 .rolesel{background:var(--fill);border:0;border-radius:12px;padding:3px}
 .rolesel button{background:transparent;border:0;color:var(--ink);border-radius:9px;box-shadow:none}
 .brand .mark{box-shadow:none;border-radius:9px}
@@ -151,5 +137,4 @@ header.top{color:var(--ink)}
 .modsel,.regsel{background:var(--fill);border:0;border-radius:12px;padding:3px;gap:2px}
 .modsel button,.regsel button{background:transparent;border:0;border-radius:9px;color:var(--ink);font-family:var(--body);font-size:.9rem;font-weight:500;box-shadow:none;min-height:36px}
 .modsel button[aria-pressed="true"],.regsel button[aria-pressed="true"]{background:var(--paper);font-weight:600}
-@media (prefers-color-scheme:dark){.modsel button[aria-pressed="true"],.regsel button[aria-pressed="true"],.rolesel button[aria-checked="true"]{background:#636366}}
 @media (max-width:760px){header.top .brand h1{letter-spacing:-.01em}}
