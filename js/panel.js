@@ -20,14 +20,33 @@ function hace(f){
   return d<=0?'hoy':d===1?'ayer':`hace ${d} días`;
 }
 function lunesISO(){ const d=new Date(todayISO()+'T12:00:00'); const w=(d.getDay()+6)%7; return daysAgo(w); }
+/* Estado del día por paciente: rojo si hay alerta de dolor sin revisar o chequeo en rojo;
+   si no, el color del chequeo de hoy; blanco si no respondió (o no tiene acceso al portal). */
+const ST_W = {r:300, y:60, n:20, g:0};
+const ST_L = {r:'Rojo', y:'Amarillo', g:'Verde', n:'Sin chequeo hoy'};
+function dayState(p, al){
+  const list = wellBy[p.id] || [], hoy = list.find(x => x.fecha === todayISO()), wl = hoy ? wellLight(list) : null;
+  const myAl = alertas.filter(a => a.paciente_id === p.id);
+  if(myAl.length) return {k:'r', t:alertWhy(myAl[0]) || 'Alerta de dolor'};
+  if(wl){ const why = (wl.why || []).join(', ');
+    return {k:wl.c, t: wl.c === 'g' ? 'Chequeo en verde' : `Chequeo en ${wl.c === 'r' ? 'rojo' : 'amarillo'}${why ? ': ' + why : ''}`}; }
+  return {k:'n', t: p.email ? 'No respondió el chequeo de hoy' : 'Sin acceso al portal'};
+}
+function stDetail(i){
+  const d = i.ds;
+  if(d.k === 'g') return '';
+  if(d.k === 'n') return i.p.email ? '' : ' · sin acceso al portal';
+  return ' · ' + esc(d.t.replace(/^Chequeo en (rojo|amarillo): ?/, '').replace(/^Chequeo en (rojo|amarillo)$/, 'bienestar bajo'));
+}
 function patInfo(p){
   const s=Object.assign(blank(), p.st||{}), k=pkey(s), P0=P[k], ph=P0.phases[phaseIdx(s)], sm=p.sum||{};
   const al=alertas.filter(a=>a.paciente_id===p.id).length, wl=wellLight(wellBy[p.id]||[]);
   const red = wl && wl.c==='r' && wl.e.fecha>=daysAgo(1);
   const inact = sm.last ? sm.last<daysAgo(7) : false;
   const consent = !!(consentBy[p.id] || s.consent);
-  const score = al*100 + (p.pend||0)*50 + (red?30:0) + (inact?10:0) + (!consent?5:0);
-  return {p, s, mod:modOf(s), cond:subLabel(s,P0), fase:ph.name.split(' · ')[0], sem:s.semPlan, sm, al, red, inact, consent, score};
+  const ds = dayState(p, al);
+  const score = ST_W[ds.k] + al*100 + (p.pend||0)*50 + (red?30:0) + (inact?10:0) + (!consent?5:0);
+  return {p, s, mod:modOf(s), cond:subLabel(s,P0), fase:ph.name.split(' · ')[0], sem:s.semPlan, sm, al, red, inact, consent, score, ds};
 }
 function renderHome(){
   const el=$('#home'); if(!el) return;
@@ -70,8 +89,10 @@ function renderHome(){
     <section class="card hpats">
       <div class="rowhead"><h2 class="hsec">Pacientes</h2>
         <label class="hsearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="hq" placeholder="Buscar paciente o condición" aria-label="Buscar paciente" value="${esc(homeQ)}"></label></div>
+      <p class="slegend"><span class="st-r"><i></i>Requiere atención</span><span class="st-y"><i></i>Amarillo</span><span class="st-g"><i></i>Verde</span><span class="st-n"><i></i>No respondió el chequeo</span></p>
       ${patients.length ? (list.length ? `<div class="pcards">${list.map(i=>`
-        <button class="pcard" data-open-h="${esc(i.p.id)}">
+        <button class="pcard st-${i.ds.k}" data-open-h="${esc(i.p.id)}">
+          <span class="pstate"><span class="sdot" aria-hidden="true"></span><span><b>${ST_L[i.ds.k]}</b>${stDetail(i)}</span></span>
           <span class="ptop"><span class="mtag m-${i.mod}">${MOD_L[i.mod]}</span>${i.al?`<span class="flag r">${i.al} alerta${i.al>1?'s':''}</span>`:''}${i.p.pend?`<span class="flag y">${i.p.pend} solicitud</span>`:''}</span>
           <b class="pname">${esc(i.p.nombre||'Sin nombre')}</b>
           <span class="pcond">${esc(i.cond)}</span>
@@ -103,3 +124,13 @@ $('#home').addEventListener('click', e=>{
 });
 $('#home').addEventListener('input', e=>{ if(e.target.id==='hq'){ homeQ=e.target.value; const pos=e.target.selectionStart; renderHome(); const i=$('#hq'); i.focus(); try{ i.setSelectionRange(pos,pos); }catch(err){} } });
 $('#bHome').onclick=()=>{ loadPatients().then(()=>{ if(homeVisible()) renderHome(); }); showHome(); };
+
+/* El estado del día se refresca solo mientras el panel está abierto */
+setInterval(async () => {
+  if(typeof me === 'undefined' || me.role !== 'fisio' || !homeVisible() || document.hidden) return;
+  try { await Promise.all([loadWellBy(), typeof loadAlerts === 'function' ? loadAlerts() : null]); renderHome(); } catch(e){}
+}, 180000);
+document.addEventListener('visibilitychange', async () => {
+  if(document.hidden || typeof me === 'undefined' || me.role !== 'fisio' || !homeVisible()) return;
+  try { await loadWellBy(); renderHome(); } catch(e){}
+});
