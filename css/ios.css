@@ -1,0 +1,155 @@
+/* ==========================================================
+   Ápex · estilo iOS para toda la app (oct 2026)
+   Reemplaza el modo oscuro "Pista": claro por defecto y oscuro
+   automático según el sistema. Tipografía del sistema, sin
+   mayúsculas forzadas, tarjetas blancas sin borde sobre gris.
+   Negro para la acción principal; el rojo queda para carga,
+   alertas y dolor. Los PDF y Excel exportados no cambian.
+   ========================================================== */
+:root{
+  color-scheme:light;
+  --cream:#F2F2F7; --paper:#FFFFFF; --soft:#F2F2F7; --line:#E5E5EA; --field:#FFFFFF; --sep:#C6C6C8;
+  --ink:#1D1D1F; --muted:#6E6E73; --tech:#8E8E93; --on-ink:#FFFFFF; --fill:rgba(120,120,128,.12); --fill2:rgba(120,120,128,.2);
+  --act:#1D1D1F; --on-act:#FFFFFF;
+  --coral:#D70015; --red:#D70015; --sig:#C4281C; --coral-soft:#FFE4E1;
+  --green:#1E6B33; --green-soft:#E1F5E6; --gold:#8A6100; --gold-soft:#FFF1C2;
+  --purple:#3A3A3C; --purple-soft:#EDEDF0; --blue:#0A5BC4; --blue-soft:#E3EEFB;
+  --dark:#1D1D1F; --dark2:#2C2C2E;
+  --c-act:#8E8E93; --c-act-soft:#F2F2F7; --c-neuro:#3A3A3C; --c-neuro-soft:#EDEDF0; --c-central:#D70015; --c-central-soft:#FFE4E1;
+  --ok:#1E6B33; --warn:#8A6100; --bad:#C4281C;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  --mono:var(--body);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --cream:#000000; --paper:#1C1C1E; --soft:#2C2C2E; --line:#38383A; --field:#1C1C1E; --sep:#38383A;
+    --ink:#F5F5F7; --muted:#98989F; --tech:#8E8E93; --on-ink:#000000; --fill:rgba(120,120,128,.28); --fill2:rgba(120,120,128,.36);
+    --act:#F5F5F7; --on-act:#000000;
+    --coral:#FF453A; --red:#FF453A; --sig:#FF6961; --coral-soft:#33100D;
+    --green:#7FD99A; --green-soft:#0F2A17; --gold:#FFD60A; --gold-soft:#2E2406;
+    --purple:#E5E5EA; --purple-soft:#2C2C2E; --blue:#64A8FF; --blue-soft:#0B2340;
+    --dark:#F5F5F7; --dark2:#E5E5EA;
+    --c-act:#98989F; --c-act-soft:#2C2C2E; --c-neuro:#E5E5EA; --c-neuro-soft:#2C2C2E; --c-central:#FF453A; --c-central-soft:#33100D;
+    --ok:#7FD99A; --warn:#FFD60A; --bad:#FF6961;
+  }
+}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--cream);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased}
+::selection{background:rgba(10,132,255,.25);color:inherit}
+
+/* ---------- Tipografía: sin mayúsculas forzadas ni espaciados de etiqueta ---------- */
+h1,h2,h3,h4,.client,.badge,.phase h2,.light b,h3.sec,.blk .bh b,table.pl th,table.data th,.mini h4,details#refs>summary,.tabs button,.logf h4,.kpi span,
+.brand .sig,.brand h1,.modsel button,.lghead h2,.alh b,.heye,.hhero h1,.hsec,.pname,.ftoggle .ft b,.rvban b,.rvdone b,.rvname,.rvl,.trainer,legend,.kpi b,.dayhead h3,.lvtt b,.lvnow span,.lvnow b,.lvname{
+  font-family:var(--display);text-transform:none;letter-spacing:normal;font-stretch:100%}
+h3.sec,.hsec{font-size:1.06rem;font-weight:600;color:var(--ink)}
+.brand h1{font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+.brand .sig,.trainer,.heye,.rvl,legend{font-size:.82rem;color:var(--muted);font-weight:500}
+.heye{color:var(--muted)}
+.client{font-size:2rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.hhero h1{font-size:clamp(1.9rem,4vw,2.4rem);font-weight:700;letter-spacing:-.022em;line-height:1.1}
+.phase h2{font-size:1.15rem;font-weight:600}
+.dayhead h3{font-size:1.25rem;font-weight:700;letter-spacing:-.01em}
+.blk .bh b{font-size:.95rem;font-weight:600}
+.kpi span{font-size:.82rem;color:var(--muted)}
+.kpi b{font-weight:700;letter-spacing:-.02em}
+table.pl th,table.data th{font-size:.78rem;font-weight:500;color:var(--muted)}
+.pname,.rvname{font-weight:700;letter-spacing:-.01em}
+.rvname{font-size:1.6rem}
+.lghead h2{font-size:1.9rem;font-weight:700;letter-spacing:-.02em}
+.tabs button,.modsel button{font-size:.9rem;font-weight:500}
+.kpi span,.lvset span,.rvn,.plast,.pmeta,.ali,.alt{font-family:var(--body)}
+
+/* ---------- Superficies ---------- */
+.card,aside.form,.phead{background:var(--paper);border:0;border-radius:14px;box-shadow:none}
+.mini,.mw,.logf,.req,.mod{background:var(--soft);border:0;border-radius:12px}
+.kpi{background:var(--paper);border:0;border-radius:14px}
+.kpi.hot{background:var(--coral-soft)}
+.pcard{background:var(--paper);border:0;border-radius:14px}
+.alpanel{background:var(--paper);border:0;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+header.top{background:transparent;border-bottom:.5px solid var(--sep)}
+table.pl td,table.data td,table.data th,table.pl th,.ali,.hlist li+li{border-bottom-color:var(--line);border-top-color:var(--line)}
+.hlist li+li{border-top:.5px solid var(--line)}
+.warnbox,.mod.warnmod{background:var(--coral-soft);border:0}
+.example{background:var(--gold-soft);border:0;color:var(--ink)}
+.tw.k-desc,.tw.k-recup{background:var(--green-soft);border-color:transparent}
+.tw.k-taper,.tw.k-mini{background:var(--gold-soft);border-color:transparent}
+.d24,.pushc,.rvdone{border-color:transparent}
+
+/* ---------- Campos ---------- */
+select,input[type=text],input[type=number],input[type=date],input[type=email],input[type=search],input[type=password],input[type=url],input:not([type]),textarea,table.pl input,table.banco select,table.banco input{
+  background:var(--field);border:1px solid var(--line);color:var(--ink);border-radius:10px}
+input::placeholder,textarea::placeholder{color:var(--tech)}
+select option,header.top select option{background:var(--paper);color:var(--ink)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid #0A84FF;outline-offset:2px}
+
+/* ---------- Botones ---------- */
+button{background:var(--fill);border:0;color:var(--ink);border-radius:10px;font-weight:600}
+button:hover{border-color:transparent;background:var(--fill2)}
+button.primary,.lbtn{background:var(--act);border:0;color:var(--on-act)}
+button.primary:hover,.lbtn:hover{background:var(--act);opacity:.88}
+button.dark{background:var(--act);border:0;color:var(--on-act)}
+button.ghost,.ghostb{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.ghostb.danger,.fdel{color:var(--bad);border-color:var(--line)}
+.linkbtn,.mini-btn.link{background:transparent}
+.xbtn{background:transparent;color:var(--muted)}
+.xbtn:hover{background:var(--fill);color:var(--bad)}
+header.top button,header.top select{background:var(--fill);border:0;color:var(--ink)}
+header.top button:hover{background:var(--fill2)}
+.homebtn[aria-current="page"]{background:var(--act)!important;color:var(--on-act)!important;border-color:transparent!important}
+button.busy::after{border-color:color-mix(in srgb,var(--on-act) 35%,transparent);border-top-color:var(--on-act)}
+
+/* Selecciones tipo control segmentado */
+.tabs button{background:transparent;border:0;border-radius:999px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--act);color:var(--on-act)}
+.modsel button[aria-pressed="true"],.regsel button[aria-pressed="true"],.rolesel button[aria-checked="true"]{background:var(--paper);color:var(--ink);border-color:transparent;box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.rvc,.wc,.wz,.lvchip,.lvround{border:0;background:var(--fill);color:var(--ink);font-family:var(--body)}
+.rvc.on,.wc.on,.wz.on,.lvchip.on,.prio.B,.ter{background:var(--act);color:var(--on-act);border-color:transparent}
+.badge{background:var(--fill);color:var(--ink);border-radius:999px}
+.badge.dk{background:var(--red);color:#fff}
+.toast{background:#1D1D1F;color:#fff;border-radius:12px}
+.tundo{background:rgba(255,255,255,.18);color:#fff}
+
+/* Etiquetas de lado, módulo y alertas */
+.l-a{background:var(--fill);color:var(--ink)}
+.l-s{background:var(--green-soft);color:var(--green)}
+.l-l{background:var(--coral-soft);color:var(--sig)}
+.warnchip,.pill.r,.alt span,.lgmsg.err,.lvwarn{color:var(--sig)}
+.lgmsg.ok{color:var(--green)}
+.pill.r{background:var(--coral-soft)}
+.m-rodilla,.flag.r{background:var(--coral-soft);color:var(--sig)}
+.m-deporte{background:var(--blue-soft);color:var(--blue)}
+.m-salud{background:var(--green-soft);color:var(--green)}
+.m-lumbar{background:var(--purple-soft);color:var(--ink)}
+.flag.y,.plast.old{color:var(--gold)}
+.flag.y{background:var(--gold-soft)}
+.hlist .dot.n{background:var(--tech)}
+.adjbar.y{background:var(--gold-soft);color:var(--gold);border:0}
+.adjbar.r{background:var(--coral-soft);color:var(--sig);border:0}
+#netState{box-shadow:0 6px 20px rgba(0,0,0,.15)}
+#netState.off{background:var(--gold-soft);color:var(--gold);border:0}
+#netState.sync{background:var(--green-soft);color:var(--green);border:0}
+.wch7 .wc.on.t1,.wch7 .wc.on.t2,.wch7 .wc.on.t3,.wch10 .wc.on.i1,.wch10 .wc.on.i2,.wch10 .wc.on.i3{background:#34C759;color:#0B2E15}
+.wch7 .wc.on.t5,.wch10 .wc.on.i4,.wch10 .wc.on.i5{background:#FFCC00;color:#1D1D1F}
+.wch7 .wc.on.t6,.wch7 .wc.on.t7,.wch10 .wc.on.i6,.wch10 .wc.on.i7,.wch10 .wc.on.i8,.wch10 .wc.on.i9,.wch10 .wc.on.i10{background:#D70015;color:#fff}
+
+/* ---------- Entrada ---------- */
+.login{background:var(--cream)}
+.logcard{background:var(--paper);border:0;border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 40px rgba(0,0,0,.08)}
+@media (prefers-color-scheme:dark){.logcard{box-shadow:none}}
+.rolesel{background:var(--fill);border:0;border-radius:12px;padding:3px}
+.rolesel button{background:transparent;border:0;color:var(--ink);border-radius:9px;box-shadow:none}
+.brand .mark{box-shadow:none;border-radius:9px}
+
+/* Ajustes tras la primera revisión */
+header.top{color:var(--ink)}
+.brand h1{color:var(--ink)}
+.dayhead{background:transparent;border:0;border-radius:0;color:var(--ink);padding:6px 2px 2px}
+.dayhead span{color:var(--muted)}
+.blk{border-color:var(--line)}
+.modsel,.regsel{background:var(--fill);border:0;border-radius:12px;padding:3px;gap:2px}
+.modsel button,.regsel button{background:transparent;border:0;border-radius:9px;color:var(--ink);font-family:var(--body);font-size:.9rem;font-weight:500;box-shadow:none;min-height:36px}
+.modsel button[aria-pressed="true"],.regsel button[aria-pressed="true"]{background:var(--paper);font-weight:600}
+@media (prefers-color-scheme:dark){.modsel button[aria-pressed="true"],.regsel button[aria-pressed="true"],.rolesel button[aria-checked="true"]{background:#636366}}
+@media (max-width:760px){header.top .brand h1{letter-spacing:-.01em}}

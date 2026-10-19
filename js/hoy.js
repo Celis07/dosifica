@@ -229,8 +229,8 @@ renderAthlete = function(){
   }
   el.innerHTML = html;
   el.classList.toggle('has-tabs', !!(A.consent && c));
-  const tc = document.querySelector('meta[name="theme-color"]');
-  if(tc) tc.setAttribute('content', k === 'page' ? (hDark() ? '#000000' : '#F2F2F7') : (hDark() ? H_TINT_DK : H_TINT)[k]);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(tc => { const dk = /dark/.test(tc.getAttribute('media') || '');
+    tc.setAttribute('content', k === 'page' ? (dk ? '#000000' : '#F2F2F7') : (dk ? H_TINT_DK : H_TINT)[k]); });
   // Chequeo obligatorio antes de entrenar en vivo: al guardarlo, arranca la sesión que se pidió.
   if(A.pendLive != null && wellness.some(x => x.fecha === todayISO()) && !A.wOpen){ const di = A.pendLive; A.pendLive = null; setTimeout(() => startLive(di), 50); }
 };

@@ -55,7 +55,7 @@ function logForm(day, di){
 }
 function dayHTML(day, di){
   return `<section class="card day" style="padding:12px">
-  <div class="dayhead"><h3>${esc(day.name.toUpperCase())}</h3>${!editMode?`<button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button>`:''}</div>
+  <div class="dayhead"><h3>${esc(day.name)}</h3>${!editMode?`<button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button>`:''}</div>
   ${logOpen===di && !editMode ? logForm(day, di) : ''}
   ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
     <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(fmtLabel(sg.fmt))}</i></div>
@@ -258,11 +258,11 @@ function render(){
     <div class="in" style="padding-top:0;display:block">
       <div class="phase"><h2>${esc(ph.name.split(' · ').slice(1).join(' · ')||ph.name)}</h2><p>${esc(ph.goal)}</p><p class="small" style="margin-top:4px">${esc(ph.when)}</p></div>
       <div class="actions">
-        <button class="primary" id="bSave">Guardar</button>
-        ${view==='plan'?`<button class="dark" id="bEdit">${editMode?'Terminar edición':'Editar ejercicios'}</button><button id="bTpl">Plantillas</button>`:''}
+        <button id="bSave">Guardar</button>
+        ${view==='plan'?`<button id="bEdit">${editMode?'Terminar edición':'Editar ejercicios'}</button><button id="bTpl">Plantillas</button>`:''}
         <button id="bPdf">Descargar PDF</button>
         <button id="bXls">Descargar Excel</button>
-        <button class="dark" id="bPub">Publicar al deportista</button>
+        <button class="primary" id="bPub">Publicar al deportista</button>
       </div>
     </div>
   </div></div>
