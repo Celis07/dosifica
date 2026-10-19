@@ -92,7 +92,7 @@ function hBlocks(day, k){
   const adj = k === 'y' || k === 'r';
   return `<div class="ap-list">${day.segs.map(sg => {
     const n = sg.rows.length, rpe = hRPE(sg.rows), mark = adj && sg.type !== 'act' && rpe;
-    const sub = [fmtLabel(sg.fmt), `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
+    const sub = [sg.sub, fmtLabel(sg.fmt), `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
     return `<details class="ap-blk"><summary>
       <span class="ap-l"><b>${esc(SEGS[sg.type] || sg.type)}</b><span>${esc(sub)}</span></span>
       <span class="ap-r">${rpe ? `<span class="ap-rpe${mark ? ' k-' + k : ''}">${esc(rpe)}${mark ? ' hoy' : ''}</span>` : ''}${H_ICON.chev}</span>

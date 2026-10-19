@@ -58,7 +58,7 @@ function dayHTML(day, di){
   <div class="dayhead"><h3>${esc(day.name)}</h3>${!editMode?`<button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button>`:''}</div>
   ${logOpen===di && !editMode ? logForm(day, di) : ''}
   ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
-    <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc(fmtLabel(sg.fmt))}</i></div>
+    <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc([sg.sub, fmtLabel(sg.fmt)].filter(Boolean).join(' · '))}</i></div>
     ${editMode?fmtEditor(sg.fmt,di,gi):''}
     ${sg.type==='act'&&gi===0?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
     <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th>Video</th><th></th>':''}</tr></thead><tbody>
