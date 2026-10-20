@@ -98,6 +98,10 @@ function poLeccion(c){
   const l = L[doy % L.length];
   return `<button type="button" class="po-w po-lec" data-po="lec" data-lecid="${esc(l.id)}"><span class="po-ht"><span class="po-l">Lección de hoy · ${l.min} min</span><b>${esc(l.t)}</b></span>${PO_I.chev}</button>`;
 }
+function poFrase(){
+  if(typeof fraseDelDia !== 'function') return '';
+  return `<section class="po-w po-frase" aria-label="Frase del día"><span class="po-l">Frase del día</span><p>${esc(fraseDelDia())}</p></section>`;
+}
 function poInicio(c){
   const nom = (A.p?.nombre || '').split(' ')[0];
   const sem = poSemana(c);
@@ -109,7 +113,7 @@ function poInicio(c){
       <div class="po-grid">${sem.html}${poTorneo(c)}${poRecord()}${poRacha(sem.W)}</div>
       ${poMeta()}
       ${poMensaje()}
-      ${poLeccion(c)}
+      ${poFrase()}
       <nav class="po-quick" aria-label="Accesos rápidos">
         <button type="button" data-po="chk"><span>${PO_I.chk}</span>Chequeo</button>
         <button type="button" data-po="reg"><span>${PO_I.reg}</span>Registrar</button>
