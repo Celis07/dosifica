@@ -269,11 +269,12 @@ function render(){
     <button role="tab" data-view="ses" aria-selected="${view==='ses'}">Sesiones y evolución</button>
     <button role="tab" data-view="req" aria-selected="${view==='req'}">Solicitudes${(pendingBy[curId]||0)?` (${pendingBy[curId]})`:''}</button>
     <button role="tab" data-view="cal" aria-selected="${view==='cal'}">Calendario</button>
+    <button role="tab" data-view="eval" aria-selected="${view==='eval'}">Evaluación</button>
     <button role="tab" data-view="hist" aria-selected="${view==='hist'}">Historia clínica</button>
     <button role="tab" data-view="panel" aria-selected="${view==='panel'}">Panel de pacientes</button>
     <button role="tab" data-view="banco" aria-selected="${view==='banco'}">Banco</button>
   </nav>`;
-  const body = view==='plan' ? planView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
+  const body = view==='plan' ? planView() : view==='eval' && typeof evalView==='function' ? evalView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
   // Descargas y plantillas: al final de la ficha
   const tail = `${view==='plan' && tplOpen ? tplCard() : ''}<section class="card dlbar"><h3 class="sec">Descargar y plantillas</h3><div class="actions">
     <button id="bPdf">Descargar PDF</button><button id="bXls">Descargar Excel</button>${view==='plan'?'<button id="bTpl">Plantillas</button>':''}</div></section>`;

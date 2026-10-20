@@ -156,7 +156,7 @@ function rehabMod(s){
 /* ---------- Formulario del fisio ---------- */
 function rehabSync(){
   const on = !!st.rehab && modOf(st) === 'deporte';
-  document.querySelectorAll('[data-rshow]').forEach(el => { el.hidden = !on || (el.dataset.rshow === 'fp' && (st.rehabCond || 'fp') !== 'fp'); });
+  document.querySelectorAll('[data-rshow]').forEach(el => { const want = el.dataset.rshow.split(' '); el.hidden = !on || (!want.includes('on') && !want.includes(st.rehabCond || 'fp')); });
 }
 const _syncVisRehab = syncVisibility;
 syncVisibility = function(){ _syncVisRehab(); rehabSync(); };

@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="css/ios.css">
 <link rel="stylesheet" href="css/hoy.css">
 <link rel="stylesheet" href="css/tabata.css">
+<link rel="stylesheet" href="css/recepcion.css">
 
 
 </head>
@@ -80,7 +81,7 @@
   <fieldset>
     <legend>Módulo</legend>
     <div class="modsel" role="group" aria-label="Módulo"><button type="button" data-mod="rodilla">Rehab</button><button type="button" data-mod="deporte">Deporte</button><button type="button" data-mod="salud">Salud</button></div>
-    <div class="regsel" role="group" aria-label="Región de rehabilitación" data-modshow="rodilla lumbar"><button type="button" data-reg="rodilla">Rodilla</button><button type="button" data-reg="lumbar">Lumbar</button></div>
+    <div class="regsel" role="group" aria-label="Región de rehabilitación" data-modshow="rodilla lumbar hombro"><button type="button" data-reg="rodilla">Rodilla</button><button type="button" data-reg="lumbar">Lumbar</button><button type="button" data-reg="hombro">Hombro</button></div>
   </fieldset>
   <hr class="s">
   <fieldset>
@@ -124,6 +125,30 @@
       <label class="f">Oswestry (ODI %)<input type="number" id="lumOdi" data-k="lumOdi" min="0" max="100"></label>
     </div>
   </fieldset>
+  <hr class="s" data-modshow="hombro">
+  <fieldset data-modshow="hombro">
+    <legend>Diagnóstico de hombro</legend>
+    <p class="small" style="margin:0 0 8px">Dolor de hombro relacionado con el manguito rotador (tendinopatía, pinzamiento o dolor subacromial).</p>
+    <div class="row2">
+      <label class="f">Hombro afectado<select id="homLado" data-k="homLado"><option value="der">Derecho</option><option value="izq">Izquierdo</option></select></label>
+      <label class="f">Semanas desde el inicio<input type="number" id="homSem" data-k="homSem" min="0" max="520"></label>
+    </div>
+    <label class="f">Irritabilidad<select id="homIrr" data-k="homIrr"><option value="alta">Alta · duele en reposo o lo despierta de noche</option><option value="mod">Moderada · duele con ciertos gestos y se calma en minutos</option><option value="baja">Baja · solo con cargas altas o por encima de la cabeza</option></select></label>
+    <label class="chk"><input type="checkbox" id="homOH" data-k="homOH"> Su deporte o trabajo exige el brazo por encima de la cabeza (lanzar, nadar, sacar)</label>
+    <label class="chk"><input type="checkbox" id="homRF" data-k="homRF"> Banderas rojas descartadas (rotura aguda tras trauma, luxación, infección, tumor, origen cervical)</label>
+  </fieldset>
+  <hr class="s" data-modshow="hombro">
+  <fieldset data-modshow="hombro">
+    <legend>Estado clínico hoy</legend>
+    <div class="row2">
+      <label class="f">Dolor con la actividad (0–10)<input type="number" id="homDolor" data-k="homDolor" min="0" max="10"></label>
+      <label class="f">Dolor nocturno (0–10)<input type="number" id="homNoche" data-k="homNoche" min="0" max="10"></label>
+    </div>
+    <div class="row2">
+      <label class="f">Respuesta a las 24 h<select id="homResp" data-k="homResp"><option value="">Sin dato</option><option value="mejor">Mejor que basal</option><option value="igual">Vuelve a basal</option><option value="peor">Peor que basal</option></select></label>
+      <label class="f">SPADI (%)<input type="number" id="homSpadi" data-k="homSpadi" min="0" max="100"></label>
+    </div>
+  </fieldset>
   <hr class="s" data-modshow="rodilla">
   <fieldset data-modshow="rodilla">
     <legend>Diagnóstico</legend>
@@ -148,11 +173,12 @@
     <label class="f" data-modshow="deporte">Deporte para planificar<select id="deporteP" data-k="deporteP"><option value="uwr">Rugby subacuático</option><option value="natacion">Natación</option><option value="futbol">Fútbol</option><option value="carrera">Carrera</option><option value="cancha">Baloncesto o voleibol</option><option value="raqueta">Tenis, pádel o squash</option><option value="gimnasio">Gimnasio o fuerza general</option></select></label>
     <label class="chk" data-modshow="deporte"><input type="checkbox" id="rehab" data-k="rehab"> Deportista en rehabilitación: entrena con su calendario de torneos y la terapia va en Activación y Neuro</label>
     <div class="row2" data-rshow="on" hidden>
-      <label class="f">Lesión<select id="rehabCond" data-k="rehabCond"><option value="fp">Fascitis plantar</option><option value="otra">Otra lesión (la terapia la pongo yo)</option></select></label>
-      <label class="f" data-rshow="fp">Lado<select id="rehabLado" data-k="rehabLado"><option value="der">Derecho</option><option value="izq">Izquierdo</option></select></label>
+      <label class="f">Lesión<select id="rehabCond" data-k="rehabCond"><option value="fp">Fascitis plantar</option><option value="hom">Dolor de hombro (manguito rotador)</option><option value="otra">Otra lesión (la terapia la pongo yo)</option></select></label>
+      <label class="f" data-rshow="fp hom">Lado<select id="rehabLado" data-k="rehabLado"><option value="der">Derecho</option><option value="izq">Izquierdo</option></select></label>
     </div>
     <label class="f" data-rshow="fp" hidden>Irritabilidad hoy<select id="rehabIrr" data-k="rehabIrr"><option value="alta">Alta · cojea o duele en reposo</option><option value="mod">Moderada · duele al empezar y cede al calentar</option><option value="baja">Baja · ya tolera trotar y saltos suaves</option></select></label>
-    <label class="f" data-rshow="fp" hidden>Inicio de la rehabilitación<input type="date" id="rehabIni" data-k="rehabIni"></label>
+    <label class="f" data-rshow="hom" hidden>Irritabilidad hoy<select id="rehabIrrH" data-k="rehabIrr"><option value="alta">Alta · duele en reposo o lo despierta de noche</option><option value="mod">Moderada · duele con ciertos gestos y se calma en minutos</option><option value="baja">Baja · solo con cargas altas o por encima de la cabeza</option></select></label>
+    <label class="f" data-rshow="fp hom" hidden>Inicio de la rehabilitación<input type="date" id="rehabIni" data-k="rehabIni"></label>
     <label class="f" data-modshow="salud">Población<select id="poblacion" data-k="poblacion"><option value="sed">Adulto sedentario o que empieza</option><option value="act">Adulto activo</option><option value="may">Adulto mayor (65 años o más)</option></select></label>
     <label class="f" data-modshow="deporte salud">Nivel en fuerza<select id="nivel" data-k="nivel"><option value="ini">Principiante · menos de 1 año</option><option value="int">Intermedio · 1–3 años</option><option value="av">Avanzado · más de 3 años</option></select></label>
     <label class="f">Fase<select id="fase" data-k="fase"></select></label>
@@ -202,6 +228,7 @@
 <script src="js/lumbar.js"></script>
 <script src="js/rutinas.js"></script>
 <script src="js/rehabdep.js"></script>
+<script src="js/hombro.js"></script>
 <script src="js/servidor.js"></script>
 <script src="js/fase1.js"></script>
 <script src="js/revision.js"></script>
@@ -220,6 +247,8 @@
 <script src="js/portada.js"></script>
 <script src="js/acceso.js"></script>
 <script src="js/tabata.js"></script>
+<script src="js/recepcion.js"></script>
+<script src="js/evaluacion.js"></script>
 <script src="js/atras.js"></script>
 <script src="js/inicio.js"></script>
 

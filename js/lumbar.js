@@ -171,7 +171,7 @@ Object.keys(LUM_C).forEach(k=>{ STAGES['lum-'+k] = P['lum-'+k].phases.map((_,i)=
 
 /* ---------- Integración con el resto de la app ---------- */
 MODULOS.lumbar = 'Rehabilitación · Lumbar';
-const isRehab = s => ['rodilla','lumbar'].includes(modOf(s));
+const isRehab = s => ['rodilla','lumbar','hombro'].includes(modOf(s));
 const _pkeyBase = pkey;
 pkey = function(s){ return modOf(s)==='lumbar' ? 'lum-'+(LUM_C[s.lumCond] ? s.lumCond : 'agudo') : _pkeyBase(s); };
 const _suggestedBase = suggested;
@@ -253,7 +253,7 @@ syncVisibility = function(){
 };
 const _setModuloBase = setModulo;
 setModulo = function(m){
-  if(m==='rodilla' && modOf(st)==='lumbar') return;     // tocar "Rehab" no cambia la región elegida
+  if(m==='rodilla' && isRehab(st) && modOf(st)!=='rodilla') return;     // tocar "Rehab" no cambia la región elegida
   if(m==='lumbar'){ if(modOf(st)==='lumbar') return; st.modulo='lumbar'; st.fase='auto'; if(!st.lumCond) st.lumCond='agudo'; if(!st.nivel) st.nivel='int'; editMode=false; fillForm(); render(); markDirty(); return; }
   _setModuloBase(m);
 };

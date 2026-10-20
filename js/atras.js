@@ -12,6 +12,8 @@
 
   const visible = sel => { const el = document.querySelector(sel); return !!(el && !el.hidden && el.offsetParent !== null); };
   function back(){
+    // 0) Bienestar en vivo (modo recepción)
+    if(typeof RC !== 'undefined' && RC && visible('#rcp')) return rcpBack();
     // 0) Cronómetro de intervalos: corriendo se pausa; en otra pantalla se cierra
     if(typeof TB !== 'undefined' && TB && visible('#tabata')){ if(TB.screen === 'run'){ if(!TB.paused) document.querySelector('#tabata [data-tb="pause"]')?.click(); } else tbClose(); return true; }
     // 1) Modo en vivo: lo cierra guardando el avance, igual que la X
