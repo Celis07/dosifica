@@ -1,8 +1,7 @@
 /* ===================== DURACIÓN DE LA SESIÓN Y MICRO RUTINAS (oct 2026) =====================
-   1) Cada sesión debe caber en 45–75 min, con 10–15 min para movilidad y activación.
-      La app estima el tiempo (series × trabajo + descansos + cambio de ejercicio) y, al
-      generar el plan, recorta lo menos prioritario hasta que quepa. El tiempo no se muestra
-      en el plan: solo se avisa al fisio qué se quitó o si un plan editado a mano se pasa.
+   1) 45–75 min por sesión es un ESTIMADO orientativo. La app calcula el tiempo aproximado
+      (series × trabajo + descansos + cambio de ejercicio) y solo avisa al fisio si un día queda
+      muy por fuera; nunca quita ejercicios ni series para cuadrarlo. (fitDay queda sin uso.)
    2) Micro rutinas predeterminadas de Activación, Neuro y Fuerza para personas que no
       entrenan nada específico, con el material de Brainbox (barras, discos, mancuernas,
       cajones y bancas). El módulo Salud las usa solas y en "Editar ejercicios" se pueden
@@ -172,7 +171,8 @@ genWeekSal = function(s){
 
 /* ---------- Todos los planes generados caben en 45–75 min ---------- */
 const _genWeekFit = genWeek;
-genWeek = function(s){ return _genWeekFit(s).map(d => fitDay(d, s)); };
+// 45–75 min es un estimado: el plan NUNCA quita ejercicios ni series para cuadrar el tiempo (decisión del fisio, oct 2026).
+genWeek = function(s){ return _genWeekFit(s); };
 
 /* ---------- Aviso al fisio (sin mostrar minutos) ---------- */
 function timeNotice(){
@@ -182,8 +182,8 @@ function timeNotice(){
   const msgs = [];
   w.days.forEach(d => {
     const t = tDay(d);
-    if(t.total > T_MAX + 2) msgs.push(`<b>${esc(d.name)}</b> queda largo para 45–75 minutos: quita un ejercicio o una serie.`);
-    else if(t.total < T_MIN - 2 && !desc) msgs.push(`<b>${esc(d.name)}</b> queda corto para 45–75 minutos: puedes sumar una serie o un ejercicio.`);
+    if(t.total > T_MAX + 10) msgs.push(`<b>${esc(d.name)}</b>: estimado cerca de ${Math.round(t.total / 5) * 5} min, por encima de 45–75. Es orientativo; no se quitó nada.`);
+    else if(t.total < T_MIN - 10 && !desc) msgs.push(`<b>${esc(d.name)}</b>: estimado cerca de ${Math.round(t.total / 5) * 5} min, por debajo de 45–75. Es orientativo.`);
     if(!w.custom && d.trim && d.trim.length) msgs.push(`<b>${esc(d.name)}</b>: para que quepa en 45–75 minutos quedaron fuera ${esc(d.trim.slice(0, 4).join(', '))}${d.trim.length > 4 ? ` y ${d.trim.length - 4} más` : ''}. Si alguno es clave, agrégalo en Editar ejercicios y quita otro.`);
   });
   return msgs.length ? `<section class="card"><h3 class="sec">Duración de las sesiones</h3>${msgs.map(m => `<p class="small" style="margin:4px 0">${m}</p>`).join('')}</section>` : '';
