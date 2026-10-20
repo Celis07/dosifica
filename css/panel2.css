@@ -227,3 +227,20 @@ body.fx .fx-ch{display:flex;align-items:center;gap:10px;width:100%;min-height:44
 .fx-ch span{flex:1;min-width:0}
 #accCard{position:relative}
 body.fx .fx-accx{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:16px;border:0;background:var(--fx-fill);color:var(--fx-ink);padding:0;font-size:14px}
+
+/* v4: buscar + filtro en un ícono, filas de dos líneas */
+.fx-sbar{display:flex;gap:8px;align-items:center}
+.fx-sbar .fx-search{flex:1}
+body.fx .fx-fbtn{width:40px;height:40px;border-radius:10px;border:0;background:var(--fx-fill);color:var(--fx-ink);display:flex;align-items:center;justify-content:center;padding:0;flex:none}
+body.fx .fx-fbtn.on{background:var(--fx-ink);color:var(--fx-bg)}
+.fx-sbar .fx-menu{left:auto;width:min(260px,100%)}
+body.fx .fx-ftag{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;border:0;border-radius:15px;height:30px;padding:0 12px;background:var(--fx-fill);color:var(--fx-ink);font-size:13.5px;font-weight:600}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.fx-when{font-size:13px;color:var(--fx-3);flex:none}
+body.fx .fx-pat{min-height:62px}
+/* listas de opciones como filas con selector (banco y revisión) */
+.rvsel{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;border-bottom:.5px solid var(--line)}
+.rvsel select,.rvselx{width:auto;max-width:60%;border:0;background:var(--fill);border-radius:8px;min-height:34px;padding:0 10px;font-weight:600}
+.rvselx{max-width:100%;margin-top:6px}
+.px-sel{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--h-2,#6E6E73)}
+.px-sel select{flex:1;min-height:36px;border-radius:10px;border:0;background:var(--h-fill,rgba(120,120,128,.12));color:inherit;padding:0 10px;font-size:15px;font-weight:600}

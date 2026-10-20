@@ -34,8 +34,8 @@ function bkTags(e){
 
 /* ---------- Editor ---------- */
 function bkEditor(){
-  const ch = k => `<div class="rvf"><span class="rvl">${BK_LBL[k]}</span><div class="rvchips">${BK_OPTS[k].map(([v, l]) =>
-    `<button type="button" class="rvc${String(BK[k]) === String(v) ? ' on' : ''}" data-bkx="${k}|${v}" aria-pressed="${String(BK[k]) === String(v)}">${esc(l)}</button>`).join('')}</div></div>`;
+  const ch = k => `<label class="rvsel"><span class="rvl">${BK_LBL[k]}</span><select data-bksel="${k}">${BK_OPTS[k].map(([v, l]) =>
+    `<option value="${esc(String(v))}"${String(BK[k]) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></label>`;
   const knee = ['rod', 'cad', 'gen', 'tob'].includes(BK.reg);
   return `<section class="card rvcard bked" id="bkEd">
     <h2 class="rvname">${BK.mode === 'new' ? 'Nuevo ejercicio' : 'Editar ejercicio'}</h2>
@@ -119,3 +119,5 @@ $('#out').addEventListener('click', e => {
   }
 });
 $('#out').addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.id === 'bkN'){ e.preventDefault(); bkSave(); } });
+
+document.addEventListener('change', e => { const t = e.target.closest && e.target.closest('[data-bksel]'); if(!t) return; bkSync(); const k = t.dataset.bksel, v = t.value; BK[k] = k === 'bloque' || k === 'reg' ? v : +v; render(); });

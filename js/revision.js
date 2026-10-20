@@ -40,7 +40,7 @@ function revCard(){
   const left = rvPending().length, tot = rvTotal();
   if(!RV){ bancoQ.modo = ''; return revBanner() + '<section class="card"><p class="small" style="margin:0">No quedan ejercicios por revisar en esta tanda.' + (rvSkip.size ? ` Saltaste ${rvSkip.size}; <button class="linkbtn" data-rv="reskip" style="min-height:0;padding:0">volver a verlos</button>.` : '') + '</p></section>'; }
   const chips = k => `<div class="rvf"><span class="rvl">${RV_LBL[k]}</span>${RV_HELP[k] ? `<span class="rvh">${RV_HELP[k]}</span>` : ''}
-    <div class="rvchips">${RV_OPTS[k].map(([v, l]) => `<button type="button" class="rvc${String(RV[k]) === String(v) ? ' on' : ''}" data-rvk="${k}|${v}" aria-pressed="${String(RV[k]) === String(v)}">${esc(l)}</button>`).join('')}</div></div>`;
+    <select class="rvselx" data-rvsel="${k}" aria-label="${esc(RV_LBL[k])}">${RV_OPTS[k].map(([v, l]) => `<option value="${esc(String(v))}"${String(RV[k]) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select></div>`;
   const kneeRelevant = ['rod','cad','gen','tob'].includes(RV.reg);
   return `<section class="card rvcard">
     <div class="rvtop"><button class="linkbtn" data-rv="exit" style="min-height:0;padding:0">← Volver al banco</button><span class="rvn">${tot - left + 1} de ${tot} · quedan ${left}</span></div>
@@ -98,3 +98,5 @@ $('#out').addEventListener('click', e => {
   if((b = e.target.closest('[data-bdel]'))){ const n = b.dataset.bdel; bancoSetDel(n, true); undoToast(`Eliminado: ${n}`, () => bancoSetDel(n, false)); }
   if((b = e.target.closest('[data-brest]'))){ bancoSetDel(b.dataset.brest, false); toast('Ejercicio restaurado'); }
 });
+
+document.addEventListener('change', e => { const t = e.target.closest && e.target.closest('[data-rvsel]'); if(!t) return; const k = t.dataset.rvsel, v = t.value; RV[k] = k === 'bloque' || k === 'reg' ? v : +v; render(); });

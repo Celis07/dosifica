@@ -112,20 +112,34 @@ function fxPass(i, f){
   if(/^st-/.test(f)) return i.ds.k === f.slice(3);
   return i.mod === f;
 }
+function fxCorto(s){
+  try{
+    const mo = modOf(s);
+    if(mo === 'deporte'){ const d = s.deporte || (typeof DEP_PERF !== 'undefined' ? DEP_PERF[s.deporteP] : '') || 'Deporte';
+      const r = s.rehab && typeof REHAB_DEP !== 'undefined' && REHAB_DEP[s.rehabCond || 'fp']; return r ? `${d} · rehab ${r.zona || 'lesión'}` : d; }
+    if(mo === 'salud') return 'Salud · ' + ((POBL[s.poblacion || 'sed'] || {}).l || '').replace(/ \(.*\)$/, '');
+    return P[pkey(s)].label.replace(/ \(.*\)$/, '');
+  }catch(e){ return ''; }
+}
 function fxPacientes(){
   const q = FX.q.trim().toLowerCase();
   const list = fxInfos().filter(i => fxPass(i, FX.f) && (!q || (i.p.nombre || '').toLowerCase().includes(q) || i.cond.toLowerCase().includes(q)))
     .sort((a, b) => b.score - a.score || (b.sm.last || '').localeCompare(a.sm.last || '') || (a.p.nombre || '').localeCompare(b.p.nombre || ''));
-  const chips = FX_F.slice(); if(/^st-/.test(FX.f)) chips.splice(1, 0, [FX.f, ST_L[FX.f.slice(3)]]);
+  const fl = (FX_F.find(x => x[0] === FX.f) || [FX.f, /^st-/.test(FX.f) ? ST_L[FX.f.slice(3)] : 'Todos'])[1];
+  const ICF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
   return `<div class="fx-page">
     <header class="fx-hd"><div><span class="fx-eye">${patients.length} paciente${patients.length === 1 ? '' : 's'}</span><h1>Pacientes</h1></div>
       <button type="button" class="fx-avb red" data-fx="nuevo" aria-label="Nuevo paciente">${FX_I.plus}</button></header>
-    <label class="fx-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="fxQ" placeholder="Buscar paciente o condición" aria-label="Buscar paciente" value="${esc(FX.q)}" autocomplete="off"></label>
-    <div class="fx-chips" role="group" aria-label="Filtrar">${chips.map(([k, l]) => `<button type="button" data-fxf="${k}" aria-pressed="${FX.f === k}">${esc(l)}</button>`).join('')}</div>
-    ${patients.length ? (list.length ? `<div class="fx-list">${list.map(i => { const n = unreadBy[i.p.id] || 0, v = tecPendBy[i.p.id] || 0; return `<button type="button" class="fx-rb fx-pat" data-fxopen="${esc(i.p.id)}">
+    <div class="fx-sbar fx-secsel">
+      <label class="fx-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="fxQ" placeholder="Buscar" aria-label="Buscar paciente o condición" value="${esc(FX.q)}" autocomplete="off"></label>
+      <button type="button" class="fx-fbtn${FX.f !== 'todos' ? ' on' : ''}" data-fxfm aria-haspopup="true" aria-expanded="false" aria-label="Filtrar: ${esc(fl)}">${ICF}</button>
+      <div class="fx-menu" role="menu" hidden>${FX_F.map(([k, l]) => `<button type="button" role="menuitem" data-fxf="${k}"${FX.f === k ? ' aria-current="true"' : ''}><span>${esc(l)}</span>${FX.f === k ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : ''}</button>`).join('')}</div>
+    </div>
+    ${FX.f !== 'todos' ? `<button type="button" class="fx-ftag" data-fxf="todos">${esc(fl)} · ${list.length}<span aria-hidden="true">✕</span><span class="sr">Quitar filtro</span></button>` : ''}
+    ${patients.length ? (list.length ? `<div class="fx-list">${list.map(i => { const n = unreadBy[i.p.id] || 0, v = tecPendBy[i.p.id] || 0, pend = i.al + n + (i.p.pend || 0) + v; return `<button type="button" class="fx-rb fx-pat" data-fxopen="${esc(i.p.id)}">
       <i class="fx-d ${i.ds.k}" aria-label="${esc(ST_L[i.ds.k])}"></i>
-      <span class="fx-rt"><b>${esc(i.p.nombre || 'Sin nombre')}</b><span>${esc(i.cond)}</span><span class="fx-r3">S${esc(i.sem || 1)} · adh. ${esc(i.sm.adh || '—')} · ${esc(hace(i.sm.last))}${i.sm.dolor != null ? ` · dolor ${esc(i.sm.dolor)}/10` : ''}</span></span>
-      <span class="fx-bdg">${i.al ? `<em class="r">${i.al}</em>` : ''}${n ? `<em class="b" title="Mensajes">${n}</em>` : ''}${i.p.pend ? `<em class="y" title="Solicitudes">${i.p.pend}</em>` : ''}${v ? `<em class="b" title="Videos">▶</em>` : ''}</span>${FX_I.chev}</button>`; }).join('')}</div>`
+      <span class="fx-rt"><b>${esc(i.p.nombre || 'Sin nombre')}</b><span>${esc(fxCorto(i.s))}</span></span>
+      ${pend ? `<span class="fx-bdg"><em class="${i.al ? 'r' : 'b'}" aria-label="${pend} pendiente${pend > 1 ? 's' : ''}">${pend}</em></span>` : `<span class="fx-when">${esc(i.sm.last ? hace(i.sm.last) : '')}</span>`}${FX_I.chev}</button>`; }).join('')}</div>`
       : '<p class="fx-empty">Ningún paciente coincide.</p>')
       : '<div class="fx-w fx-emptyw"><p>Aún no tienes pacientes guardados.</p><button type="button" class="primary" data-fx="nuevo">Crear el primero</button></div>'}
   </div>`;
@@ -168,6 +182,7 @@ showHome = function(){ document.body.classList.remove('fx-datos'); _showHomeFx.a
 
 $('#home').addEventListener('click', async e => {
   const q = s => e.target.closest(s); let b;
+  if((b = q('[data-fxfm]'))){ const m = b.nextElementSibling; m.hidden = !m.hidden; b.setAttribute('aria-expanded', String(!m.hidden)); return; }
   if((b = q('[data-fxok]'))){ e.stopPropagation(); markReviewed(b.dataset.fxok); return; }
   if((b = q('[data-fxopen]'))){
     const v = b.dataset.fxv || 'resumen'; FX.from = FX.tab;
@@ -319,8 +334,8 @@ function fxDays(out){
   });
 }
 document.addEventListener('click', e => {   // cerrar el menú de secciones al tocar afuera
-  const m = document.querySelector('#out .fx-menu'); if(!m || m.hidden) return;
-  if(!e.target.closest('.fx-secsel')){ m.hidden = true; document.querySelector('#out [data-fxmenu]')?.setAttribute('aria-expanded', 'false'); }
+  const m = document.querySelector('#out .fx-menu:not([hidden]), #home .fx-menu:not([hidden])'); if(!m) return;
+  if(!e.target.closest('.fx-secsel')){ m.hidden = true; m.previousElementSibling?.setAttribute('aria-expanded', 'false'); }
 });
 $('#out').addEventListener('click', e => {
   const mb = e.target.closest('[data-fxmenu]'); if(mb){ const m = mb.nextElementSibling; m.hidden = !m.hidden; mb.setAttribute('aria-expanded', String(!m.hidden)); return; }

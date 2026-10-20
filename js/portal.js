@@ -135,7 +135,7 @@ function pxProgreso(c){
   if(A.pg === 'fuerza'){
     if(!opts.length) chart = `<p class="ap-muted px-empty">Cuando registres el peso de un ejercicio en dos sesiones o más, aquí ves cómo sube.</p>`;
     else { const a = lifts[A.pgEx], f = a[0], l = a[a.length-1], d = l.kg - f.kg;
-      chart = `<div class="px-chips" role="group" aria-label="Ejercicio">${opts.slice(0, 8).map(k => `<button type="button" data-pgex="${esc(k)}" aria-pressed="${k === A.pgEx}">${esc(k)}</button>`).join('')}</div>
+      chart = `<label class="px-sel"><span>Ejercicio</span><select data-pgexsel aria-label="Ejercicio">${opts.slice(0, 12).map(k => `<option${k === A.pgEx ? ' selected' : ''}>${esc(k)}</option>`).join('')}</select></label>
         <p class="px-delta">${d > 0 ? `<b>+${esc(PX.fmtN(d))} kg</b> desde ${esc(fmtD(f.x))}${f.kg ? ` (+${Math.round(d / f.kg * 100)} %)` : ''}` : d < 0 ? `${esc(PX.fmtN(d))} kg desde ${esc(fmtD(f.x))}` : `Mismo peso desde ${esc(fmtD(f.x))}`}</p>
         ${pxLine(a.map(p => ({x: p.x, y: p.kg, tip: `${fmtD(p.x)}: ${PX.fmtN(p.kg)} kg${p.reps ? ' × ' + p.reps : ''}${p.rpe ? ' a RPE ' + p.rpe : ''}`})), {unit:' kg', aria:`Peso en ${A.pgEx}`, dec:1})}`; }
   } else if(A.pg === 'dolor'){
@@ -501,3 +501,5 @@ document.addEventListener('click', async e => {
   }, 400);
   setTimeout(() => clearInterval(t), 20000);
 })();
+
+document.addEventListener('change', e => { if(e.target.matches && e.target.matches('[data-pgexsel]')){ A.pgEx = e.target.value; renderAthlete(); } });
