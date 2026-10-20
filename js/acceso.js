@@ -36,7 +36,7 @@ function accRender(){
     if(!card){ card=document.createElement('section'); card.className='card'; card.id='accCard'; const ph=document.querySelector('#out .phead'); if(ph) ph.after(card); }
     if(card) card.innerHTML=accRowHTML();
   } else if(card) card.remove();
-  const hint=$('#accRow'); if(hint) hint.innerHTML = curId && !isExample ? '<p class="small" style="margin:0">Para enviarle el acceso usa <b>Acceso</b>, junto a Publicar.</p>' : '';
+  const hint=$('#accRow'); if(hint) hint.innerHTML = curId && !isExample ? '<p class="small" style="margin:0">Al publicar, si todavía no ha entrado a Ápex, te aparece cómo enviarle el acceso. <button type="button" class="linkbtn" id="bAcc2">Enviar acceso ahora</button></p>' : '';
 }
 // redibujar el bloque de acceso cada vez que la ficha se dibuja
 if(typeof render==='function'){ const _r=render; render=function(){ const out=_r.apply(this, arguments); accRender(); return out; }; }
@@ -82,6 +82,7 @@ async function accCopy(){
 }
 document.addEventListener('click', e=>{
   const q=s=>e.target.closest(s);
+  if(q('#bAcc2')){ accOpen=true; ACC={id:null,link:'',busy:'',msg:'',kind:''}; accRender(); $('#accCard')?.scrollIntoView({block:'start', behavior:'smooth'}); return; }
   if(q('#bAcc')){ accOpen=!accOpen; if(!accOpen) ACC={id:null,link:'',busy:'',msg:'',kind:''}; accRender(); if(accOpen) $('#accCard')?.scrollIntoView({block:'nearest', behavior:'smooth'}); return; }
   if(q('#accMail')) return accSendMail();
   if(q('#accLink')) return accMakeLink();

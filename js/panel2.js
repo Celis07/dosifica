@@ -256,13 +256,11 @@ function fxFicha(){
     hdr.innerHTML = `<div class="fx-fbar"><button type="button" class="fx-back" data-fxback>${FX_I.back}${esc(backL)}</button><span class="fx-save" id="fxSave">${esc($('#saveState')?.textContent || '')}</span></div>
       <div class="fx-who"><span class="fx-av">${esc(fxIni(st.nombre || 'N'))}</span><div class="fx-wn"><div class="client">${esc(st.nombre || 'Paciente nuevo')}</div><p class="fx-cond">${esc(subLabel(st, P0))}${st.deporte && !depNorm(subLabel(st, P0)).includes(depNorm(st.deporte)) ? ' · ' + esc(st.deporte) : ''}</p></div></div>
       <div class="fx-tags">${ds ? `<span class="fx-tag st-${ds.k}"><i class="fx-d ${ds.k}"></i>${esc(ST_L[ds.k])}</span>` : ''}<span class="fx-tag">Semana ${esc(num(st.semPlan) || 1)} · ${esc(m.l)}</span>${!consent && !isExample ? '<span class="fx-tag bad">Falta consentimiento</span>' : ''}</div>
-      <div class="actions"></div>`;
-    const acts = hdr.querySelector('.actions');
-    ['#bPub', '#bMsg', '#bAcc'].forEach(s => { const b = ph.querySelector(s); if(b) acts.appendChild(b); });
-    const msg = acts.querySelector('#bMsg'); if(msg){ msg.className = 'msgbtn fx-act'; [...msg.childNodes].forEach(n => { if(n.nodeType === 3 && n.textContent.trim()) n.textContent = 'Mensaje'; }); }
-    const pub = acts.querySelector('#bPub'); if(pub) pub.textContent = 'Publicar';
-    const acc = acts.querySelector('#bAcc'); if(acc) acc.textContent = 'Acceso';
-    if(curId && !isExample) acts.insertAdjacentHTML('beforeend', '<button type="button" class="fx-act" data-fx="rcpp" aria-label="Bienestar en vivo">En vivo</button>');
+      <div class="fx-acts"></div>`;
+    const acts = hdr.querySelector('.fx-acts');
+    const pub = ph.querySelector('#bPub'); if(pub){ pub.textContent = 'Publicar'; acts.appendChild(pub); }
+    const msg = ph.querySelector('#bMsg'); if(msg){ msg.className = 'fx-icb'; [...msg.childNodes].forEach(n => { if(n.nodeType === 3) n.remove(); }); msg.title = 'Mensaje'; acts.appendChild(msg); }
+    if(curId && !isExample) acts.insertAdjacentHTML('beforeend', `<button type="button" class="fx-icb" data-fx="rcpp" aria-label="Bienestar en vivo" title="Bienestar en vivo">${FX_I.heart}</button>`);
     const sv = ph.querySelector('#bSave'); if(sv){ sv.className = 'fx-savebtn'; hdr.querySelector('.fx-fbar').appendChild(sv); }
   }
   const ex = ph.querySelector('#bEdit');
@@ -271,10 +269,11 @@ function fxFicha(){
   if(view !== 'plan' && tail) tail.remove();
   if(sp){ tabs.remove(); return; }
   const badge = k => { const n = k === 'req' ? (pendingBy[curId] || 0) : k === 'ses' ? (tecPendBy[curId] || 0) : 0; return n ? `<span class="fx-pb">${n}</span>` : ''; };
-  const nav = document.createElement('nav'); nav.className = 'tabs fx-pills'; nav.setAttribute('role', 'tablist'); nav.setAttribute('aria-label', 'Secciones de la ficha');
-  nav.innerHTML = FX_SECS.map(([k, l]) => `<button type="button" role="tab" data-view="${k}" aria-selected="${view === k}">${l}${badge(k)}</button>`).join('');
+  const cur = FX_SECS.find(x => x[0] === view) || FX_SECS[0], tot = (pendingBy[curId] || 0) + (tecPendBy[curId] || 0);
+  const nav = document.createElement('div'); nav.className = 'fx-secsel';
+  nav.innerHTML = `<button type="button" class="fx-secbtn" data-fxmenu aria-haspopup="true" aria-expanded="false"><span>Sección</span><b>${esc(cur[1])}</b>${cur[0] === 'resumen' && tot ? `<span class="fx-pb">${tot}</span>` : ''}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="fx-menu" role="menu" hidden>${FX_SECS.map(([k, l]) => `<button type="button" role="menuitem" data-view="${k}"${k === view ? ' aria-current="true"' : ''}><span>${l}</span>${badge(k)}${k === view ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : ''}</button>`).join('')}</div>`;
   tabs.replaceWith(nav);
-  setTimeout(() => nav.querySelector('[aria-selected="true"]')?.scrollIntoView({block: 'nearest', inline: 'nearest'}), 0);
   // Cuerpo de cada sección
   const keep = el => el.id === 'accCard' || el === hdr || el === nav || el.classList.contains('example') || el.classList.contains('foot');
   if(view === 'resumen' || view === 'datos'){
@@ -285,58 +284,48 @@ function fxFicha(){
     const card = document.createElement('section'); card.className = 'card fx-phase';
     card.innerHTML = `<div><span class="fx-eye">Fase actual · ${esc(phs.when)}</span><h2>${esc(phs.name)}</h2><p>${esc(phs.goal)}</p></div><div class="actions"></div>`;
     if(ex) card.querySelector('.actions').appendChild(ex);
-    (out.querySelector('#accCard') || nav).after(card);
+    nav.after(card);
   }
-  fxSubTabs(out, nav);
-}
-
-/* Subpestañas dentro de cada sección: una cosa a la vez */
-const FX_SUB = {
-  plan: [['sem', 'Semana', c => c.classList.contains('fx-phase') || c.classList.contains('day') || c.classList.contains('dlbar') || /^esta semana/i.test(fxT(c))],
-         ['ciclo', 'Ciclo', c => /^(semanas|semana tipo|carga|dosis)/i.test(fxT(c))],
-         ['caso', 'Caso y evidencia', c => true]],
-  ses:  [['res', 'Resumen', (c, i) => i < 2 && !fxT(c)],
-         ['chk', 'Chequeos y carga', c => /^(chequeo|carga|monoton)/i.test(fxT(c))],
-         ['reg', 'Registros', c => /^(sesiones|evaluaciones)/i.test(fxT(c))],
-         ['vid', 'Videos', c => true]],
-  eval: [['per', 'Persona', c => c.classList.contains('pf-top') || /^persona/i.test(fxT(c))],
-         ['ant', 'Antecedentes', c => /^antecedentes/i.test(fxT(c))],
-         ['dol', 'Dolor', c => /^dolor/i.test(fxT(c))],
-         ['pru', 'Pruebas', c => /^pruebas/i.test(fxT(c))],
-         ['viv', 'En vivo', c => true]],
-  cal:  [['tor', 'Torneos', c => /^calendario/i.test(fxT(c))], ['sem', 'Semanas', c => true]]
-};
-FX.sub = {}; FX.dayOpen = new Set([0]);
-const fxT = c => ((c.querySelector('h3.sec, h3, h2') || {}).textContent || '').trim();
-function fxSubTabs(out, nav){
-  const def = FX_SUB[view]; if(!def || editMode) { fxDays(out); return; }
-  const cards = [...out.children].filter(c => c.tagName === 'SECTION' && c.id !== 'accCard');
-  const groups = def.map(() => []);
-  cards.forEach((c, i) => { const g = def.findIndex(d => d[2](c, i)); groups[g < 0 ? def.length - 1 : g].push(c); });
-  const used = def.map((d, k) => [d, groups[k]]).filter(x => x[1].length);
-  if(used.length < 2){ fxDays(out); return; }
-  let cur = FX.sub[view]; if(!used.some(x => x[0][0] === cur)) cur = used[0][0][0];
-  used.forEach(([d, cs]) => cs.forEach(c => { c.hidden = d[0] !== cur; }));
-  const seg = document.createElement('div'); seg.className = 'fx-seg'; seg.setAttribute('role', 'tablist'); seg.setAttribute('aria-label', 'Partes de esta sección');
-  seg.innerHTML = used.map(([d]) => `<button type="button" role="tab" data-fxsub="${d[0]}" aria-selected="${d[0] === cur}">${esc(d[1])}</button>`).join('');
-  nav.after(seg);
+  fxFold(out);
   fxDays(out);
 }
-// Días del plan plegados: se ve el resumen y se abre el que se toque
+
+/* Todo plegable: cada tarjeta de la sección se abre y se cierra con su título (se recuerda) */
+FX.dayOpen = new Set();
+try{ FX.open = new Set(JSON.parse(LS.get('apex_fxopen') || '[]')); }catch(e){ FX.open = new Set(); }
+const fxT = c => ((c.querySelector('h3.sec, h3, h2') || {}).textContent || '').trim();
+function fxFold(out){
+  if(editMode) return;
+  [...out.children].forEach(c => {
+    if(c.tagName !== 'SECTION' || c.id === 'accCard' || c.classList.contains('day') || c.classList.contains('dlbar')) return;
+    const t = c.querySelector('h3.sec, h3, h2'); if(!t) return;
+    const title = (c.classList.contains('fx-phase') ? 'Fase · ' : '') + t.textContent.trim().split(' (')[0];
+    const key = view + ':' + title.split(' · ')[0].slice(0, 40), open = FX.open.has(key);
+    c.classList.remove('fold', 'open'); c.classList.add('fx-cc'); c.classList.toggle('fx-closed', !open);
+    t.classList.add('fx-hidt');
+    c.insertAdjacentHTML('afterbegin', `<button type="button" class="fx-ch" data-fxcc="${esc(key)}" aria-expanded="${open}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg><span>${esc(title)}</span></button>`);
+  });
+}
+// Días del plan plegados: se ve el título y los bloques; se abre el que se toque
 function fxDays(out){
   if(view !== 'plan' || editMode) return;
   out.querySelectorAll(':scope > section.card.day').forEach((c, i) => {
     if(typeof logOpen !== 'undefined' && logOpen === i) FX.dayOpen.add(i);
     const open = FX.dayOpen.has(i), h = c.querySelector('.dayhead'); if(!h) return;
-    const rows = c.querySelectorAll('.blk tr, .blk .ex, .blk li').length;
     c.classList.add('fx-day'); c.classList.toggle('fx-closed', !open);
     const t = h.querySelector('h3'); if(!t) return;
     const n = [...c.querySelectorAll('.blk')].map(b => (b.querySelector('.bh b') || {}).textContent).filter(Boolean);
     t.innerHTML = `<button type="button" class="fx-dt" data-fxday="${i}" aria-expanded="${open}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>${esc(t.textContent)}${!open && n.length ? `<small>${esc(n.join(' · '))}</small>` : ''}</button>`;
   });
 }
+document.addEventListener('click', e => {   // cerrar el menú de secciones al tocar afuera
+  const m = document.querySelector('#out .fx-menu'); if(!m || m.hidden) return;
+  if(!e.target.closest('.fx-secsel')){ m.hidden = true; document.querySelector('#out [data-fxmenu]')?.setAttribute('aria-expanded', 'false'); }
+});
 $('#out').addEventListener('click', e => {
-  const sb_ = e.target.closest('[data-fxsub]'); if(sb_){ FX.sub[view] = sb_.dataset.fxsub; render(); return; }
+  const mb = e.target.closest('[data-fxmenu]'); if(mb){ const m = mb.nextElementSibling; m.hidden = !m.hidden; mb.setAttribute('aria-expanded', String(!m.hidden)); return; }
+  const cc = e.target.closest('[data-fxcc]'); if(cc){ const k = cc.dataset.fxcc, card = cc.closest('.fx-cc'); FX.open.has(k) ? FX.open.delete(k) : FX.open.add(k); const o = FX.open.has(k);
+    card.classList.toggle('fx-closed', !o); cc.setAttribute('aria-expanded', String(o)); try{ LS.set('apex_fxopen', JSON.stringify([...FX.open])); }catch(_){} return; }
   const dy = e.target.closest('[data-fxday]'); if(dy){ const i = +dy.dataset.fxday; FX.dayOpen.has(i) ? FX.dayOpen.delete(i) : FX.dayOpen.add(i); render(); return; }
   const b = e.target.closest('[data-fxback],[data-fx]'); if(!b) return;
   if(b.hasAttribute('data-fxback')){ e.stopPropagation(); return fxBack(true); }
@@ -355,4 +344,26 @@ function fxBack(full){
   }
   if(FX.tab !== 'inicio'){ FX.tab = 'inicio'; FX.from = 'inicio'; renderHome(); window.scrollTo(0, 0); return true; }
   return false;
+}
+
+/* Publicar abre también el acceso (si el deportista todavía no ha entrado nunca a Ápex) */
+if(typeof publishPlan === 'function'){
+  const _pubFx = publishPlan;
+  publishPlan = async function(){
+    await _pubFx.apply(this, arguments);
+    if(!curId || isExample || !(st.email || '').trim() || typeof accRender !== 'function') return;
+    const yaEntro = (sessions || []).some(x => x.autor === 'deportista') || (typeof wellness !== 'undefined' && wellness.length) || (typeof unreadBy !== 'undefined' && unreadBy[curId]);
+    if(yaEntro) return;
+    accOpen = true; ACC = {id: curId, link: '', busy: '', msg: 'Plan publicado. Si todavía no ha entrado a Ápex, envíale su acceso:', kind: 'ok'};
+    accRender(); $('#accCard')?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  };
+}
+if(typeof accRender === 'function'){
+  const _accFx = accRender;
+  accRender = function(){
+    _accFx.apply(this, arguments);
+    $('#bAcc')?.remove();
+    const c = $('#accCard'); if(c && !c.querySelector('[data-fxaccx]')) c.insertAdjacentHTML('afterbegin', '<button type="button" class="fx-accx" data-fxaccx aria-label="Cerrar">✕</button>');
+  };
+  document.addEventListener('click', e => { if(e.target.closest('[data-fxaccx]')){ accOpen = false; ACC = {id: null, link: '', busy: '', msg: '', kind: ''}; accRender(); } });
 }

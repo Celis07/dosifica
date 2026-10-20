@@ -1,6 +1,6 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
-// tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (chequeo en rojo → fisio),
+// tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (cada chequeo del deportista → fisio, en verde, amarillo o rojo),
 //        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -66,14 +66,21 @@ Deno.serve(async (req) => {
       const { data: p } = pl ? await db.from("pacientes").select("email,avisos").eq("id", pl.paciente_id).maybeSingle() : { data: null };
       if (p?.email && quiere(p, "plan")) n = await enviar(p.email, { title: "Tu plan está listo", body: `Tu fisioterapeuta publicó tu plan de la semana ${pl!.semana ?? ""}.`, tag: "plan" });
     }
-    if (b.tipo === "bienestar") { // chequeo diario en rojo → fisio
+    if (b.tipo === "bienestar") { // cada chequeo diario del deportista → fisio (en rojo con prioridad)
       const { data: w } = await db.from("bienestar").select("paciente_id,sueno,estres,fatiga,dolor,molestias").eq("id", b.id).maybeSingle();
       if (w) {
         const { data: p } = await db.from("pacientes").select("nombre,fisio_email").eq("id", w.paciente_id).maybeSingle();
         const Z: Record<string, string> = { cuello: "cuello", hombro: "hombro", codo: "codo o muñeca", dorsal: "espalda alta", lumbar: "zona lumbar", cadera: "cadera", muslo: "muslo", rodilla: "rodilla", pierna: "pierna", tobillo: "tobillo", otra: "otra zona" };
-        const why = [w.sueno >= 6 ? "durmió muy mal" : "", w.estres >= 6 ? "estrés muy alto" : "", w.fatiga >= 6 ? "fatiga muy alta" : "", w.dolor >= 6 ? "dolor muscular alto" : "",
-          ...((w.molestias || []) as any[]).filter((m) => +m.i >= 6).map((m) => `dolor en ${Z[m.z] || m.z} ${m.i}/10`)].filter(Boolean).join(" · ");
-        if (p?.fisio_email) n = await enviar(p.fisio_email, { title: "Chequeo en rojo", body: `${p.nombre || "Paciente"}: ${why}. Su plan de hoy ya salió recortado.`, tag: "chk-" + w.paciente_id, url: APP });
+        const mol = ((w.molestias || []) as any[]);
+        const it = [w.sueno, w.estres, w.fatiga, w.dolor].map((x) => +x || 0), max = Math.max(...it, ...mol.map((m) => +m.i >= 6 ? 6 : +m.i >= 4 ? 5 : 0)), sum = it.reduce((a, c) => a + c, 0);
+        const rojo = max >= 6 || sum >= 18, amarillo = !rojo && (max >= 5 || sum >= 14);
+        const why = [w.sueno >= 5 ? "durmió mal" : "", w.estres >= 5 ? "estrés alto" : "", w.fatiga >= 5 ? "fatiga alta" : "", w.dolor >= 5 ? "dolor muscular alto" : "",
+          ...mol.filter((m) => +m.i >= 4).map((m) => `dolor en ${Z[m.z] || m.z} ${m.i}/10`)].filter(Boolean).join(" · ");
+        const nom = p?.nombre || "Paciente";
+        const msg = rojo ? { title: "Chequeo en rojo", body: `${nom}: ${why || "bienestar muy bajo"}. Su plan de hoy ya salió recortado.` }
+          : amarillo ? { title: "Chequeo en amarillo", body: `${nom}: ${why || "bienestar bajo"}. Hoy sin subir carga.` }
+          : { title: "Chequeo en verde", body: `${nom} respondió su chequeo: listo para entrenar.` };
+        if (p?.fisio_email) n = await enviar(p.fisio_email, { ...msg, tag: "chk-" + w.paciente_id, url: APP });
       }
     }
     const avisados = new Set<string>();
