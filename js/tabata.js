@@ -3,7 +3,7 @@
    Configura: preparación, trabajo, descanso, número de ejercicios, número de series y
    descanso entre series (más los nombres de los ejercicios, opcionales).
    Corre a pantalla completa con el color de la fase, anillo de progreso, cuenta regresiva grande,
-   pitidos (3-2-1, inicio de trabajo y de descanso, final), voz opcional y vibración en Android.
+   silbato al empezar cada trabajo, campana al terminarlo (triple al final), pitidos 3-2-1 y vibración en Android. Sin voz.
    El tiempo se calcula con la hora real, así que no se desfasa aunque el celular vaya lento.
    Se abre desde Inicio (Tabata), desde un bloque Intermitente del plan y desde el panel del fisio. */
 
@@ -39,7 +39,7 @@ function tbPhases(c){
   return P;
 }
 
-/* ---------- Sonido, voz y vibración ---------- */
+/* ---------- Sonido y vibración ---------- */
 function tbAudio(){
   if(TB.ac) return TB.ac;
   const C = window.AudioContext || window.webkitAudioContext; if(!C) return null;
@@ -54,17 +54,47 @@ function tbTone(freq, dur, when = 0, vol = .22, type = 'sine'){
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + .02); }catch(e){}
 }
 function tbVib(p){ if(TB && TB.cfg.vib) try{ navigator.vibrate && navigator.vibrate(p); }catch(e){} }
-function tbSay(t){
-  if(!TB || !TB.cfg.voice || !('speechSynthesis' in window)) return;
-  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'es-ES'; u.rate = 1.05; speechSynthesis.speak(u); }catch(e){}
+// Silbato de árbitro: tono agudo con trino (modulación rápida) y algo de aire (ruido filtrado)
+function tbWhistle(when = 0, dur = .55){
+  if(!TB || !TB.cfg.sound) return;
+  const ac = tbAudio(); if(!ac) return;
+  try{
+    const t0 = ac.currentTime + when, out = ac.createGain();
+    out.gain.setValueAtTime(0.0001, t0); out.gain.exponentialRampToValueAtTime(.3, t0 + .02);
+    out.gain.setValueAtTime(.3, t0 + dur - .06); out.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    out.connect(ac.destination);
+    const o = ac.createOscillator(); o.type = 'sine'; o.frequency.value = 2850;
+    const lfo = ac.createOscillator(), dep = ac.createGain(); lfo.frequency.value = 32; dep.gain.value = 140;
+    lfo.connect(dep); dep.connect(o.frequency);
+    const og = ac.createGain(); og.gain.value = .8; o.connect(og); og.connect(out);
+    const len = Math.ceil(ac.sampleRate * dur), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+    for(let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const nz = ac.createBufferSource(), bp = ac.createBiquadFilter(), ng = ac.createGain();
+    nz.buffer = buf; bp.type = 'bandpass'; bp.frequency.value = 2850; bp.Q.value = 6; ng.gain.value = .35;
+    nz.connect(bp); bp.connect(ng); ng.connect(out);
+    [o, lfo, nz].forEach(n => { n.start(t0); n.stop(t0 + dur + .02); });
+  }catch(e){}
+}
+// Campana: parciales inarmónicos que se apagan solos (los agudos más rápido)
+function tbBell(when = 0, base = 740, vol = .3){
+  if(!TB || !TB.cfg.sound) return;
+  const ac = tbAudio(); if(!ac) return;
+  try{
+    const t0 = ac.currentTime + when;
+    [[1, 1, 1.9], [2, .55, 1.3], [2.76, .42, 1.0], [5.4, .22, .6], [8.93, .12, .35]].forEach(([r, a, dec]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = base * r;
+      g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol * a, t0 + .004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dec);
+      o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dec + .05);
+    });
+  }catch(e){}
 }
 function tbCue(p){
-  // al empezar cada fase
-  if(p.k === 'work'){ tbTone(1320, .45, 0, .26, 'triangle'); tbVib([200]); tbSay(tbName(TB.cfg, p.ex)); }
-  else if(p.k === 'rest'){ tbTone(660, .4); tbVib([90, 60, 90]); tbSay('Descanso'); }
-  else if(p.k === 'srest'){ tbTone(660, .35); tbTone(520, .45, .2); tbVib([90, 60, 90]); tbSay('Descanso entre series'); }
-  else if(p.k === 'prep'){ tbSay('Prepárate'); }
-  else if(p.k === 'done'){ tbTone(784, .18); tbTone(988, .18, .18); tbTone(1318, .5, .36, .26, 'triangle'); tbVib([200, 80, 200, 80, 400]); tbSay('¡Terminado! Buen trabajo'); }
+  // Silbato al empezar cada tiempo de trabajo; campana al terminarlo. Sin voz.
+  if(p.k === 'work'){ tbWhistle(); tbVib([200]); }
+  else if(p.k === 'rest' || p.k === 'srest'){ tbBell(); tbVib([90, 60, 90]); }
+  else if(p.k === 'done'){ tbBell(0); tbBell(.45); tbBell(.9, 740, .34); tbVib([200, 80, 200, 80, 400]); }
 }
 
 /* ---------- Motor ---------- */
@@ -128,8 +158,7 @@ function tbSetup(){
     <details class="tb-names"${(c.names || []).some(Boolean) ? ' open' : ''}><summary>Nombres de los ejercicios <span>(opcional)</span></summary>
       <div class="tb-nl">${Array.from({length:c.ex}, (_, k) => `<label><span>${k + 1}</span><input type="text" data-tbn="${k}" value="${esc((c.names || [])[k] || '')}" placeholder="Ejercicio ${k + 1}" maxlength="40"></label>`).join('')}</div></details>
     <div class="tb-list">
-      <label class="tb-row tb-sw"><span class="tb-l"><b>Sonidos</b><span>Pitidos 3-2-1 y al cambiar de fase</span></span><input type="checkbox" role="switch" data-tbo="sound"${c.sound ? ' checked' : ''}></label>
-      <label class="tb-row tb-sw"><span class="tb-l"><b>Voz</b><span>Dice el ejercicio y "descanso"</span></span><input type="checkbox" role="switch" data-tbo="voice"${c.voice ? ' checked' : ''}></label>
+      <label class="tb-row tb-sw"><span class="tb-l"><b>Sonidos</b><span>Silbato al empezar, campana al terminar y 3-2-1</span></span><input type="checkbox" role="switch" data-tbo="sound"${c.sound ? ' checked' : ''}></label>
       ${'vibrate' in navigator ? `<label class="tb-row tb-sw"><span class="tb-l"><b>Vibración</b><span>Al cambiar de fase</span></span><input type="checkbox" role="switch" data-tbo="vib"${c.vib ? ' checked' : ''}></label>` : ''}
     </div>
     <p class="tb-hint">En iPhone, sube el volumen. La pantalla se mantiene encendida mientras corre.</p>
@@ -189,7 +218,7 @@ function openTabata(pre, source){
   tbRender();
 }
 function tbClose(){
-  tbStopTick(); tbWakeOff(); try{ speechSynthesis.cancel(); }catch(e){}
+  tbStopTick(); tbWakeOff();
   const el = $('#tabata'); if(el){ el.hidden = true; el.innerHTML = ''; } document.body.classList.remove('tbopen');
   try{ TB && TB.ac && TB.ac.close(); }catch(e){}
   TB = null;
@@ -197,7 +226,6 @@ function tbClose(){
 function tbStart(){
   const ac = tbAudio(); try{ ac && ac.resume(); }catch(e){}
   tbTone(1, .01, 0, .0001);   // desbloquea el audio en iPhone (tiene que ser dentro del toque)
-  if(TB.cfg.voice && 'speechSynthesis' in window){ try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} }
   tbSave(TB.cfg);
   TB.ph = tbPhases(TB.cfg); TB.screen = 'run'; TB.paused = false; TB.t0 = tbNow(); TB.workMs = 0;
   tbWakeOn(); tbGo(0); tbStartTick();
@@ -224,7 +252,7 @@ document.addEventListener('click', e => {
   if(k === 'next') return tbGo(TB.i + 1, TB.paused);
   if(k === 'stop'){
     if(!TB.stopAsk){ TB.stopAsk = true; toast('Toca la X otra vez para terminar.'); setTimeout(() => { if(TB) TB.stopAsk = false; }, 3000); return; }
-    TB.screen = 'setup'; tbStopTick(); tbWakeOff(); try{ speechSynthesis.cancel(); }catch(e){} return tbRender();
+    TB.screen = 'setup'; tbStopTick(); tbWakeOff(); return tbRender();
   }
 });
 document.addEventListener('change', e => {
