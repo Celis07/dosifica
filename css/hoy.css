@@ -375,3 +375,67 @@ body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin
 #athleteApp.ath2 .px-tecf select,#athleteApp.ath2 .px-tecf input[type=text]{width:100%;min-height:44px;border:0;border-radius:10px;background:var(--h-fill);color:var(--h-ink);padding:0 12px;font-size:16px}
 #athleteApp.ath2 .px-tecf input[type=file]{font-size:15px;color:var(--h-ink)}
 .ap-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+
+/* ---------- Portada con widgets (portada.js) ---------- */
+#athleteApp.ath2{--po-w:#FFFFFF;--po-l:#6E6E73;--po-ses:#E5202E;--po-ses-t:rgba(229,32,46,.18);--po-chk:#0A6CFF;--po-chk-t:rgba(10,108,255,.16);--po-ses-ink:#C4161F;--po-chk-ink:#0A5BD6;--po-q:#E5E5EA}
+@media (prefers-color-scheme:dark){#athleteApp.ath2{--po-w:#1C1C1E;--po-l:#98989F;--po-ses:#FF453A;--po-ses-t:rgba(255,69,58,.22);--po-chk:#64D2FF;--po-chk-t:rgba(100,210,255,.2);--po-ses-ink:#FF6961;--po-chk-ink:#64D2FF;--po-q:#2C2C2E}}
+.po-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.po-top h1{margin:0}
+.po-date{margin:0;font-size:13px;font-weight:600;color:var(--po-l);text-transform:uppercase;letter-spacing:.04em}
+.po-body{gap:14px}
+#athleteApp.ath2 .po-w{display:flex;flex-direction:column;gap:6px;background:var(--po-w);border:0;border-radius:22px;padding:14px;text-align:left;color:var(--h-ink);font-size:15px;width:100%;box-sizing:border-box}
+.po-l{font-size:13px;font-weight:600;color:var(--po-l)}
+.po-s{font-size:13px;color:var(--po-l);line-height:1.3}
+.po-hero{--tint:var(--h-n);--dot:var(--h-n-dot);--ic:var(--h-n-ic);--ti:var(--h-n-ink);--t2:var(--h-n-2);gap:12px!important}
+#athleteApp.ath2 .po-hero{background:var(--tint);padding:16px}
+.po-hero.s-g{--tint:var(--h-g);--dot:var(--h-g-dot);--ic:var(--h-g-ic);--ti:var(--h-g-ink);--t2:var(--h-g-2)}
+.po-hero.s-y{--tint:var(--h-y);--dot:var(--h-y-dot);--ic:var(--h-y-ic);--ti:var(--h-y-ink);--t2:var(--h-y-2)}
+.po-hero.s-r{--tint:var(--h-r);--dot:var(--h-r-dot);--ic:var(--h-r-ic);--ti:var(--h-r-ink);--t2:var(--h-r-2)}
+.po-hs{display:flex;gap:12px;align-items:center}
+.po-dot{width:34px;height:34px;border-radius:17px;flex:none;background:var(--dot);color:var(--ic);display:flex;align-items:center;justify-content:center}
+.po-ht{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.po-ht b{font-size:17px;font-weight:700;line-height:1.25}
+.po-ht>span:not(.po-l){font-size:14px;color:var(--po-l)}
+.po-hero .po-ht b{color:var(--ti)} .po-hero .po-ht>span{color:var(--t2)!important}
+.po-ses{display:flex;align-items:center;gap:10px;border-top:.5px solid rgba(120,120,128,.3);padding-top:12px}
+#athleteApp.ath2 .po-sesb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;border:0;background:transparent;padding:0;text-align:left;color:var(--ti)}
+.po-sesb b{font-size:20px;font-weight:700;letter-spacing:-.01em} .po-sesb b span{font-size:15px;font-weight:500;color:var(--t2)}
+.po-sesb>span{font-size:13px;color:var(--t2)}
+#athleteApp.ath2 .po-play{width:52px;height:52px;border-radius:26px;border:0;flex:none;background:var(--h-act);color:var(--h-on-act);display:flex;align-items:center;justify-content:center}
+.po-done{width:44px;height:44px;border-radius:22px;flex:none;background:var(--dot);color:var(--ic);display:flex;align-items:center;justify-content:center}
+#athleteApp.ath2 .po-cta{min-height:44px;border:0;border-radius:12px;background:var(--h-act);color:var(--h-on-act);font-size:16px;font-weight:600;padding:0 16px}
+#athleteApp.ath2 .po-plain{min-height:44px;border:0;border-radius:12px;background:transparent;color:var(--h-ink);font-size:16px;font-weight:500;padding:0 12px}
+#athleteApp.ath2 .po-del{color:var(--h-r-txt)}
+.po-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+#athleteApp.ath2 .po-sq{min-height:150px;justify-content:space-between}
+.po-rings{display:block}
+.po-rings circle{fill:none;stroke-width:13;stroke-linecap:round}
+.po-rings .tr.ses{stroke:var(--po-ses-t)} .po-rings .v.ses{stroke:var(--po-ses)}
+.po-rings .tr.chk{stroke:var(--po-chk-t)} .po-rings .v.chk{stroke:var(--po-chk)}
+.po-s b.ses{color:var(--po-ses-ink)} .po-s b.chk{color:var(--po-chk-ink)}
+.po-big{font-size:46px;font-weight:700;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.po-mid{font-size:20px;font-weight:700;line-height:1.15}
+.po-rv{display:flex;flex-direction:column} .po-rv b{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1} .po-rv span{font-size:13px;color:var(--po-l);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.po-spark polyline{fill:none;stroke:var(--h-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round} .po-spark circle{fill:var(--h-ink)}
+.po-weeks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.po-weeks i{height:8px;border-radius:4px;background:var(--po-q)} .po-weeks i.ok{background:var(--h-g-dot)} .po-weeks i.now{background:var(--po-l);opacity:.5}
+#athleteApp.ath2 .po-meta,#athleteApp.ath2 .po-msg,#athleteApp.ath2 .po-lec{flex-direction:row;align-items:center;gap:12px}
+#athleteApp.ath2 .po-mf{flex-direction:column;align-items:stretch}
+.po-mi{width:36px;height:36px;border-radius:18px;flex:none;background:var(--po-q);color:var(--h-ink);display:flex;align-items:center;justify-content:center}
+.po-meta .chev,.po-lec .chev{color:var(--h-chev);flex:none}
+.po-cd{display:flex;flex-direction:column;align-items:flex-end;flex:none} .po-cd b{font-size:26px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums} .po-cd span{font-size:12px;color:var(--po-l)}
+.po-empty .po-mi{background:var(--h-act);color:var(--h-on-act)}
+#athleteApp.ath2 .po-mf input{width:100%;min-height:44px;border:0;border-radius:10px;background:var(--h-fill);color:var(--h-ink);padding:0 12px;font-size:16px;box-sizing:border-box}
+.po-mf label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--po-l)}
+.po-acts{display:flex;gap:8px;flex-wrap:wrap}
+.po-note{margin:0;font-size:12px;color:var(--po-l)}
+.po-msg .po-ht b{font-weight:500;font-size:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.po-unread{width:10px;height:10px;border-radius:5px;background:var(--po-chk);flex:none}
+.po-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:4px 0}
+#athleteApp.ath2 .po-quick button{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:transparent;color:var(--h-ink);font-size:12px;font-weight:500;padding:0}
+.po-quick button>span{position:relative;width:58px;height:58px;border-radius:29px;background:var(--po-w);display:flex;align-items:center;justify-content:center}
+.po-badge{position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:6px;background:var(--po-ses);border:2px solid var(--po-w)}
+#athleteApp.ath2 .po-back{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--ti,var(--h-ink));font-size:17px;font-weight:500;padding:0;min-height:36px;margin-right:auto}
+.ap-top .ap-date{margin-left:8px}
+#athleteApp.ath2 .po-top{display:flex;flex-direction:row;justify-content:space-between;align-items:flex-end;text-align:left}
+#athleteApp.ath2 .po-top>div{display:flex;flex-direction:column;align-items:flex-start;min-width:0}

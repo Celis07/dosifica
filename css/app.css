@@ -791,3 +791,6 @@ table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
 #chatDlg .px-qr{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 #chatDlg .md-pre.px-pre{display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding-bottom:2px}
 #chatDlg .md-pre.px-pre button{flex:none;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px dashed var(--line);background:transparent;border-radius:16px;padding:6px 10px;font-size:.8rem;font-weight:500}
+.po-fmeta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin:4px 0 6px;padding:6px 10px;border-radius:8px;background:var(--soft);border:1px solid var(--line);font-size:.86rem}
+.po-fmeta span{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.po-fmeta i{font-style:normal;color:var(--muted)}
