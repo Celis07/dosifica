@@ -93,10 +93,7 @@ function fxInicio(){
 
     <button type="button" class="fx-w fx-live" data-fx="rcp"><span class="fx-lt"><span class="fx-lk">En vivo</span><b>Bienestar antes de entrenar</b><span>${preHoy.length ? `${preHoy.length} hoy` : 'Para quien entrena contigo hoy'}</span></span><span class="fx-play">${FX_I.play}</span></button>
 
-    <div class="fx-grid">
-      <button type="button" class="fx-w fx-small" data-tbopen="libre"><span class="fx-ic">${FX_I.timer}</span><span><b>Intervalos</b><span>Cronómetro</span></span></button>
-      <div class="fx-w fx-small"><span class="fx-ic c-tor">${FX_I.trophy}</span><span><b>${tor1 ? esc(fmtD(tor1.f)) : 'Sin torneos'}</b><span>${tor1 ? `${esc(tor1.n || 'Torneo')}${torN > 1 ? ` · ${torN} deportistas` : ` · ${esc((tor1.p || '').split(' ')[0])}`}` : 'Próximo torneo'}</span></span></div>
-    </div>
+    <div class="fx-w fx-small"><span class="fx-ic c-tor">${FX_I.trophy}</span><span><b>${tor1 ? 'Próximo torneo · ' + esc(fmtD(tor1.f)) : 'Sin torneos próximos'}</b><span>${tor1 ? `${esc(tor1.n || 'Torneo')}${torN > 1 ? ` · ${torN} deportistas` : ` · ${esc((tor1.p || '').split(' ')[0])}`}` : 'Agrégalos en el Calendario de cada deportista'}</span></span></div>
 
     <section class="fx-sec"><h2>Requiere atención</h2>
       ${att.length ? `<div class="fx-list">${att.slice(0, 8).map(a => `<div class="fx-row"><button type="button" class="fx-rb" data-fxopen="${esc(a.pid)}" data-fxv="${a.v}"><i class="fx-d ${a.k}"></i><span class="fx-rt"><b>${esc(a.t)}</b><span>${esc(a.d)}</span></span>${a.ok ? '' : FX_I.chev}</button>${a.ok ? `<button type="button" class="fx-ok" data-fxok="${esc(a.ok)}">Revisada</button>` : ''}</div>`).join('')}</div>`
@@ -210,7 +207,7 @@ openPatient = function(id, v){ return _openPatientFx(id, v || 'resumen'); };
 function fxResumen(){
   const p = patients.find(x => x.id === curId), ds = p && typeof dayState === 'function' ? dayState(p) : {k: 'n', t: 'Sin datos'};
   const nd = nDias(st), w = num(st.semPlan) || 1, done = Math.min((sumBy[curId]?.byWeek?.[w]) || 0, nDias(st)), m = mesoWeek(st);
-  const pf = st.perfil || {}, rf = (pf.rf || []).length, yf = (pf.yf || []).length;
+  const pf = (st.pf && typeof st.pf === 'object' ? st.pf : (typeof st.perfil === 'object' && st.perfil) || {}), rf = (pf.rf || []).length, yf = (pf.yf || []).length;
   const ses = (sessions || []).filter(s => s.dolor != null).slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '')).slice(-8);
   const lastS = (sessions || []).slice().sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''))[0];
   let spark = '';
@@ -257,13 +254,15 @@ function fxFicha(){
     hdr.innerHTML = `<div class="fx-fbar"><button type="button" class="fx-back" data-fxback>${FX_I.back}${esc(backL)}</button></div><h1 class="fx-tt">${view === 'banco' ? 'Banco de ejercicios' : 'Tabla de pacientes'}</h1>`;
   } else {
     hdr.innerHTML = `<div class="fx-fbar"><button type="button" class="fx-back" data-fxback>${FX_I.back}${esc(backL)}</button><span class="fx-save" id="fxSave">${esc($('#saveState')?.textContent || '')}</span></div>
-      <div class="fx-who"><span class="fx-av">${esc(fxIni(st.nombre || 'N'))}</span><div class="fx-wn"><div class="client">${esc(st.nombre || 'Paciente nuevo')}</div><p class="fx-cond">${esc(subLabel(st, P0))}${st.deporte ? ' · ' + esc(st.deporte) : ''}</p></div></div>
+      <div class="fx-who"><span class="fx-av">${esc(fxIni(st.nombre || 'N'))}</span><div class="fx-wn"><div class="client">${esc(st.nombre || 'Paciente nuevo')}</div><p class="fx-cond">${esc(subLabel(st, P0))}${st.deporte && !depNorm(subLabel(st, P0)).includes(depNorm(st.deporte)) ? ' · ' + esc(st.deporte) : ''}</p></div></div>
       <div class="fx-tags">${ds ? `<span class="fx-tag st-${ds.k}"><i class="fx-d ${ds.k}"></i>${esc(ST_L[ds.k])}</span>` : ''}<span class="fx-tag">Semana ${esc(num(st.semPlan) || 1)} · ${esc(m.l)}</span>${!consent && !isExample ? '<span class="fx-tag bad">Falta consentimiento</span>' : ''}</div>
       <div class="actions"></div>`;
     const acts = hdr.querySelector('.actions');
     ['#bPub', '#bMsg', '#bAcc'].forEach(s => { const b = ph.querySelector(s); if(b) acts.appendChild(b); });
-    const msg = acts.querySelector('#bMsg'); if(msg){ msg.className = 'msgbtn fx-act'; }
-    if(curId && !isExample) acts.insertAdjacentHTML('beforeend', '<button type="button" class="fx-act" data-fx="rcpp">Bienestar en vivo</button>');
+    const msg = acts.querySelector('#bMsg'); if(msg){ msg.className = 'msgbtn fx-act'; [...msg.childNodes].forEach(n => { if(n.nodeType === 3 && n.textContent.trim()) n.textContent = 'Mensaje'; }); }
+    const pub = acts.querySelector('#bPub'); if(pub) pub.textContent = 'Publicar';
+    const acc = acts.querySelector('#bAcc'); if(acc) acc.textContent = 'Acceso';
+    if(curId && !isExample) acts.insertAdjacentHTML('beforeend', '<button type="button" class="fx-act" data-fx="rcpp" aria-label="Bienestar en vivo">En vivo</button>');
     const sv = ph.querySelector('#bSave'); if(sv){ sv.className = 'fx-savebtn'; hdr.querySelector('.fx-fbar').appendChild(sv); }
   }
   const ex = ph.querySelector('#bEdit');
@@ -288,8 +287,57 @@ function fxFicha(){
     if(ex) card.querySelector('.actions').appendChild(ex);
     (out.querySelector('#accCard') || nav).after(card);
   }
+  fxSubTabs(out, nav);
+}
+
+/* Subpestañas dentro de cada sección: una cosa a la vez */
+const FX_SUB = {
+  plan: [['sem', 'Semana', c => c.classList.contains('fx-phase') || c.classList.contains('day') || c.classList.contains('dlbar') || /^esta semana/i.test(fxT(c))],
+         ['ciclo', 'Ciclo', c => /^(semanas|semana tipo|carga|dosis)/i.test(fxT(c))],
+         ['caso', 'Caso y evidencia', c => true]],
+  ses:  [['res', 'Resumen', (c, i) => i < 2 && !fxT(c)],
+         ['chk', 'Chequeos y carga', c => /^(chequeo|carga|monoton)/i.test(fxT(c))],
+         ['reg', 'Registros', c => /^(sesiones|evaluaciones)/i.test(fxT(c))],
+         ['vid', 'Videos', c => true]],
+  eval: [['per', 'Persona', c => c.classList.contains('pf-top') || /^persona/i.test(fxT(c))],
+         ['ant', 'Antecedentes', c => /^antecedentes/i.test(fxT(c))],
+         ['dol', 'Dolor', c => /^dolor/i.test(fxT(c))],
+         ['pru', 'Pruebas', c => /^pruebas/i.test(fxT(c))],
+         ['viv', 'En vivo', c => true]],
+  cal:  [['tor', 'Torneos', c => /^calendario/i.test(fxT(c))], ['sem', 'Semanas', c => true]]
+};
+FX.sub = {}; FX.dayOpen = new Set([0]);
+const fxT = c => ((c.querySelector('h3.sec, h3, h2') || {}).textContent || '').trim();
+function fxSubTabs(out, nav){
+  const def = FX_SUB[view]; if(!def || editMode) { fxDays(out); return; }
+  const cards = [...out.children].filter(c => c.tagName === 'SECTION' && c.id !== 'accCard');
+  const groups = def.map(() => []);
+  cards.forEach((c, i) => { const g = def.findIndex(d => d[2](c, i)); groups[g < 0 ? def.length - 1 : g].push(c); });
+  const used = def.map((d, k) => [d, groups[k]]).filter(x => x[1].length);
+  if(used.length < 2){ fxDays(out); return; }
+  let cur = FX.sub[view]; if(!used.some(x => x[0][0] === cur)) cur = used[0][0][0];
+  used.forEach(([d, cs]) => cs.forEach(c => { c.hidden = d[0] !== cur; }));
+  const seg = document.createElement('div'); seg.className = 'fx-seg'; seg.setAttribute('role', 'tablist'); seg.setAttribute('aria-label', 'Partes de esta sección');
+  seg.innerHTML = used.map(([d]) => `<button type="button" role="tab" data-fxsub="${d[0]}" aria-selected="${d[0] === cur}">${esc(d[1])}</button>`).join('');
+  nav.after(seg);
+  fxDays(out);
+}
+// Días del plan plegados: se ve el resumen y se abre el que se toque
+function fxDays(out){
+  if(view !== 'plan' || editMode) return;
+  out.querySelectorAll(':scope > section.card.day').forEach((c, i) => {
+    if(typeof logOpen !== 'undefined' && logOpen === i) FX.dayOpen.add(i);
+    const open = FX.dayOpen.has(i), h = c.querySelector('.dayhead'); if(!h) return;
+    const rows = c.querySelectorAll('.blk tr, .blk .ex, .blk li').length;
+    c.classList.add('fx-day'); c.classList.toggle('fx-closed', !open);
+    const t = h.querySelector('h3'); if(!t) return;
+    const n = [...c.querySelectorAll('.blk')].map(b => (b.querySelector('.bh b') || {}).textContent).filter(Boolean);
+    t.innerHTML = `<button type="button" class="fx-dt" data-fxday="${i}" aria-expanded="${open}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>${esc(t.textContent)}${!open && n.length ? `<small>${esc(n.join(' · '))}</small>` : ''}</button>`;
+  });
 }
 $('#out').addEventListener('click', e => {
+  const sb_ = e.target.closest('[data-fxsub]'); if(sb_){ FX.sub[view] = sb_.dataset.fxsub; render(); return; }
+  const dy = e.target.closest('[data-fxday]'); if(dy){ const i = +dy.dataset.fxday; FX.dayOpen.has(i) ? FX.dayOpen.delete(i) : FX.dayOpen.add(i); render(); return; }
   const b = e.target.closest('[data-fxback],[data-fx]'); if(!b) return;
   if(b.hasAttribute('data-fxback')){ e.stopPropagation(); return fxBack(true); }
   const a = b.dataset.fx;

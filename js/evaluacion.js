@@ -1,7 +1,7 @@
 /* ===================== PERFIL DE EVALUACIÓN (ficha del fisio) =====================
    Cuando llega la persona, el fisio va marcando lo que tiene y queda guardado su perfil:
    antecedentes y banderas, dolor y zonas, y pruebas físicas con su historial.
-   Se guarda en la ficha (st.perfil) junto con el resto del estado del paciente. */
+   Se guarda en la ficha (st.pf) junto con el resto del estado del paciente. */
 
 if(typeof MOD_L !== 'undefined') MOD_L.hombro = 'Rehab';
 Object.assign(R, {
@@ -41,8 +41,8 @@ const PF_TESTS = [
 const PF_ALL = PF_TESTS.flatMap(g => g.t);
 let pfZona = null, pfPre = null, pfPreFor = null;
 
-function pfGet(){ if(!st.perfil) st.perfil = {}; const p = st.perfil; ['ant','rf','yf'].forEach(k => { if(!Array.isArray(p[k])) p[k] = []; }); if(!Array.isArray(p.dolor)) p.dolor = []; if(!p.pr) p.pr = {}; if(!Array.isArray(p.otras)) p.otras = []; return p; }
-function pfTouch(){ st.perfil.upd = todayISO(); markDirty(); }
+function pfGet(){ if(st.perfil && typeof st.perfil === 'object'){ st.pf = st.perfil; st.perfil = ''; } if(!st.pf || typeof st.pf !== 'object') st.pf = {}; const p = st.pf; ['ant','rf','yf'].forEach(k => { if(!Array.isArray(p[k])) p[k] = []; }); if(!Array.isArray(p.dolor)) p.dolor = []; if(!p.pr) p.pr = {}; if(!Array.isArray(p.otras)) p.otras = []; return p; }
+function pfTouch(){ st.pf.upd = todayISO(); markDirty(); }
 const pfChips = (grp, list, sel, cls) => `<div class="pf-chips">${list.map(([k, l]) => `<button type="button" class="pf-chip${sel.includes(k) ? ' on' : ''}${cls ? ' ' + cls : ''}" data-pft="${grp}|${k}" aria-pressed="${sel.includes(k)}">${esc(l)}</button>`).join('')}</div>`;
 const pfNum = v => String(v).replace('.', ',');
 function pfTestRow(t, p){

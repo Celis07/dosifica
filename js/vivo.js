@@ -123,7 +123,8 @@ function lvTimedStep(st){
     <div class="lvclock ${s.done?'fin':s.on?'on':'off'}"><span class="lbl">${esc(s.label)}</span><span class="big" id="lvClk">${s.done?'✓':fmtT(s.left)}</span><div class="bar"><i id="lvClkBar" style="width:${s.pct}%"></i></div></div>
     ${s.done?'':cur}${am}
     <div class="lvctl"><button type="button" class="lvbtn ghost" data-clk="reset" aria-label="Reiniciar reloj"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
-      <button type="button" class="lvbtn primary grow" data-clk="toggle">${s.done?'Repetir':run?'Pausar':lvClock()>0?'Seguir':'Empezar'}</button></div></div>`;
+      <button type="button" class="lvbtn primary grow" data-clk="toggle">${s.done?'Repetir':run?'Pausar':lvClock()>0?'Seguir':'Empezar'}</button></div>
+    ${st.k==='inter' && typeof TB_REG!=='undefined' ? (()=>{ const id='lv'+L.i; TB_REG[id]={pre:{work:st.on, rest:st.off, sets:st.rounds, ex:Math.max(1, st.rows.length), names:st.rows.map(r=>r.e)}, src:`${st.seg}: intermitente ${st.on}" / ${st.off}"`}; return `<button type="button" class="lvbtn ghost tb-lv" data-tbopen="${id}">Cronómetro con silbato y campana</button>`; })() : ''}</div>`;
 }
 const lvSideTxt = l => l==='Lesionada'?'Pierna lesionada':l==='Sana'?'Pierna sana':'';
 function lvEndStep(){

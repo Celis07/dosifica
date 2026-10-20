@@ -36,7 +36,7 @@ function accRender(){
     if(!card){ card=document.createElement('section'); card.className='card'; card.id='accCard'; const ph=document.querySelector('#out .phead'); if(ph) ph.after(card); }
     if(card) card.innerHTML=accRowHTML();
   } else if(card) card.remove();
-  const hint=$('#accRow'); if(hint) hint.innerHTML = curId && !isExample ? '<p class="small" style="margin:0">Para enviarle el acceso usa <b>Dar acceso</b>, junto a Publicar.</p>' : '';
+  const hint=$('#accRow'); if(hint) hint.innerHTML = curId && !isExample ? '<p class="small" style="margin:0">Para enviarle el acceso usa <b>Acceso</b>, junto a Publicar.</p>' : '';
 }
 // redibujar el bloque de acceso cada vez que la ficha se dibuja
 if(typeof render==='function'){ const _r=render; render=function(){ const out=_r.apply(this, arguments); accRender(); return out; }; }

@@ -91,10 +91,12 @@
     <label class="f">Correo del deportista (su usuario para entrar)<input type="email" id="pemail" data-k="email" autocomplete="off"></label>
     <div id="accRow"></div>
     <div class="row2">
-      <label class="f">Deporte<input type="text" id="deporte" data-k="deporte"></label>
+      <label class="f">Deporte<select id="deporteSel" aria-describedby="depHint"></select></label>
       <label class="f" data-modshow="rodilla">Rodilla afectada<select id="lado" data-k="lado"><option value="der">Derecha</option><option value="izq">Izquierda</option></select></label>
     </div>
-    <label class="f" data-modshow="rodilla">Perfil deportivo para el retorno<select id="perfil" data-k="perfil"><option value="">Sin perfil específico</option><option value="uwr">Rugby subacuático</option><option value="futbol">Fútbol</option><option value="cancha">Baloncesto o voleibol</option><option value="carrera">Carrera</option><option value="natacion">Natación</option></select></label>
+    <div id="depAdd" class="depadd" hidden><label class="f">Nombre del deporte<input type="text" id="depNew" maxlength="40" autocomplete="off"></label><label class="f">Se entrena parecido a<select id="depLike"></select></label><div class="actions"><button type="button" class="primary" id="depOk">Añadir</button><button type="button" id="depNo">Cancelar</button></div></div>
+    <p class="small" id="depHint" style="margin:0"></p>
+    <label class="f" data-modshow="ninguno" hidden>Perfil deportivo para el retorno<select id="perfil" data-k="perfil"><option value="">Sin perfil específico</option><option value="uwr">Rugby subacuático</option><option value="futbol">Fútbol</option><option value="cancha">Baloncesto o voleibol</option><option value="carrera">Carrera</option><option value="natacion">Natación</option></select></label>
     <label class="chk"><input type="checkbox" id="consent" data-k="consent"> Consentimiento informado para tratar datos de salud firmado</label>
     <div class="small" id="pidRow"></div>
   </fieldset>
@@ -171,7 +173,7 @@
   <hr class="s">
   <fieldset>
     <legend>Planificación</legend>
-    <label class="f" data-modshow="deporte">Deporte para planificar<select id="deporteP" data-k="deporteP"><option value="uwr">Rugby subacuático</option><option value="natacion">Natación</option><option value="futbol">Fútbol</option><option value="carrera">Carrera</option><option value="cancha">Baloncesto o voleibol</option><option value="raqueta">Tenis, pádel o squash</option><option value="gimnasio">Gimnasio o fuerza general</option></select></label>
+    <label class="f" data-modshow="ninguno" hidden>Deporte para planificar<select id="deporteP" data-k="deporteP"><option value="uwr">Rugby subacuático</option><option value="natacion">Natación</option><option value="futbol">Fútbol</option><option value="carrera">Carrera</option><option value="cancha">Baloncesto o voleibol</option><option value="raqueta">Tenis, pádel o squash</option><option value="gimnasio">Gimnasio o fuerza general</option></select></label>
     <label class="chk" data-modshow="deporte"><input type="checkbox" id="rehab" data-k="rehab"> Deportista en rehabilitación: entrena con su calendario de torneos y la terapia va en Activación y Neuro</label>
     <div class="row2" data-rshow="on" hidden>
       <label class="f">Lesión<select id="rehabCond" data-k="rehabCond"><option value="fp">Fascitis plantar</option><option value="hom">Dolor de hombro (manguito rotador)</option><option value="otra">Otra lesión (la terapia la pongo yo)</option></select></label>
@@ -250,6 +252,7 @@
 <script src="js/tabata.js"></script>
 <script src="js/recepcion.js"></script>
 <script src="js/evaluacion.js"></script>
+<script src="js/deportes.js"></script>
 <script src="js/panel2.js"></script>
 <script src="js/atras.js"></script>
 <script src="js/inicio.js"></script>
