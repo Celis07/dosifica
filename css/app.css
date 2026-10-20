@@ -764,3 +764,7 @@ table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
 .bked .f{display:flex;flex-direction:column;gap:6px}
 .bked .chk{min-height:40px}
 .bk .actions{display:flex;justify-content:space-between;align-items:center;gap:8px}
+/* ---------- Acceso del deportista ---------- */
+.accbox{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--soft);display:flex;flex-direction:column;gap:6px}
+.accbox .acc-h{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.accbox input[readonly]{font-family:var(--mono);font-size:.74rem}

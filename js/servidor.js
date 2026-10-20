@@ -298,7 +298,7 @@ $('#loginForm').addEventListener('submit', async e=>{
     const {error}=await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin+location.pathname}});
     btn.disabled=false; btn.classList.remove('busy');
     if(error) lgMsg(/rate/i.test(error.message)?'Se enviaron demasiados correos. Espera unos minutos e inténtalo de nuevo.':'No se pudo enviar el enlace. Inténtalo de nuevo.','err');
-    else lgMsg(`Listo. Revisa <b>${esc(email)}</b> y abre el enlace en <b>este mismo navegador</b>. Luego creas tu contraseña.`,'ok');
+    else lgMsg(`Listo. Revisa <b>${esc(email)}</b> y abre el enlace. Si en 2 minutos no llega, revisa Spam o Correo no deseado, o pídele a tu fisioterapeuta el enlace por WhatsApp.`,'ok');
     return;
   }
   const pass=$('#loginPass').value||'';
