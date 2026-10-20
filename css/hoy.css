@@ -315,3 +315,63 @@ body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin
 #athleteApp.ath2 .ap-sw:checked::after{transform:translateX(20px)}
 #athleteApp.ath2 .ap-sw:disabled{opacity:.4;cursor:default}
 #athleteApp.ath2 .av-note{margin:0 16px 8px}
+
+/* ---------- Portal: progreso, aprende, chat y técnica (portal.js) ---------- */
+#athleteApp.ath2 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.px-card{gap:12px}
+.px-fig{margin:0;display:flex;flex-direction:column;gap:4px}
+.px-fig svg{display:block;overflow:visible}
+.px-grid{stroke:var(--h-sep);stroke-width:1;opacity:.6}
+.px-tick{fill:var(--h-2);font-size:11px;font-variant-numeric:tabular-nums}
+.px-line{fill:none;stroke:var(--h-ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.px-dot{fill:var(--h-ink);stroke:var(--h-card);stroke-width:2}
+.px-hit{fill:transparent;cursor:pointer;outline:none}
+.px-hit:focus-visible{stroke:var(--h-ink);stroke-width:1.5}
+.px-last{fill:var(--h-ink);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.px-bar{fill:var(--h-2);opacity:.45} .px-bar.now{fill:var(--h-ink);opacity:1}
+.px-cap{font-size:13px;color:var(--h-2);min-height:18px}
+.px-empty{margin:4px 0;font-size:15px}
+.px-delta{margin:0;font-size:15px;color:var(--h-2)} .px-delta b{color:var(--h-ink)}
+.px-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+#athleteApp.ath2 .px-chips button{flex:none;min-height:34px;padding:0 12px;border-radius:17px;border:0;background:var(--h-fill);color:var(--h-ink);font-size:14px;font-weight:500;white-space:nowrap}
+#athleteApp.ath2 .px-chips button[aria-pressed="true"]{background:var(--h-act);color:var(--h-on-act);font-weight:600}
+.px-rec{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.px-hitos .px-hl{margin:0;font-size:17px} .px-hitos .px-hl b{font-size:22px}
+.px-bar-p{height:8px;border-radius:4px;background:var(--h-fill);overflow:hidden} .px-bar-p i{display:block;height:100%;background:var(--h-g-dot);border-radius:4px}
+.px-hlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.px-hlist li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.px-hlist li i{font-style:normal;color:var(--h-2)}
+.px-hic{flex:none;width:22px;height:22px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--h-fill);color:var(--h-2);font-weight:700}
+.px-hlist li.ok .px-hic{background:var(--h-g-dot);color:#fff} .px-hlist li.no .px-hic{background:var(--h-r);color:var(--h-r-2)}
+.px-small{font-size:13px;margin:0}
+.px-count{flex-direction:row;align-items:baseline;gap:10px} .px-count b{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums} .px-count span{color:var(--h-2)}
+.px-logros{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.px-logro{background:var(--h-card);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;opacity:.55}
+.px-logro.ok{opacity:1}
+.px-logro b{font-size:15px} .px-logro>span:not(.px-lic){font-size:13px;color:var(--h-2)}
+.px-lic{width:26px;height:26px;border-radius:13px;background:var(--h-fill);display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.px-logro.ok .px-lic{background:var(--h-g-dot);color:#fff}
+.px-search{width:100%;min-height:40px;border:0;border-radius:10px;background:var(--h-fill);color:var(--h-ink);padding:0 12px;font-size:17px}
+.px-ex{align-items:flex-start}
+.px-exb{display:flex;gap:6px;align-items:center;flex:none}
+#athleteApp.ath2 .px-vid,#athleteApp.ath2 .px-tec{display:inline-flex;align-items:center;gap:4px;min-height:34px;padding:0 10px;border-radius:17px;border:0;background:var(--h-fill);color:var(--h-ink);font-size:14px;font-weight:600;text-decoration:none}
+#athleteApp.ath2 .px-tec{width:34px;padding:0;justify-content:center}
+.px-lec .px-lh{min-height:60px}
+.px-lec.open .chev{transform:rotate(90deg)}
+.px-lb{padding:0 16px 14px;display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:1.45}
+.px-lb p{margin:0} .px-src{font-size:13px;color:var(--h-2)}
+.px-lec+.px-lec{border-top:.5px solid var(--h-sep)}
+.px-chat{gap:12px}
+.px-thread{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto}
+.px-msg{max-width:82%;display:flex;flex-direction:column;gap:2px}
+.px-msg p{margin:0;padding:9px 12px;border-radius:18px;font-size:16px;line-height:1.35;white-space:pre-wrap;overflow-wrap:anywhere}
+.px-msg span{font-size:12px;color:var(--h-2);padding:0 6px}
+.px-msg.me{align-self:flex-end;align-items:flex-end} .px-msg.me p{background:var(--h-act);color:var(--h-on-act);border-bottom-right-radius:6px}
+.px-msg.fi{align-self:flex-start} .px-msg.fi p{background:var(--h-fill);color:var(--h-ink);border-bottom-left-radius:6px}
+.px-compose{display:flex;gap:8px;align-items:flex-end}
+#athleteApp.ath2 .px-compose textarea{flex:1;min-height:44px;max-height:140px;border:0;border-radius:20px;background:var(--h-fill);color:var(--h-ink);padding:11px 14px;font-size:16px;resize:none}
+#athleteApp.ath2 .px-send{flex:none;width:44px;height:44px;border-radius:22px;border:0;background:var(--h-act);color:var(--h-on-act);display:flex;align-items:center;justify-content:center}
+.px-com{color:var(--h-ink)!important}
+#athleteApp.ath2 .px-tecf select,#athleteApp.ath2 .px-tecf input[type=text]{width:100%;min-height:44px;border:0;border-radius:10px;background:var(--h-fill);color:var(--h-ink);padding:0 12px;font-size:16px}
+#athleteApp.ath2 .px-tecf input[type=file]{font-size:15px;color:var(--h-ink)}
+.ap-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important}
