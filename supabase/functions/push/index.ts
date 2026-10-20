@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
 // tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (chequeo en rojo → fisio),
-//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), mensaje (fisio → deportista), prueba (a un correo).
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -113,11 +113,18 @@ Deno.serve(async (req) => {
         if (p?.email) n += await enviar(p.email, { title: "Tu plan te espera", body: "Llevas unos días sin registrar sesión. Abre Ápex y entrena en modo en vivo.", tag: "inact" });
       }
     }
-    if (b.tipo === "mensaje") { // mensaje del fisio → deportista
-      const { data: m } = await db.from("mensajes").select("paciente_id,texto").eq("id", b.id).maybeSingle();
-      const { data: p } = m ? await db.from("pacientes").select("email,avisos").eq("id", m.paciente_id).maybeSingle() : { data: null };
-      const t = (m?.texto || "").trim();
-      if (p?.email && t && quiere(p, "mensaje")) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: t.length > 140 ? t.slice(0, 137) + "…" : t, tag: "msg-" + b.id });
+    if (b.tipo === "mensaje") { // chat: fisio → deportista o deportista → fisio
+      const { data: m } = await db.from("mensajes").select("paciente_id,texto,autor").eq("id", b.id).maybeSingle();
+      const { data: p } = m ? await db.from("pacientes").select("nombre,email,fisio_email,avisos").eq("id", m.paciente_id).maybeSingle() : { data: null };
+      const t = (m?.texto || "").trim(), corto = t.length > 140 ? t.slice(0, 137) + "…" : t;
+      if (m?.autor === "deportista") { if (p?.fisio_email && t) n = await enviar(p.fisio_email, { title: `Mensaje de ${p.nombre || "tu paciente"}`, body: corto, tag: "chat-" + m.paciente_id, url: APP + "?chat=" + m.paciente_id }); }
+      else if (p?.email && t && quiere(p, "mensaje")) n = await enviar(p.email, { title: "Mensaje de tu fisioterapeuta", body: corto, tag: "msg-" + b.id });
+    }
+    if (b.tipo === "tecnica" || b.tipo === "tecnica_c") { // video de técnica: nuevo → fisio; comentado → deportista
+      const { data: v } = await db.from("tecnica").select("paciente_id,ejercicio,comentario").eq("id", b.id).maybeSingle();
+      const { data: p } = v ? await db.from("pacientes").select("nombre,email,fisio_email,avisos").eq("id", v.paciente_id).maybeSingle() : { data: null };
+      if (v && b.tipo === "tecnica" && p?.fisio_email) n = await enviar(p.fisio_email, { title: "Video de técnica", body: `${p.nombre || "Paciente"} subió su ${v.ejercicio}. Revísalo y coméntale.`, tag: "tec-" + b.id, url: APP + "?tecnica=" + v.paciente_id });
+      if (v && b.tipo === "tecnica_c" && p?.email && quiere(p, "mensaje")) n = await enviar(p.email, { title: "Tu fisioterapeuta revisó tu técnica", body: `${v.ejercicio}: ${(v.comentario || "").slice(0, 120)}`, tag: "tecc-" + b.id });
     }
     if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
 

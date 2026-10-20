@@ -9,9 +9,12 @@ const isStandalone = () => window.matchMedia('(display-mode: standalone)').match
 const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 function b64u(s){ const p='='.repeat((4-s.length%4)%4), b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(b, c=>c.charCodeAt(0)); }
 
+let SW_REG = null; // registro listo de antemano: en iPhone la suscripción tiene que ocurrir pegada al toque
+if('serviceWorker' in navigator){ navigator.serviceWorker.ready.then(r => { SW_REG = r; }).catch(() => {}); }
 async function swReg(){
+  if(SW_REG) return SW_REG;
   if(!('serviceWorker' in navigator)) return null;
-  try{ return await navigator.serviceWorker.getRegistration() || await navigator.serviceWorker.register('sw.js'); }catch(e){ return null; }
+  try{ SW_REG = await navigator.serviceWorker.getRegistration() || await navigator.serviceWorker.register('sw.js'); return SW_REG; }catch(e){ return null; }
 }
 /* Estado en este dispositivo: on | off | denied | install | unsupported */
 async function pushState(){
@@ -26,32 +29,42 @@ async function saveSub(sub, rol){
   const {error} = await sb.rpc('registrar_push', {p_endpoint:j.endpoint, p_p256dh:j.keys.p256dh, p_auth:j.keys.auth, p_rol:rol});
   return !error;
 }
+/* Se llama directo desde el toque. Sin esperas antes de pedir permiso y suscribir:
+   Safari en iPhone bloquea la suscripción si el toque "se enfría". */
 async function enablePush(rol){
-  const st0 = await pushState();
-  if(st0 === 'install'){ toast('En iPhone primero instala la app: Compartir → Agregar a inicio, y ábrela desde el ícono.'); return false; }
-  if(st0 === 'unsupported'){ toast('Este navegador no permite notificaciones. Prueba con Chrome o con la app instalada.'); return false; }
-  if(st0 === 'denied'){ toast('Las notificaciones están bloqueadas para Ápex. Actívalas en los ajustes del navegador.'); return false; }
-  const perm = await Notification.requestPermission();
-  if(perm !== 'granted'){ toast('Sin permiso no podemos avisarte.'); return false; }
-  const reg = await swReg(); if(!reg){ toast('No se pudo preparar el dispositivo. Recarga la página.'); return false; }
-  await navigator.serviceWorker.ready;
-  let sub = await reg.pushManager.getSubscription();
-  try{ if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)}); }
-  catch(e){ toast('No se pudo activar en este dispositivo.'); return false; }
+  if(isIOS && !isStandalone()){ toast('En iPhone primero instala la app: Compartir → Agregar a inicio, y ábrela desde el ícono.'); return false; }
+  if(!pushSupported()){ toast('Este navegador no permite notificaciones. Prueba con Chrome o con la app instalada.'); return false; }
+  if(Notification.permission === 'denied'){ toast('Las notificaciones están bloqueadas para Ápex. Actívalas en Ajustes → Notificaciones → Ápex.'); return false; }
+  const regNow = SW_REG;   // ya preparado al abrir la app
+  let sub = null, err = null;
+  try{
+    const perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+    if(perm !== 'granted'){ toast('Sin permiso no podemos avisarte.'); return false; }
+    const reg = regNow || await swReg();
+    if(!reg){ toast('No se pudo preparar el dispositivo. Cierra la app y ábrela de nuevo.'); return false; }
+    sub = await reg.pushManager.getSubscription();
+    if(!sub) sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u(VAPID_PUB)});
+  }catch(e){ err = e; }
+  if(!sub){
+    console.error('push subscribe', err);
+    toast(err && /NotAllowed|gesture|user/i.test(String(err.name || err.message)) ? 'El celular no dejó activarlas. Toca el botón otra vez.' : 'No se pudo activar en este dispositivo. Cierra la app, ábrela y toca de nuevo.');
+    return false;
+  }
   if(!(await saveSub(sub, rol))){ toast('No se pudo guardar. Revisa tu conexión.'); return false; }
   sb.rpc('probar_push').then(()=>{}, ()=>{});
   toast('Notificaciones activadas. Te llegará una de prueba.');
   return true;
 }
-/* Al entrar: si ya había permiso, renueva la suscripción a nombre de quien entró */
+/* Al entrar: si este dispositivo ya está suscrito, lo registra a nombre de quien entró */
 async function syncPush(rol){
   try{ if(!pushSupported() || Notification.permission !== 'granted') return;
     const reg = await swReg(); const sub = reg && await reg.pushManager.getSubscription(); if(sub) await saveSub(sub, rol); }catch(e){}
 }
-/* Al salir: este dispositivo deja de recibir avisos de esta cuenta */
+/* Al salir: esta cuenta deja de recibir avisos en este dispositivo, pero el celular conserva la suscripción
+   (en iPhone volver a suscribirse exige otro toque); al entrar de nuevo, syncPush la reasigna sola. */
 async function pushOff(){
   try{ const reg = await swReg(); const sub = reg && await reg.pushManager.getSubscription();
-    if(sub){ await sb.rpc('quitar_push', {p_endpoint: sub.endpoint}); await sub.unsubscribe(); } }catch(e){}
+    if(sub) await sb.rpc('quitar_push', {p_endpoint: sub.endpoint}); }catch(e){}
 }
 
 /* Tarjeta en el portal del deportista */
