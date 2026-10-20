@@ -28,6 +28,7 @@
     }
     // 4) Panel del fisio: de la ficha de un paciente vuelve a Inicio
     if(typeof me !== 'undefined' && me.role === 'fisio'){
+      if(typeof fxBack === 'function') return fxBack(false);
       if(typeof editMode !== 'undefined' && editMode){ editMode = false; render(); return true; }
       if(typeof homeVisible === 'function' && !homeVisible()){ showHome(); return true; }
       return false;
@@ -39,7 +40,7 @@
     const moved = back();
     // vuelve a poner la barrera ya (y otra vez en el próximo toque, por si Chrome la ignora)
     try{ history.pushState({apex: Date.now()}, '', location.href); armed = true; }catch(e){}
-    if(!moved && !warned && typeof toast === 'function' && typeof me !== 'undefined' && me.role){ warned = true; toast('Ya estás en Inicio. Para cerrar tu cuenta usa Salir.'); }
+    if(!moved && !warned && typeof toast === 'function' && typeof me !== 'undefined' && me.role){ warned = true; toast(me.role === 'fisio' ? 'Ya estás en Inicio. Para cerrar sesión ve a Cuenta.' : 'Ya estás en Inicio. Para cerrar tu cuenta usa Salir.'); }
     setTimeout(() => { armed = false; }, 0);   // fuerza a re-armar con el próximo toque
   });
 })();
