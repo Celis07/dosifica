@@ -63,8 +63,9 @@ async function syncPush(rol){
 /* Al salir: esta cuenta deja de recibir avisos en este dispositivo, pero el celular conserva la suscripción
    (en iPhone volver a suscribirse exige otro toque); al entrar de nuevo, syncPush la reasigna sola. */
 async function pushOff(){
-  try{ const reg = await swReg(); const sub = reg && await reg.pushManager.getSubscription();
-    if(sub) await sb.rpc('quitar_push', {p_endpoint: sub.endpoint}); }catch(e){}
+  const run = (async () => { try{ const reg = await swReg(); const sub = reg && await reg.pushManager.getSubscription();
+    if(sub) await sb.rpc('quitar_push', {p_endpoint: sub.endpoint}); }catch(e){} })();
+  await Promise.race([run, new Promise(r => setTimeout(r, 3000))]);   // nunca bloquea el cierre de sesión
 }
 
 /* Tarjeta en el portal del deportista */

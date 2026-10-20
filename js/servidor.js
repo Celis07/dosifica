@@ -2,6 +2,12 @@
 const SB_URL='https://pxttepssphezwptpgdvw.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4dHRlcHNzcGhlendwdHBnZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzOTY2NTUsImV4cCI6MjEwNjk3MjY1NX0.aVcozH1keMxEMdVlpRJ8i1rjVLzqOab-xj0uuSNTkI8';
 const sb = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:true, detectSessionInUrl:true}});
+/* Cerrar sesión solo en este dispositivo y siempre: aunque el servidor ya no reconozca la sesión
+   (por ejemplo, si se cerró en otro equipo), se borra la sesión guardada aquí. */
+async function hardSignOut(){
+  try{ await Promise.race([sb.auth.signOut({scope:'local'}), new Promise(r=>setTimeout(r, 4000))]); }catch(e){}
+  try{ Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+}
 let me = {email:null, uid:null, role:null}, solicitudes = [], pendingBy = {}, sumBy = {};
 function toast(t){ const el=$('#toast'); el.textContent=t; el.hidden=false; clearTimeout(el._t); el._t=setTimeout(()=>el.hidden=true, 2600); }
 function saveBlob(blob, fname){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000); }
@@ -227,7 +233,7 @@ async function startAthlete(p){
 }
 $('#athleteApp').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s); let b;
-  if(q('#aOut')){ if(obGet().length){ toast('Tienes registros sin enviar. Conéctate a internet antes de salir.'); return; } LS.set(CA_KEY(),null); LS.set('apex_last',null); await pushOff(); await sb.auth.signOut(); location.reload(); return; }
+  if(q('#aOut')){ if(obGet().length && !A.forceOut){ A.forceOut=true; setTimeout(()=>A.forceOut=false, 6000); toast('Tienes registros sin enviar: si sales ahora se pierden. Toca otra vez para salir igual.'); return; } LS.set(CA_KEY(),null); LS.set('apex_last',null); await pushOff(); await hardSignOut(); location.reload(); return; }
   if((b=q('[data-alog]'))){ const d=+b.dataset.alog; A.open = A.open===d?null:d; renderAthlete(); return; }
   if(q('#aCancel')){ A.open=null; renderAthlete(); return; }
   if(q('#awOpen')){ A.wOpen=true; renderAthlete(); return; }
@@ -356,9 +362,9 @@ async function route(session){
   const {data:p}=await sb.from('pacientes').select('id,nombre,avisos').maybeSingle();
   if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); syncPush('deportista'); return; }
   showLogin(`Entraste como <b>${esc(me.email)}</b>, ${lgRole==='fisio'?'pero este correo no está registrado como fisioterapeuta.':'pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo.'} <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
-  const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+  const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await hardSignOut(); location.reload(); };
 }
-$('#fOut').onclick=async()=>{ await pushOff(); await sb.auth.signOut(); location.reload(); };
+$('#fOut').onclick=async()=>{ await pushOff(); await hardSignOut(); location.reload(); };
 let routed=false;
 async function boot(){
   sb.auth.onAuthStateChange((ev, session)=>{ if(session && !routed && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')){ routed=true; route(session); } });
