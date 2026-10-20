@@ -117,6 +117,7 @@ function poInicio(c){
       <nav class="po-quick" aria-label="Accesos rápidos">
         <button type="button" data-po="chk"><span>${PO_I.chk}</span>Chequeo</button>
         <button type="button" data-po="reg"><span>${PO_I.reg}</span>Registrar</button>
+        <button type="button" data-tbopen="libre"><span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6M12 2v3"/></svg></span>Intervalos</button>
         <button type="button" data-po="msg"><span>${PO_I.msg}${(A.msgs || []).some(x => x.autor !== 'deportista' && !x.leido_at) ? '<i class="po-badge" aria-label="mensaje sin leer"></i>' : ''}</span>Mensaje</button>
       </nav>
       ${typeof pushCard === 'function' ? pushCard() : ''}
