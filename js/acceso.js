@@ -25,7 +25,19 @@ function accRowHTML(){
     ${a.msg?`<p class="lgmsg ${a.kind||''}" style="margin:6px 0 0">${a.msg}</p>`:''}
   </div>`;
 }
-function accRender(){ const el=$('#accRow'); if(el) el.innerHTML=accRowHTML(); }
+let accOpen=false;
+function accRender(){
+  // botón "Dar acceso" junto a Publicar (visible también en el celular, donde la ficha va plegada)
+  const acts=document.querySelector('#out .phead .actions');
+  if(acts && !$('#bAcc')){ const b=document.createElement('button'); b.type='button'; b.id='bAcc'; b.textContent='Dar acceso'; const pub=$('#bPub'); pub?pub.after(b):acts.append(b); }
+  const bA=$('#bAcc'); if(bA){ bA.setAttribute('aria-expanded', String(accOpen)); bA.classList.toggle('dark', accOpen); }
+  let card=$('#accCard');
+  if(accOpen && !isExample){
+    if(!card){ card=document.createElement('section'); card.className='card'; card.id='accCard'; const ph=document.querySelector('#out .phead'); if(ph) ph.after(card); }
+    if(card) card.innerHTML=accRowHTML();
+  } else if(card) card.remove();
+  const hint=$('#accRow'); if(hint) hint.innerHTML = curId && !isExample ? '<p class="small" style="margin:0">Para enviarle el acceso usa <b>Dar acceso</b>, junto a Publicar.</p>' : '';
+}
 // redibujar el bloque de acceso cada vez que la ficha se dibuja
 if(typeof render==='function'){ const _r=render; render=function(){ const out=_r.apply(this, arguments); accRender(); return out; }; }
 
@@ -70,6 +82,7 @@ async function accCopy(){
 }
 document.addEventListener('click', e=>{
   const q=s=>e.target.closest(s);
+  if(q('#bAcc')){ accOpen=!accOpen; if(!accOpen) ACC={id:null,link:'',busy:'',msg:'',kind:''}; accRender(); if(accOpen) $('#accCard')?.scrollIntoView({block:'nearest', behavior:'smooth'}); return; }
   if(q('#accMail')) return accSendMail();
   if(q('#accLink')) return accMakeLink();
   if(q('#accCopy')) return accCopy();
