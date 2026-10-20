@@ -1,3 +1,11 @@
+/* Guardia de sesión: si al volver atrás (Android) se recarga una dirección vieja con #access_token
+   ya vencido, no dejamos que ese token viejo reemplace la sesión buena guardada (eso cerraba la sesión). */
+(function(){ try{
+  const h = location.hash || ''; if(!/access_token=/.test(h)) return;
+  const exp = +((h.match(/expires_at=(\d+)/) || [])[1] || 0);
+  const tieneSesion = Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k));
+  if(tieneSesion && (!exp || exp * 1000 < Date.now())) history.replaceState(history.state, '', location.pathname + location.search);
+}catch(e){} })();
 /* ===================== REFERENCIAS ===================== */
 const R = {
   aspetar:{l:'A',c:'Kotsifaki R, Korakakis V, King E, et al. Aspetar clinical practice guideline on rehabilitation after anterior cruciate ligament reconstruction. Br J Sports Med. 2023;57(9):500-514. PMID 36731908.',k:'Guía GRADE (140 ECA). La mayoría de recomendaciones tienen certeza baja; propone criterios de retorno a correr y al deporte por consenso.'},
