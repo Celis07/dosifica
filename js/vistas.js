@@ -18,17 +18,30 @@ function painLight(s){
 const isLoggable = (sg,r) => ['neuro','central'].includes(sg.type) && /RPE\s*[6-9]|RPE\s*10/.test(r.c||'') && !r.ter;
 const ladoTag = l => l ? `<span class="lado l-${l==='Sana'?'s':l==='Lesionada'?'l':'a'}">${esc(l)}</span>` : '<span class="lado l-n">—</span>';
 
+/* RPE: uno solo por sesión (oct 2026). El dato sigue guardado en cada fila (lo usan los ajustes del
+   chequeo y del mesociclo); en pantalla se muestra una vez, arriba de la sesión. */
+const RPE_IN = /RPE\s*[\d–-]+/i;
+function sinRPE(c){ return String(c||'').replace(/\s*[·,]?\s*RPE\s*[\d–-]+\s*[·,]?\s*/i,' · ').replace(/^\s*·\s*|\s*·\s*$/g,'').trim(); }
+function rpeRango(rows){
+  const v=[]; rows.forEach(r=>{ const m=String(r.c||'').match(/RPE\s*([\d–-]+)/i); if(m) m[1].split(/[–-]/).forEach(x=>{ if(x!==''&&!isNaN(+x)) v.push(+x); }); });
+  if(!v.length) return ''; const lo=Math.min(...v), hi=Math.max(...v); return lo===hi?`${lo}`:`${lo}–${hi}`;
+}
+function rpeSes(day){
+  if(day.rpe) return String(day.rpe).replace(/^RPE\s*/i,'').replace('-','–');
+  const main=day.segs.filter(sg=>sg.type!=='act').flatMap(sg=>sg.rows.filter(r=>!r.ter));
+  return rpeRango(main.length?main:day.segs.flatMap(sg=>sg.rows));
+}
 function rowView(r){
   const cue=cueOf(r.e), vid=videoOf(r.e), sug=suggestion(r);
-  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td>${isRod(st)?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(r.c)}</td><td class="n">${esc(r.n)}</td></tr>`;
+  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td>${isRod(st)?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(sinRPE(r.c))}</td><td class="n">${esc(r.n)}</td></tr>`;
 }
 function rowEdit(r, di, gi, ri){
-  const a=(f,w)=>`<input value="${esc(r[f])}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}"${w?` style="width:${w}"`:''} aria-label="${f}">`;
-  let html = `<tr><td class="e"><input list="exlib" value="${esc(r.e)}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="e" aria-label="Ejercicio"></td>
+  const a=(f,w,v)=>`<input value="${esc(v??r[f])}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}"${w?` style="width:${w}"`:''} aria-label="${f}">`;
+  const ta=(f,lbl,v)=>`<textarea rows="1" class="grow" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}" aria-label="${lbl}"${f==='e'?' data-sugx autocomplete="off"':''}>${esc(v??r[f])}</textarea>`;
+  let html = `<tr><td class="e">${ta('e','Ejercicio')}</td>
     ${isRod(st)?`<td class="ld"><select data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="lado" aria-label="Lado"><option value="">—</option>${LADOS.map(l=>`<option${r.lado===l?' selected':''}>${l}</option>`).join('')}</select><label class="tchk"><input type="checkbox" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="ter"${r.ter?' checked':''}> Terapia</label></td>`:''}
-    <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="c">${a('c','7em')}</td><td class="n">${a('n')}</td>
-    <td class="v"><input value="${esc(myMeta[r.e]?.video||'')}" data-vid="${esc(r.e)}" placeholder="https://…" aria-label="Enlace del video"></td>
-    <td class="x"><button class="mini-btn" data-sub="${di}|${gi}|${ri}">Sustituir</button><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
+    <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="c">${ta('c','Carga',sinRPE(r.c))}</td><td class="n">${ta('n','Nota')}</td>
+    <td class="x"><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
   if(subOpen===`${di}|${gi}|${ri}`){
     const c=candidates(r.e, st);
     html += `<tr class="subrow"><td colspan="8">${c.length?`<span class="small">Alternativas que respetan las restricciones de esta fase:</span><div class="picks">${c.map(x=>`<button class="pick" data-pick="${di}|${gi}|${ri}|${esc(x.n)}">${esc(x.n)}<i>${esc(x.cue)}</i></button>`).join('')}</div>`:'<span class="small">No hay alternativas en la biblioteca que respeten las restricciones de esta fase. Escribe una tú.</span>'}</td></tr>`;
@@ -47,7 +60,7 @@ function logForm(day, di){
       <label class="f">A las 24 h<select id="lf-d24"><option value="">Aún no</option><option value="mejor">Mejor que basal</option><option value="igual" selected>Vuelve a basal</option><option value="peor">Peor que basal</option></select></label>
     </div>
     ${ex.length?`<div class="tbl"><table class="pl" style="min-width:480px"><thead><tr><th>Ejercicio</th><th>kg</th><th>Reps hechas</th><th>RPE real</th></tr></thead><tbody>
-      ${ex.map((r,k)=>`<tr><td class="e">${esc(r.e)} <span class="small">${esc(r.c)}</span></td><td><input type="number" step="0.5" data-lx="${k}" data-lf="kg" style="width:6em"></td><td><input type="number" data-lx="${k}" data-lf="reps" style="width:5em"></td><td><input type="number" min="1" max="10" data-lx="${k}" data-lf="rpe" style="width:5em"></td></tr>`).join('')}
+      ${ex.map((r,k)=>`<tr><td class="e">${esc(r.e)}</td><td><input type="number" step="0.5" data-lx="${k}" data-lf="kg" style="width:6em"></td><td><input type="number" data-lx="${k}" data-lf="reps" style="width:5em"></td><td><input type="number" min="1" max="10" data-lx="${k}" data-lf="rpe" style="width:5em"></td></tr>`).join('')}
     </tbody></table></div>`:''}
     <label class="f">Comentario<input type="text" id="lf-nota"></label>
     <div class="actions"><button class="primary" id="lfSave" data-day="${di}">Guardar sesión</button><button id="lfCancel">Cancelar</button></div>
@@ -56,12 +69,15 @@ function logForm(day, di){
 function dayHTML(day, di){
   return `<section class="card day" style="padding:12px">
   <div class="dayhead"><h3>${esc(day.name)}</h3>${!editMode?`<button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button>`:''}</div>
+  ${(()=>{ const auto=(()=>{ const d=clone(day); delete d.rpe; return rpeSes(d); })(), v=rpeSes(day);
+    return editMode ? `<label class="drpe">RPE de la sesión <input value="${esc(day.rpe||'')}" placeholder="${esc(auto||'7')}" data-drpe="${di}" aria-label="RPE de la sesión" style="width:6em"></label>`
+      : v ? `<p class="drpe">RPE de la sesión <b>${esc(v)}</b></p>` : ''; })()}
   ${logOpen===di && !editMode ? logForm(day, di) : ''}
   ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
     <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc([sg.sub, fmtLabel(sg.fmt)].filter(Boolean).join(' · '))}</i></div>
     ${editMode?fmtEditor(sg.fmt,di,gi):''}
     ${sg.type==='act'&&gi===0?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
-    <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th>Video</th><th></th>':''}</tr></thead><tbody>
+    <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th></th>':''}</tr></thead><tbody>
     ${sg.rows.map((r,ri)=> editMode ? rowEdit(r,di,gi,ri) : rowView(r)).join('')}
     </tbody></table></div>
     ${editMode?`<div class="addrow"><button class="ghost" data-add="${di}|${gi}">+ Añadir ejercicio</button></div>`:''}
@@ -286,7 +302,10 @@ function render(){
 function ensureCustom(){ const k=planKey(st); if(!st.plans) st.plans={}; if(!st.plans[k]) st.plans[k]=clone(genWeek(st)); return st.plans[k]; }
 $('#out').addEventListener('input', e=>{
   const t=e.target;
-  if(t.dataset.f && t.dataset.f!=='lado' && t.dataset.f!=='ter'){ const days=ensureCustom(); days[+t.dataset.d].segs[+t.dataset.g].rows[+t.dataset.r][t.dataset.f]=t.value; markDirty(); }
+  if(t.dataset.f && t.dataset.f!=='lado' && t.dataset.f!=='ter'){ const days=ensureCustom(), row=days[+t.dataset.d].segs[+t.dataset.g].rows[+t.dataset.r];
+    if(t.dataset.f==='c'){ const k=(String(row.c||'').match(RPE_IN)||[''])[0]; row.c=[t.value.trim(),k].filter(Boolean).join(' · '); } else row[t.dataset.f]=t.value; markDirty(); }
+  if(t.dataset.drpe!==undefined){ const days=ensureCustom(); const v=t.value.trim(); if(v) days[+t.dataset.drpe].rpe=v; else delete days[+t.dataset.drpe].rpe; markDirty(); }
+  if(t.classList.contains('grow')) growTA(t);
   if(t.dataset.fmt && t.tagName==='INPUT'){ const [d,g,k]=t.dataset.fmt.split('|'); const days=ensureCustom(); const sg=days[+d].segs[+g]; sg.fmt=Object.assign({t:'series'},sg.fmt); sg.fmt[k]= k==='b'&&sg.fmt.t==='rondas' ? t.value : (num(t.value)??''); markDirty(); }
 });
 $('#out').addEventListener('change', e=>{
@@ -296,8 +315,8 @@ $('#out').addEventListener('change', e=>{
   if(t.dataset.f==='lado' || t.dataset.f==='ter'){ const days=ensureCustom(); days[+t.dataset.d].segs[+t.dataset.g].rows[+t.dataset.r][t.dataset.f]= t.dataset.f==='ter' ? t.checked : t.value; markDirty(); render(); return; }
   if(t.dataset.fmt && t.tagName==='SELECT'){ const [d,g]=t.dataset.fmt.split('|'); const days=ensureCustom(); const sg=days[+d].segs[+g]; sg.fmt={t:t.value, ...({inter:{a:40,b:20,c:3},amrap:{a:12},emom:{a:10},rondas:{a:3,b:'90 s'}}[t.value]||{})}; markDirty(); render(); return; }
   if(t.dataset.fmt){ render(); return; }
-  if(t.dataset.f==='e'){ const v=t.value.trim(); if(v && !BASE.has(v) && !myLib.includes(v)){ myLib.push(v); buildBanco(); renderLib(); saveLib(); } render(); }
-  else if(t.dataset.f && !document.querySelector('.edited')) render();
+  if(t.dataset.f==='e'){ const v=t.value.trim(); if(v && !BASE.has(v) && !myLib.includes(v)){ myLib.push(v); buildBanco(); renderLib(); saveLib(); } if(!editMode) render(); }
+  else if(t.dataset.f && !editMode && !document.querySelector('.edited')) render();   // en edición no se repinta: se perdía lo que escribías en el siguiente campo
 });
 $('#out').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s);

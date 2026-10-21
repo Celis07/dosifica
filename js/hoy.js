@@ -85,13 +85,15 @@ function hRow(r, rod){
       ${r.cue ? `<span class="ap-xs">${esc(r.cue)}</span>` : ''}
       ${r.n ? `<span class="ap-xs${warn ? ' ap-warn' : ''}">${esc(r.n)}</span>` : ''}
       ${sug ? `<span class="ap-xs ap-sug">${esc(hCap(sug))}</span>` : ''}</div>
-    <div class="ap-xd">${dose ? `<b>${esc(dose)}</b>` : ''}${r.c ? `<span>${esc(r.c)}</span>` : ''}</div></div>`;
+    <div class="ap-xd">${dose ? `<b>${esc(dose)}</b>` : ''}${sinRPE(r.c) ? `<span>${esc(sinRPE(r.c))}</span>` : ''}</div></div>`;
 }
 function hBlocks(day, k){
   const rod = (A.plan?.contenido?.modulo || 'rodilla') === 'rodilla';
   const adj = k === 'y' || k === 'r';
-  return `<div class="ap-list">${day.segs.map(sg => {
-    const n = sg.rows.length, rpe = hRPE(sg.rows), mark = adj && sg.type !== 'act' && rpe;
+  const ses = day.rpe ? adjRPE('RPE ' + String(day.rpe).replace(/^RPE\s*/i, '').replace('-', '–'), k === 'r' ? -2 : k === 'y' ? -1 : 0).replace(/^RPE\s*/, '') : rpeSes(day);
+  const rpeLine = ses ? `<p class="ap-rpes${adj ? ' k-' + k : ''}">Esfuerzo de la sesión <b>RPE ${esc(ses)}${adj ? ' hoy' : ''}</b></p>` : '';
+  return rpeLine + `<div class="ap-list">${day.segs.map(sg => {
+    const n = sg.rows.length, rpe = '', mark = false;
     const sub = [sg.sub, fmtLabel(sg.fmt), `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
     return `<details class="ap-blk"><summary>
       <span class="ap-l"><b>${esc(SEGS[sg.type] || sg.type)}</b><span>${esc(sub)}</span></span>

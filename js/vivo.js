@@ -97,7 +97,7 @@ function lvChips(name, val, from, to, label){
 }
 function lvExStep(st){
   const r=st.row, d=L.done[L.i]||[], lg=L.log[r.e]||{};
-  let sets=''; for(let s=0;s<st.sets;s++) sets+=`<button type="button" class="lvset${d[s]?' on':''}" data-set="${s}" aria-pressed="${!!d[s]}"><span>Serie ${s+1}</span><b>${esc(r.r||'—')}</b><i>${esc(r.c||'')}</i></button>`;
+  let sets=''; for(let s=0;s<st.sets;s++) sets+=`<button type="button" class="lvset${d[s]?' on':''}" data-set="${s}" aria-pressed="${!!d[s]}"><span>Serie ${s+1}</span><b>${esc(r.r||'—')}</b><i>${esc(sinRPE(r.c))}</i></button>`;
   const all=d.filter(Boolean).length>=st.sets;
   return `<div class="lvex"><div class="lvmeta">${lvSide(r.lado)}${r.ter?'<span class="lado l-a">Terapia</span>':''}</div>
     <h1 class="lvname">${esc(r.e)}</h1>${r.cue?`<p class="lvcue">${esc(r.cue)}</p>`:''}${r.n?`<p class="lvnote">${esc(r.n)}</p>`:''}${lvVideo(r)}
@@ -109,7 +109,7 @@ function lvExStep(st){
 function lvCircStep(st){
   const d=L.done[L.i]||[];
   return `<div class="lvex"><div class="lvmeta"><span class="lado l-a">Ronda ${st.round} de ${st.rounds}</span></div><h1 class="lvname">Circuito</h1>
-    <div class="lvlist">${st.rows.map((r,k)=>`<button type="button" class="lvrow${d[k]?' on':''}" data-set="${k}" aria-pressed="${!!d[k]}"><span class="ck" aria-hidden="true"></span><span class="t"><b>${esc(r.e)}</b><i>${esc([r.r, r.c, r.lado&&r.lado!=='Ambas'?r.lado:''].filter(Boolean).join(' · '))}</i></span></button>`).join('')}</div>
+    <div class="lvlist">${st.rows.map((r,k)=>`<button type="button" class="lvrow${d[k]?' on':''}" data-set="${k}" aria-pressed="${!!d[k]}"><span class="ck" aria-hidden="true"></span><span class="t"><b>${esc(r.e)}</b><i>${esc([r.r, sinRPE(r.c), r.lado&&r.lado!=='Ambas'?r.lado:''].filter(Boolean).join(' · '))}</i></span></button>`).join('')}</div>
     <p class="lvnote">Descanso al terminar la ronda: ${fmtT(st.rest)} s</p></div>`;
 }
 function lvTimedStep(st){
@@ -118,7 +118,7 @@ function lvTimedStep(st){
   const head = st.k==='inter' ? `Intermitente ${st.on}" / ${st.off}" · ${st.rounds} rondas` : st.k==='amrap' ? `AMRAP ${st.min} min` : `EMOM ${st.min} min`;
   const cur = s.row ? `<div class="lvnow"><span>${s.on===false?'Siguiente':'Ahora'}</span><b>${esc((s.on===false?s.next:s.row).e)}</b><i>${esc([(s.on===false?s.next:s.row).r, lvSideTxt((s.on===false?s.next:s.row).lado)].filter(Boolean).join(' · '))}</i>${lvVideo(s.on===false?s.next:s.row)}</div>` : '';
   const am = st.k==='amrap' ? `<div class="lvbox"><b>Rondas completas</b><div class="lvcount"><button type="button" class="lvround" data-rnd="-1" aria-label="Restar ronda">−</button><output>${L.rounds[L.i]||0}</output><button type="button" class="lvround" data-rnd="1" aria-label="Sumar ronda">+</button></div>
-      <div class="lvlist sm">${st.rows.map(r=>`<div class="lvrow ro"><span class="t"><b>${esc(r.e)}</b><i>${esc([r.r, r.c].filter(Boolean).join(' · '))}</i></span></div>`).join('')}</div></div>` : '';
+      <div class="lvlist sm">${st.rows.map(r=>`<div class="lvrow ro"><span class="t"><b>${esc(r.e)}</b><i>${esc([r.r, sinRPE(r.c)].filter(Boolean).join(' · '))}</i></span></div>`).join('')}</div></div>` : '';
   return `<div class="lvex"><div class="lvmeta"><span class="lado l-a">${esc(head)}</span>${s.round?`<span class="lado l-a">Ronda ${s.round} de ${s.of}</span>`:''}</div>
     <div class="lvclock ${s.done?'fin':s.on?'on':'off'}"><span class="lbl">${esc(s.label)}</span><span class="big" id="lvClk">${s.done?'✓':fmtT(s.left)}</span><div class="bar"><i id="lvClkBar" style="width:${s.pct}%"></i></div></div>
     ${s.done?'':cur}${am}

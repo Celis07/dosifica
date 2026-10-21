@@ -794,3 +794,15 @@ table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
 .po-fmeta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;margin:4px 0 6px;padding:6px 10px;border-radius:8px;background:var(--soft);border:1px solid var(--line);font-size:.86rem}
 .po-fmeta span{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .po-fmeta i{font-style:normal;color:var(--muted)}
+
+/* Editor del plan: el nombre y la nota nunca se cortan (oct 2026) */
+table.pl textarea.grow{display:block;width:100%;min-width:12em;min-height:0;height:auto;box-sizing:border-box;resize:none;overflow:hidden;border:1px solid var(--line);border-radius:5px;padding:4px 6px;font:inherit;font-size:.84rem;line-height:1.35;background:var(--field,var(--soft));color:var(--ink)}
+table.pl td.e textarea.grow{font-weight:600;min-width:15em}
+table.pl td.e{position:relative}
+.exsug{position:absolute;left:10px;right:10px;top:calc(100% - 4px);z-index:20;display:flex;flex-direction:column;background:var(--paper,#fff);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);overflow:hidden}
+.exsug button{border:0;background:transparent;text-align:left;padding:8px 10px;font:inherit;font-size:.84rem;font-weight:500;color:var(--ink);white-space:normal}
+.exsug button+button{border-top:1px solid var(--line)}
+.exsug button:hover{background:var(--soft)}
+.drpe{margin:8px 2px 0;font-size:.86rem;color:var(--muted);display:flex;align-items:center;gap:8px}
+.drpe b{color:var(--ink);font-family:var(--mono)}
+table.pl td.c textarea.grow{min-width:7em;font-weight:600} table.pl td.c:has(textarea){white-space:normal}
