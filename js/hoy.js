@@ -94,7 +94,7 @@ function hBlocks(day, k){
   const rpeLine = ses ? `<p class="ap-rpes${adj ? ' k-' + k : ''}">Esfuerzo de la sesión <b>RPE ${esc(ses)}${adj ? ' hoy' : ''}</b></p>` : '';
   return rpeLine + `<div class="ap-list">${day.segs.map(sg => {
     const n = sg.rows.length, rpe = '', mark = false;
-    const sub = [sg.sub, fmtLabel(sg.fmt), `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
+    const sub = [sg.sub, fmtLabel(sg.fmt), blkInt(sg) ? 'máxima intención' : '', `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
     return `<details class="ap-blk"><summary>
       <span class="ap-l"><b>${esc(SEGS[sg.type] || sg.type)}</b><span>${esc(sub)}</span></span>
       <span class="ap-r">${rpe ? `<span class="ap-rpe${mark ? ' k-' + k : ''}">${esc(rpe)}${mark ? ' hoy' : ''}</span>` : ''}${H_ICON.chev}</span>

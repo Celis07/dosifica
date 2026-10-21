@@ -22,6 +22,7 @@ const ladoTag = l => l ? `<span class="lado l-${l==='Sana'?'s':l==='Lesionada'?'
    chequeo y del mesociclo); en pantalla se muestra una vez, arriba de la sesión. */
 const RPE_IN = /RPE\s*[\d–-]+/i;
 function sinRPE(c){ return String(c||'').replace(/\s*[·,]?\s*RPE\s*[\d–-]+\s*[·,]?\s*/i,' · ').replace(/^\s*·\s*|\s*·\s*$/g,'').trim(); }
+const blkInt = sg => sg.rows.some(r=>/m[aá]x\.?\s*intenci/i.test(r.c||''));
 function rpeRango(rows){
   const v=[]; rows.forEach(r=>{ const m=String(r.c||'').match(/RPE\s*([\d–-]+)/i); if(m) m[1].split(/[–-]/).forEach(x=>{ if(x!==''&&!isNaN(+x)) v.push(+x); }); });
   if(!v.length) return ''; const lo=Math.min(...v), hi=Math.max(...v); return lo===hi?`${lo}`:`${lo}–${hi}`;
@@ -79,7 +80,7 @@ function dayHTML(day, di){
       : v ? `<p class="drpe">RPE de la sesión <b>${esc(v)}</b></p>` : ''; })()}
   ${logOpen===di && !ed ? logForm(day, di) : ''}
   ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
-    <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc([sg.sub, fmtLabel(sg.fmt)].filter(Boolean).join(' · '))}</i></div>
+    <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc([sg.sub, fmtLabel(sg.fmt), blkInt(sg)?'máx. intención':''].filter(Boolean).join(' · '))}</i></div>
     ${ed?fmtEditor(sg.fmt,di,gi):''}
     ${sg.type==='act'&&gi===0&&!ed?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
     ${sg.rows.length||ed?`<div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th>${ed?'<th></th>':''}</tr></thead><tbody>

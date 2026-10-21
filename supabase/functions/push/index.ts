@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
 // tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (cada chequeo del deportista → fisio, en verde, amarillo o rojo),
-//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -118,6 +118,22 @@ Deno.serve(async (req) => {
         const { data: p } = await db.from("pacientes").select("email,avisos").eq("id", pl.paciente_id).maybeSingle();
         if (!quiere(p, "inactivo") || !(await tieneSubs(p?.email)) || !(await unaVez(`inact-${pl.paciente_id}-${ult}`))) continue;
         if (p?.email) n += await enviar(p.email, { title: "Tu plan te espera", body: "Llevas unos días sin registrar sesión. Abre Ápex y entrena en modo en vivo.", tag: "inact" });
+      }
+    }
+    if (b.tipo === "racha") { // 7 p. m.: racha de chequeos en peligro (2+ días seguidos y hoy sin chequeo)
+      const { data: planes } = await db.from("planes").select("paciente_id,mascota:contenido->>mascota,publicado_at").gte("publicado_at", new Date(Date.now() - 60 * 864e5).toISOString()).order("publicado_at", { ascending: false });
+      const vistos = new Set<string>();
+      for (const pl of (planes || []) as any[]) {
+        if (vistos.has(pl.paciente_id)) continue; vistos.add(pl.paciente_id);
+        const { data: ws } = await db.from("bienestar").select("fecha").eq("paciente_id", pl.paciente_id).gte("fecha", hoyCO(-120)).order("fecha", { ascending: false });
+        const dias = new Set((ws || []).map((w: any) => w.fecha));
+        if (dias.has(hoyCO())) continue;
+        let dn = 0; while (dias.has(hoyCO(-1 - dn))) dn++;
+        if (dn < 2) continue;
+        const { data: p } = await db.from("pacientes").select("email,avisos").eq("id", pl.paciente_id).maybeSingle();
+        if (!quiere(p, "chequeo") || !(await tieneSubs(p?.email)) || !(await unaVez(`racha-${pl.paciente_id}-${hoyCO()}`))) continue;
+        const quien = pl.mascota === "pesi" ? "Pesi" : pl.mascota === "nutria" ? "Nutria" : "Tu compañero";
+        n += await enviar(p!.email, { title: `${quien} te está esperando`, body: `No pierdas tus ${dn} días seguidos: haz tu chequeo de hoy, son 30 segundos.`, tag: "racha" });
       }
     }
     if (b.tipo === "mensaje") { // chat: fisio → deportista o deportista → fisio
