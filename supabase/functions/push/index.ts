@@ -120,20 +120,36 @@ Deno.serve(async (req) => {
         if (p?.email) n += await enviar(p.email, { title: "Tu plan te espera", body: "Llevas unos días sin registrar sesión. Abre Ápex y entrena en modo en vivo.", tag: "inact" });
       }
     }
-    if (b.tipo === "racha") { // 7 p. m.: racha de chequeos en peligro (2+ días seguidos y hoy sin chequeo)
-      const { data: planes } = await db.from("planes").select("paciente_id,mascota:contenido->>mascota,publicado_at").gte("publicado_at", new Date(Date.now() - 60 * 864e5).toISOString()).order("publicado_at", { ascending: false });
+    if (b.tipo === "racha") { // 7 p. m.: solo si la racha se pierde mañana. Los descansos no rompen la racha: un día sin registro
+      // no cuenta como hueco si la semana ya cumplió sus sesiones; si no, se permiten techo((7 − días)/días) días seguidos sin registro.
+      const { data: planes } = await db.from("planes").select("paciente_id,mascota:contenido->>mascota,dias:contenido->dias,publicado_at").gte("publicado_at", new Date(Date.now() - 60 * 864e5).toISOString()).order("publicado_at", { ascending: false });
       const vistos = new Set<string>();
+      const add = (iso: string, k: number) => { const x = new Date(iso + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + k); return x.toISOString().slice(0, 10); };
+      const lun = (iso: string) => { const x = new Date(iso + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() - ((x.getUTCDay() + 6) % 7)); return x.toISOString().slice(0, 10); };
       for (const pl of (planes || []) as any[]) {
         if (vistos.has(pl.paciente_id)) continue; vistos.add(pl.paciente_id);
-        const { data: ws } = await db.from("bienestar").select("fecha").eq("paciente_id", pl.paciente_id).gte("fecha", hoyCO(-120)).order("fecha", { ascending: false });
-        const dias = new Set((ws || []).map((w: any) => w.fecha));
-        if (dias.has(hoyCO())) continue;
-        let dn = 0; while (dias.has(hoyCO(-1 - dn))) dn++;
-        if (dn < 2) continue;
+        const desde = hoyCO(-120);
+        const { data: ws } = await db.from("bienestar").select("fecha").eq("paciente_id", pl.paciente_id).gte("fecha", desde);
+        const { data: ss } = await db.from("sesiones").select("fecha").eq("paciente_id", pl.paciente_id).gte("fecha", desde);
+        const ses = (ss || []).map((x: any) => x.fecha as string), act = new Set([...(ws || []).map((w: any) => w.fecha as string), ...ses]);
+        const hoy = hoyCO(); if (act.has(hoy)) continue;
+        const nd = Math.max(1, Math.min(7, Array.isArray(pl.dias) ? pl.dias.length : 3)), gapMax = Math.ceil((7 - nd) / nd);
+        const porSem: Record<string, Set<string>> = {}; ses.forEach((f) => { (porSem[lun(f)] ||= new Set()).add(f); });
+        const hecha = (d: string) => (porSem[lun(d)]?.size || 0) >= nd;
+        if (hecha(hoy)) continue;
+        const primero = [...act].sort()[0]; if (!primero) continue;
+        let d = add(hoy, -1), racha = 0, gap = 0, gapAct: number | null = null;
+        while (d >= primero) {
+          if (act.has(d)) { if (gapAct === null) gapAct = gap; racha++; gap = 0; }
+          else if (!hecha(d)) { gap++; if (gap > gapMax) break; }
+          d = add(d, -1);
+        }
+        if (gapAct === null) gapAct = gap;
+        if (racha < 2 || gapAct + 1 <= gapMax) continue; // aún puede descansar hoy sin perderla
         const { data: p } = await db.from("pacientes").select("email,avisos").eq("id", pl.paciente_id).maybeSingle();
-        if (!quiere(p, "chequeo") || !(await tieneSubs(p?.email)) || !(await unaVez(`racha-${pl.paciente_id}-${hoyCO()}`))) continue;
+        if (!quiere(p, "chequeo") || !(await tieneSubs(p?.email)) || !(await unaVez(`racha-${pl.paciente_id}-${hoy}`))) continue;
         const quien = pl.mascota === "pesi" ? "Pesi" : pl.mascota === "nutria" ? "Nutria" : "Tu compañero";
-        n += await enviar(p!.email, { title: `${quien} te está esperando`, body: `No pierdas tus ${dn} días seguidos: haz tu chequeo de hoy, son 30 segundos.`, tag: "racha" });
+        n += await enviar(p!.email, { title: `${quien} te está esperando`, body: `Llevas ${racha} días de racha. Haz tu chequeo hoy para no perderla: son 30 segundos.`, tag: "racha" });
       }
     }
     if (b.tipo === "mensaje") { // chat: fisio → deportista o deportista → fisio

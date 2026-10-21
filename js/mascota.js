@@ -46,15 +46,38 @@ function mascotaDe(){
   const own = LS.get(mkKey()); if(MASC[own]) return own;
   const c = A.plan?.contenido?.mascota; return MASC[c] ? c : null;
 }
-function mkRacha(){
-  const days = new Set((wellness || []).map(w => w.fecha)); let n = 0, d = todayISO();
+/* Racha (oct 2026): cuenta los días con chequeo o sesión. Un día sin registro es descanso y NO rompe la racha si
+   (a) esa semana (lunes a domingo) ya cumplió las sesiones programadas, o
+   (b) el hueco no supera el descanso normal entre sesiones: techo((7 − días de entrenamiento) / días de entrenamiento)
+       → 3 días/semana: hasta 2 días seguidos sin registro; 4: 1; 2: 3.
+   El día de hoy sin registro todavía no cuenta como hueco. */
+function rachaCalc(act, ses, nDiasPlan, hoy){
+  const okD = f => typeof f === 'string' && /^\d{4}-\d\d-\d\d$/.test(f);
+  act = new Set([...act].filter(okD)); ses = ses.filter(okD);
+  const n = Math.max(1, Math.min(7, +nDiasPlan || 3)), gapMax = Math.ceil((7 - n) / n);
   const add = (iso, k) => { const x = new Date(iso + 'T12:00:00'); x.setDate(x.getDate() + k); return x.toISOString().slice(0, 10); };
-  if(!days.has(d)) d = add(d, -1);
-  while(days.has(d)){ n++; d = add(d, -1); }
-  return n;
+  const lun = iso => { const x = new Date(iso + 'T12:00:00'); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x.toISOString().slice(0, 10); };
+  const porSem = {}; ses.forEach(f => { const l = lun(f); (porSem[l] ||= new Set()).add(f); });
+  const semHecha = d => (porSem[lun(d)]?.size || 0) >= n;
+  const primero = [...act].sort()[0]; if(!primero) return {n: 0, gap: 0, gapMax, riesgo: false};
+  let d = hoy || todayISO(); if(!act.has(d)) d = add(d, -1);
+  let racha = 0, gap = 0, gapAct = null;
+  while(d >= primero){
+    if(act.has(d)){ if(gapAct == null) gapAct = gap; racha++; gap = 0; }
+    else if(!semHecha(d)){ gap++; if(gap > gapMax) break; }
+    d = add(d, -1);
+  }
+  if(gapAct == null) gapAct = gap;
+  const h = hoy || todayISO();
+  return {n: racha, gap: gapAct, gapMax, riesgo: racha > 0 && !act.has(h) && !semHecha(h) && gapAct + 1 > gapMax};
 }
+function mkRachaInfo(){
+  const ses = (sessions || []).map(s => s.fecha), act = new Set([...(wellness || []).map(w => w.fecha), ...ses]);
+  return rachaCalc(act, ses, (A.plan?.contenido?.dias || []).length || 3);
+}
+function mkRacha(){ return mkRachaInfo().n; }
 function mkSemana(){
-  const days = new Set((wellness || []).map(w => w.fecha)), hoy = new Date(todayISO() + 'T12:00:00'), lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  const days = new Set([...(wellness || []).map(w => w.fecha), ...(sessions || []).map(s => s.fecha)]), hoy = new Date(todayISO() + 'T12:00:00'), lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
   return ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => { const x = new Date(lun); x.setDate(lun.getDate() + i); const iso = x.toISOString().slice(0, 10); return {l, ok: days.has(iso), hoy: iso === todayISO()}; });
 }
 function celHTML(elegir){
@@ -70,9 +93,9 @@ function celHTML(elegir){
     <div class="cel-mk">${MASC[m].svg(mood, mkAcc(n))}</div>
     <span class="cel-s" id="celT">${tit}</span>
     <b class="cel-n" data-to="${n}">${Math.max(0, n - 1)}</b>
-    <span class="cel-d">${n === 1 ? 'día seguido' : 'días seguidos'}</span>
+    <span class="cel-d">${n === 1 ? 'día de racha' : 'días de racha'}</span>
     ${ses ? '<span class="cel-x">Y ya registraste tu sesión de hoy.</span>' : ''}
-    <div class="cel-week" aria-label="Días con chequeo esta semana">${sem.map(d => `<span class="${d.hoy ? 'hoy' : ''}">${d.l}<i class="${d.ok ? 'ok' : ''}"></i></span>`).join('')}</div>
+    <div class="cel-week" aria-label="Días con chequeo o sesión esta semana">${sem.map(d => `<span class="${d.hoy ? 'hoy' : ''}">${d.l}<i class="${d.ok ? 'ok' : ''}"></i></span>`).join('')}</div>
     <button type="button" class="cel-btn" data-celok>Seguir</button></div>`;
 }
 const MK_HITOS = [{n: 7, a: 'gorra', t: 'la gorra'}, {n: 30, a: 'medalla', t: 'la medalla'}, {n: 100, a: 'gorro', t: 'el gorro de rugby subacuático'}];

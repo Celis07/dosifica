@@ -84,12 +84,10 @@ if(typeof netBadge === 'function'){
 }
 
 /* 8 · Panel del fisio: mascota y racha de chequeos junto a cada paciente */
-function mkRachaDe(list){
-  const days = new Set((list || []).map(w => w.fecha)); let n = 0, d = todayISO();
-  const add = (iso, k) => { const x = new Date(iso + 'T12:00:00'); x.setDate(x.getDate() + k); return x.toISOString().slice(0, 10); };
-  if(!days.has(d)) d = add(d, -1);
-  while(days.has(d)){ n++; d = add(d, -1); }
-  return n;
+function mkRachaDe(p){
+  const ses = (typeof allSes !== 'undefined' ? allSes : []).filter(x => x.paciente_id === p.id).map(x => x.fecha);
+  const act = new Set([...(wellBy[p.id] || []).map(w => w.fecha), ...ses]);
+  return rachaCalc(act, ses, nDias(p.st || {})).n;
 }
 const _renderHomeMk = renderHome;
 renderHome = function(){
@@ -97,10 +95,10 @@ renderHome = function(){
   document.querySelectorAll('#home .fx-pat[data-fxopen]').forEach(b => {
     if(b.querySelector('.mk-pr')) return;
     const p = patients.find(x => x.id === b.dataset.fxopen); if(!p) return;
-    const n = mkRachaDe(wellBy[p.id]); if(!n) return;
+    const n = mkRachaDe(p); if(!n) return;
     const sx = p.st?.pf?.sexo, m = sx === 'm' ? 'nutria' : sx === 'h' ? 'pesi' : null;
     const tgt = b.querySelector('.fx-bdg, .fx-when');
-    const html = `<span class="mk-pr ${mkVars}" title="${n} ${n === 1 ? 'día seguido' : 'días seguidos'} con chequeo">${m ? MASC[m].svg(n >= 3 ? 'feliz' : 'normal') : ''}<b>${n}</b></span>`;
+    const html = `<span class="mk-pr ${mkVars}" title="Racha: ${n} ${n === 1 ? 'día' : 'días'} con chequeo o sesión (los descansos no la rompen)">${m ? MASC[m].svg(n >= 3 ? 'feliz' : 'normal') : ''}<b>${n}</b></span>`;
     tgt ? tgt.insertAdjacentHTML('beforebegin', html) : b.insertAdjacentHTML('beforeend', html);
   });
   return r;
