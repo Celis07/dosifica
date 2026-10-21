@@ -85,7 +85,7 @@ function hRow(r, rod){
       ${r.cue ? `<span class="ap-xs">${esc(r.cue)}</span>` : ''}
       ${r.n ? `<span class="ap-xs${warn ? ' ap-warn' : ''}">${esc(r.n)}</span>` : ''}
       ${sug ? `<span class="ap-xs ap-sug">${esc(hCap(sug))}</span>` : ''}</div>
-    <div class="ap-xd">${dose ? `<b>${esc(dose)}</b>` : ''}${sinRPE(r.c) ? `<span>${esc(sinRPE(r.c))}</span>` : ''}</div></div>`;
+    <div class="ap-xd">${dose ? `<b>${esc(dose)}</b>` : ''}</div></div>`;
 }
 function hBlocks(day, k){
   const rod = (A.plan?.contenido?.modulo || 'rodilla') === 'rodilla';

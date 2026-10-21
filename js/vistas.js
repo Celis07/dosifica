@@ -33,15 +33,15 @@ function rpeSes(day){
 }
 function rowView(r){
   const cue=cueOf(r.e), vid=videoOf(r.e), sug=suggestion(r);
-  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}</td>${isRod(st)?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td><td class="c">${esc(sinRPE(r.c))}</td><td class="n">${esc(r.n)}</td></tr>`;
+  return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}${r.n?`<div class="rnote">${esc(r.n)}</div>`:''}</td>${isRod(st)?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td></tr>`;
 }
 function rowEdit(r, di, gi, ri){
   const a=(f,w,v)=>`<input value="${esc(v??r[f])}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}"${w?` style="width:${w}"`:''} aria-label="${f}">`;
   const ta=(f,lbl,v)=>`<textarea rows="1" class="grow" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}" aria-label="${lbl}"${f==='e'?' data-sugx autocomplete="off"':''}>${esc(v??r[f])}</textarea>`;
-  let html = `<tr><td class="e">${ta('e','Ejercicio')}</td>
+  const nota = r.n ? ta('n','Nota') : `<button type="button" class="addnote" data-addnote="${di}|${gi}|${ri}">+ Añadir nota</button>`;
+  let html = `<tr><td class="e">${ta('e','Ejercicio')}${nota}</td>
     ${isRod(st)?`<td class="ld"><select data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="lado" aria-label="Lado"><option value="">—</option>${LADOS.map(l=>`<option${r.lado===l?' selected':''}>${l}</option>`).join('')}</select><label class="tchk"><input type="checkbox" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="ter"${r.ter?' checked':''}> Terapia</label></td>`:''}
-    <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="c">${ta('c','Carga',sinRPE(r.c))}</td><td class="n">${ta('n','Nota')}</td>
-    <td class="x"><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
+    <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="x"><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
   if(subOpen===`${di}|${gi}|${ri}`){
     const c=candidates(r.e, st);
     html += `<tr class="subrow"><td colspan="8">${c.length?`<span class="small">Alternativas que respetan las restricciones de esta fase:</span><div class="picks">${c.map(x=>`<button class="pick" data-pick="${di}|${gi}|${ri}|${esc(x.n)}">${esc(x.n)}<i>${esc(x.cue)}</i></button>`).join('')}</div>`:'<span class="small">No hay alternativas en la biblioteca que respeten las restricciones de esta fase. Escribe una tú.</span>'}</td></tr>`;
@@ -82,7 +82,7 @@ function dayHTML(day, di){
     <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc([sg.sub, fmtLabel(sg.fmt)].filter(Boolean).join(' · '))}</i></div>
     ${ed?fmtEditor(sg.fmt,di,gi):''}
     ${sg.type==='act'&&gi===0&&!ed?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
-    ${sg.rows.length||ed?`<div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${ed?'<th></th>':''}</tr></thead><tbody>
+    ${sg.rows.length||ed?`<div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th>${ed?'<th></th>':''}</tr></thead><tbody>
     ${sg.rows.map((r,ri)=> ed ? rowEdit(r,di,gi,ri) : rowView(r)).join('')}
     </tbody></table></div>`:'<p class="small" style="margin:6px 0 0">Sin ejercicios.</p>'}
     ${ed?`<div class="addrow"><button class="ghost" data-add="${di}|${gi}">+ Añadir ejercicio</button></div>`:''}

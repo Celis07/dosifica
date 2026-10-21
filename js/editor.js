@@ -29,7 +29,6 @@ $('#out').addEventListener('focusout', e => { if(e.target.matches('textarea[data
 $('#out').addEventListener('keydown', e => {
   const t = e.target; if(!t.matches || !t.matches('textarea.grow')) return;
   if(e.key === 'Escape') edSugClose();
-  if(e.key === 'Enter' && t.dataset.f === 'e'){ e.preventDefault(); t.blur(); }   // el nombre es una línea: Enter confirma
 });
 
 /* ---------- Semana: borrador, plantillas y en blanco ---------- */
@@ -142,3 +141,23 @@ $('#out').addEventListener('click', e => {
 const _renderEd3 = render;
 render = function(){ const r = _renderEd3.apply(this, arguments); if($('#logf')) growAll($('#logf')); return r; };
 document.addEventListener('click', e => { if(e.target.closest('[data-fxcc],[data-fxday]')) requestAnimationFrame(() => growAll($('#out'))); });
+
+/* Nota bajo demanda y Enter para pasar a la casilla siguiente */
+$('#out').addEventListener('click', e => {
+  const b = e.target.closest('[data-addnote]'); if(!b) return;
+  const [d, g, r] = b.dataset.addnote.split('|');
+  b.outerHTML = `<textarea rows="1" class="grow note" data-d="${d}" data-g="${g}" data-r="${r}" data-f="n" aria-label="Nota" placeholder="Nota"></textarea>`;
+  document.querySelector(`textarea[data-d="${d}"][data-g="${g}"][data-r="${r}"][data-f="n"]`)?.focus();
+});
+$('#out').addEventListener('keydown', e => {
+  if(e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+  const t = e.target; if(!t.matches) return;
+  const sel = 'section.day.editing [data-f]:not(select):not([type=checkbox]), section.day.editing [data-drpe], #logf [data-lf], #logf #lf-fecha, #logf #lf-min, #logf #lf-srpe, #logf #lf-dolor';
+  if(!t.matches(sel)) return;
+  if(document.querySelector('.exsug button') && t.matches('[data-sugx]')){ edSugClose(); }
+  e.preventDefault();
+  const scope = t.closest('section.day.editing, #logf');
+  const all = [...scope.querySelectorAll(sel.split(', ').map(x => x.replace(/^section\.day\.editing |^#logf /, ':scope ')).join(', '))];
+  const nx = all[all.indexOf(t) + 1];
+  if(nx){ nx.focus(); if(nx.select && nx.tagName === 'INPUT') nx.select(); } else t.blur();
+}, true);

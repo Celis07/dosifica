@@ -813,3 +813,8 @@ table.pl td.c textarea.grow{min-width:7em;font-weight:600} table.pl td.c:has(tex
 .draft{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:.88rem;color:var(--muted)}
 .draft b{color:var(--ink);margin-right:6px}
 .draft button{border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;color:var(--ink)}
+.addnote{display:block;margin-top:4px;border:0;background:transparent;padding:2px 0;font:inherit;font-size:.78rem;font-weight:500;color:var(--muted);cursor:pointer}
+.addnote:hover{color:var(--ink)}
+table.pl td.e textarea.grow.note{margin-top:4px;font-weight:400;color:var(--muted)}
+.rnote{font-size:.8rem;font-weight:400;color:var(--muted);margin-top:2px}
+section.day table.pl td.e{width:60%} section.day.editing table.pl td.s,section.day.editing table.pl td.r{width:1%}
