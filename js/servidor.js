@@ -270,19 +270,11 @@ function setRole(r){ lgRole=r; LS.set('apex_role', r);
 document.querySelectorAll('.rolesel [data-role]').forEach(b=>b.onclick=()=>setRole(b.dataset.role));
 $('.rolesel').addEventListener('keydown', e=>{ if(['ArrowLeft','ArrowRight'].includes(e.key)){ const r=lgRole==='fisio'?'deportista':'fisio'; setRole(r); $(`.rolesel [data-role="${r}"]`).focus(); e.preventDefault(); } });
 function lgMsg(t, kind){ const m=$('#loginMsg'); m.innerHTML=t||''; m.className='lgmsg'+(kind?' '+kind:''); }
-function setLgMode(m){
-  lgMode=m; const link=m==='link';
-  $('#lgTitle').textContent = link ? 'Recibir enlace' : 'Entrar';
-  $('#lgSub').textContent = LG_SUB[lgRole][link?'link':'pass'];
-  $('#pwWrap').hidden = link;
-  $('#loginBtn').textContent = link ? 'Enviarme el enlace' : 'Entrar';
-  $('#lgMode').textContent = link ? 'Ya tengo contraseña' : '¿Primera vez u olvidaste tu contraseña?';
-  lgMsg('');
-  (link || !$('#loginEmail').value ? $('#loginEmail') : $('#loginPass')).focus();
-}
+function setLgMode(m){ lgMode = m === 'link' ? 'link' : 'pass'; }   // compatibilidad: el enlace ya no se pide desde aquí
+function lgViews(v){ $('#login').dataset.v = v; $('#loginForm').hidden = v !== 'login'; $('#otpForm').hidden = v !== 'otp'; $('#pwdForm').hidden = v !== 'pwd'; $('#lgOk').hidden = v !== 'ok'; }
 function showLogin(msg){
   $('#login').hidden=false; $('#fisioApp').hidden=true; $('#athleteApp').hidden=true;
-  $('#loginForm').hidden=false; $('#pwdForm').hidden=true;
+  lgViews('login');
   const saved=LS.get('apex_email'); if(saved && !$('#loginEmail').value) $('#loginEmail').value=saved;
   setRole(lgRole); if(msg) lgMsg(msg);
   setTimeout(()=>($('#loginEmail').value?$('#loginPass'):$('#loginEmail')).focus(), 30);
@@ -291,48 +283,103 @@ function eyeToggle(btn, input){
   btn.onclick=()=>{ const show=input.type==='password'; input.type=show?'text':'password'; btn.setAttribute('aria-pressed', String(show)); btn.setAttribute('aria-label', show?'Ocultar contraseña':'Mostrar contraseña'); input.focus(); };
 }
 eyeToggle($('#pwEye'), $('#loginPass')); eyeToggle($('#npEye'), $('#newPass'));
-$('#lgMode').onclick=()=>setLgMode(lgMode==='link'?'pass':'link');
 function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+const lgEmail = () => ($('#loginEmail').value||'').trim().toLowerCase();
+const lgValid = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+
+/* Entrada normal: correo y contraseña → chulito y adentro */
+let lgOkAt = 0;
 $('#loginForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const email=($('#loginEmail').value||'').trim().toLowerCase();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ lgMsg('Escribe un correo válido.','err'); shake($('#loginEmail')); $('#loginEmail').focus(); return; }
+  const email=lgEmail();
+  if(!lgValid(email)){ lgMsg('Escribe un correo válido.','err'); shake($('#loginEmail')); $('#loginEmail').focus(); return; }
   LS.set('apex_email', email);
-  const btn=$('#loginBtn'); btn.disabled=true; btn.classList.add('busy');
-  if(lgMode==='link'){
-    lgMsg('Enviando…');
-    LS.set('apex_setpwd','1');
-    const {error}=await sb.auth.signInWithOtp({email, options:{emailRedirectTo: location.origin+location.pathname}});
-    btn.disabled=false; btn.classList.remove('busy');
-    if(error) lgMsg(/rate/i.test(error.message)?'Se enviaron demasiados correos. Espera unos minutos e inténtalo de nuevo.':'No se pudo enviar el enlace. Inténtalo de nuevo.','err');
-    else lgMsg(`Listo. Revisa <b>${esc(email)}</b> y abre el enlace. Si en 2 minutos no llega, revisa Spam o Correo no deseado, o pídele a tu fisioterapeuta el enlace por WhatsApp.`,'ok');
-    return;
-  }
   const pass=$('#loginPass').value||'';
-  if(!pass){ btn.disabled=false; btn.classList.remove('busy'); lgMsg('Escribe tu contraseña.','err'); shake($('#loginPass')); $('#loginPass').focus(); return; }
-  lgMsg('Entrando…');
+  if(!pass){ lgMsg('Escribe tu contraseña. Si es tu primera vez, entra con el código de tu correo.','err'); shake($('#loginPass')); $('#loginPass').focus(); return; }
+  const btn=$('#loginBtn'); btn.disabled=true; btn.classList.add('busy'); lgMsg('');
   const {error}=await sb.auth.signInWithPassword({email, password:pass});
   btn.disabled=false; btn.classList.remove('busy');
   if(error){
     shake($('#loginForm'));
     lgMsg(/invalid|credentials/i.test(error.message)
-      ? 'Correo o contraseña incorrectos. Si aún no tienes contraseña, toca <b>¿Primera vez u olvidaste tu contraseña?</b>'
+      ? 'Correo o contraseña incorrectos. Si aún no tienes contraseña, entra con el código de tu correo.'
       : /rate|many/i.test(error.message) ? 'Demasiados intentos. Espera un momento.' : 'No se pudo entrar. Revisa tu conexión e inténtalo de nuevo.','err');
     $('#loginPass').select();
-  } else { $('#loginPass').value=''; lgMsg('Listo.','ok'); }
+  } else { $('#loginPass').value=''; lgOkAt = Date.now(); lgViews('ok'); }
+});
+// El chulito se ve al menos ~0,6 s antes de pasar al inicio
+function lgOkWait(){ const left = lgOkAt ? 650 - (Date.now() - lgOkAt) : 0; lgOkAt = 0; return left > 0 ? new Promise(r => setTimeout(r, left)) : Promise.resolve(); }
+
+/* Primera vez (u olvidé mi contraseña): código de 6 números al correo → crear contraseña */
+let otpKind = 'primera', otpT = null;
+function otpBoxes(){ return [...document.querySelectorAll('#otpForm [data-otp]')]; }
+function otpMsg(t, k){ const m=$('#otpMsg'); m.innerHTML=t||''; m.className='lgmsg'+(k?' '+k:''); }
+function otpTimer(sec){
+  clearInterval(otpT); const b=$('#otpResend'); b.disabled=true;
+  const tick=()=>{ if(sec<=0){ clearInterval(otpT); b.disabled=false; b.textContent='Reenviar código'; return; } b.textContent=`Reenviar código en 0:${String(sec).padStart(2,'0')}`; sec--; };
+  tick(); otpT=setInterval(tick, 1000);
+}
+async function otpSend(){
+  const email=lgEmail();
+  const {error}=await sb.auth.signInWithOtp({email, options:{shouldCreateUser:true, emailRedirectTo: location.origin+location.pathname}});
+  if(error){ otpMsg(/rate|seconds|after/i.test(error.message)?'Ya te enviamos un código hace poco. Espera un minuto y vuelve a pedirlo.':'No se pudo enviar el código. Revisa tu conexión e inténtalo de nuevo.','err'); otpTimer(30); return false; }
+  otpTimer(45); return true;
+}
+async function otpStart(kind){
+  const email=lgEmail();
+  if(!lgValid(email)){ lgMsg('Escribe tu correo arriba y vuelve a tocar aquí.','err'); shake($('#loginEmail')); $('#loginEmail').focus(); return; }
+  LS.set('apex_email', email); otpKind=kind;
+  $('#otpStep').textContent = 'Paso 1 de 2';
+  $('#otpTitle').textContent = kind==='olvido' ? 'Recupera tu acceso' : 'Revisa tu correo';
+  $('#otpTxt').innerHTML = `Te enviamos un código de 6 números a <b>${esc(email)}</b>. Solo lo usas esta vez para ${kind==='olvido'?'crear una contraseña nueva':'crear tu contraseña'}.`;
+  otpBoxes().forEach(i=>{ i.value=''; i.classList.remove('on'); });
+  otpMsg('Enviando…'); lgViews('otp');
+  setTimeout(()=>otpBoxes()[0].focus(), 30);
+  if(await otpSend()) otpMsg('Si en 2 minutos no llega, revisa Spam o Correo no deseado.');
+}
+async function otpVerify(){
+  const token=otpBoxes().map(i=>i.value).join('');
+  if(token.length<6) return;
+  otpBoxes().forEach(i=>i.disabled=true); otpMsg('Verificando…');
+  LS.set('apex_setpwd','1');
+  let {error}=await sb.auth.verifyOtp({email:lgEmail(), token, type:'email'});
+  if(error && /expired|invalid/i.test(error.message||'')){ const r=await sb.auth.verifyOtp({email:lgEmail(), token, type:'signup'}); if(!r.error) error=null; }
+  otpBoxes().forEach(i=>i.disabled=false);
+  if(error){ LS.set('apex_setpwd',null); otpMsg(/expired/i.test(error.message)?'El código venció. Pide uno nuevo.':'Ese código no es correcto. Revísalo o pide uno nuevo.','err'); shake($('#otpForm .otpbox')); otpBoxes().forEach(i=>i.value=''); otpBoxes()[0].focus(); return; }
+  otpMsg(''); clearInterval(otpT);   // la sesión ya existe: route() pide la contraseña
+}
+$('#lgMode').onclick=()=>otpStart('primera');
+$('#lgForgot').onclick=()=>otpStart('olvido');
+$('#otpBack').onclick=()=>{ clearInterval(otpT); lgViews('login'); lgMsg(''); };
+$('#otpResend').onclick=async()=>{ otpMsg('Enviando…'); if(await otpSend()) otpMsg('Te enviamos un código nuevo.','ok'); };
+$('#otpForm').addEventListener('submit', e=>{ e.preventDefault(); otpVerify(); });
+$('#otpForm').addEventListener('input', e=>{
+  const i=e.target; if(!i.dataset || i.dataset.otp==null) return;
+  const bx=otpBoxes(), k=+i.dataset.otp, d=(i.value||'').replace(/\D/g,'');
+  if(d.length>1){ d.slice(0, 6-k).split('').forEach((c,j)=>{ bx[k+j].value=c; }); const nx=Math.min(5, k+d.length); bx[nx].focus(); }
+  else { i.value=d; if(d && k<5) bx[k+1].focus(); }
+  bx.forEach(b=>b.classList.toggle('on', !!b.value));
+  if(bx.every(b=>b.value)) otpVerify();
+});
+$('#otpForm').addEventListener('keydown', e=>{
+  const i=e.target; if(!i.dataset || i.dataset.otp==null) return;
+  const bx=otpBoxes(), k=+i.dataset.otp;
+  if(e.key==='Backspace' && !i.value && k>0){ bx[k-1].value=''; bx[k-1].focus(); e.preventDefault(); }
+  if(e.key==='ArrowLeft' && k>0) bx[k-1].focus();
+  if(e.key==='ArrowRight' && k<5) bx[k+1].focus();
 });
 /* Crear contraseña la primera vez (o tras "olvidé mi contraseña") */
 function needsPwd(session){ return LS.get('apex_setpwd')==='1' || !(session.user.user_metadata && session.user.user_metadata.pwd); }
 function askPwd(session){
   return new Promise(resolve=>{
     $('#login').hidden=false; $('#fisioApp').hidden=true; $('#athleteApp').hidden=true;
-    $('#loginForm').hidden=true; $('#pwdForm').hidden=false; $('#pwdMsg').textContent='';
+    lgViews('pwd'); $('#pwdMsg').textContent=''; $('#pwdStep').hidden = !$('#otpForm').dataset.used && LS.get('apex_setpwd')!=='1';
     setTimeout(()=>$('#newPass').focus(), 30);
     const meter=()=>{ const v=$('#newPass').value; let s=0; if(v.length>=8)s++; if(v.length>=12)s++; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++; if(/\d/.test(v))s++; if(/[^A-Za-z0-9]/.test(v))s++;
       const pct=Math.min(100,s*20), lbl=v.length<8?'Mínimo 8 caracteres.':s<=2?'Aceptable.':s<=3?'Buena.':'Muy buena.';
       $('#pwBar').style.width=pct+'%'; $('#pwBar').className=s<=2?'lo':s<=3?'mid':'hi'; $('#pwHint').textContent=lbl; };
     $('#newPass').oninput=meter; meter();
-    const done=()=>{ LS.set('apex_setpwd',null); $('#pwdForm').hidden=true; $('#loginForm').hidden=false; resolve(); };
+    const done=()=>{ LS.set('apex_setpwd',null); lgOkAt=Date.now(); lgViews('ok'); resolve(); };
     $('#pwdSkip').onclick=()=>{ LS.set('apex_setpwd',null); done(); };
     $('#pwdForm').onsubmit=async e=>{
       e.preventDefault();
@@ -351,7 +398,8 @@ async function route(session){
   me.email=(session.user.email||'').toLowerCase(); me.uid=session.user.id;
   LS.set('apex_email', me.email);
   if(needsPwd(session)) await askPwd(session);
-  $('#login').hidden=true;
+  await lgOkWait();
+  $('#login').hidden=true; document.body.classList.add('lg-enter'); setTimeout(()=>document.body.classList.remove('lg-enter'), 1200);
   const fr=await sb.from('fisios').select('email,nombre').maybeSingle();
   if(fr.error && isNetErr(fr.error)){ if(startAthleteOffline(me.uid, me.email)) return; showLogin('Sin conexión. Conéctate a internet para entrar.'); return; }
   const f=fr.data;

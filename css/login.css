@@ -1,0 +1,77 @@
+/* ==========================================================
+   Inicio de sesión · opción A "Cima" (oct 2026)
+   Claro u oscuro según el celular, como el resto de la app.
+   Movimiento mínimo: la cima del logo se llena al abrir, el chulito
+   al entrar y una entrada suave del inicio. Nada más se mueve.
+   ========================================================== */
+#login.lgA{--lg-bg:#F2F2F7;--lg-card:#FFFFFF;--lg-ink:#1D1D1F;--lg-2:#6E6E73;--lg-3:#8E8E93;--lg-sep:#E5E5EA;--lg-act:#1D1D1F;--lg-on:#FFFFFF;--lg-red:#D70015;--lg-box:#111113;
+  min-height:100vh;min-height:100dvh;display:flex;justify-content:center;padding:0 24px;box-sizing:border-box;background:var(--lg-bg);color:var(--lg-ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#login.lgA[hidden]{display:none}
+@media (prefers-color-scheme:dark){#login.lgA{--lg-bg:#000000;--lg-card:#1C1C1E;--lg-ink:#F5F5F7;--lg-2:#98989F;--lg-3:#8E8E93;--lg-sep:#38383A;--lg-act:#F5F5F7;--lg-on:#000000;--lg-red:#FF453A;--lg-box:#1C1C1E;color-scheme:dark}}
+#login .lgwrap{width:100%;max-width:400px;display:flex;flex-direction:column;gap:28px;padding:calc(env(safe-area-inset-top,0px) + 72px) 0 calc(env(safe-area-inset-bottom,0px) + 32px);min-height:100%;box-sizing:border-box}
+#login .lgtop{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+#login .lgbox{fill:var(--lg-box)}
+#login .lgtop h1{margin:4px 0 0;font-size:34px;font-weight:700;letter-spacing:-.02em;color:var(--lg-ink);font-family:inherit;text-transform:none}
+#login .lgtag{margin:0;font-size:15px;color:var(--lg-2)}
+#login .lgform{display:flex;flex-direction:column;gap:14px;margin:0;background:transparent;border:0;padding:0;box-shadow:none}
+#login .lgform[hidden],#login .lgok[hidden]{display:none}
+#login .lggroup{background:var(--lg-card);border-radius:14px;overflow:hidden}
+#login .lgrow{display:flex;align-items:center;gap:12px;padding:0 16px;min-height:52px;font-size:16px;color:var(--lg-ink);margin:0}
+#login .lgrow>span:first-child{width:92px;flex:none}
+#login .lgrow input,#login .lgrow .pw input{flex:1;min-width:0;height:50px;border:0!important;outline:none;background:transparent!important;font-size:16px;color:var(--lg-ink);padding:0;font-family:inherit;box-shadow:none;border-radius:0}
+#login .lgrow .pw{flex:1;display:flex;align-items:center;min-width:0;position:static}
+#login .lgrow .eye{position:static;width:40px;height:40px;border:0;background:transparent;color:var(--lg-3);display:flex;align-items:center;justify-content:center;padding:0;flex:none}
+#login .lgsep{height:.5px;background:var(--lg-sep);margin-left:16px}
+#login .lgsep[hidden]{display:none}
+#login .lgbtn{height:54px;border:0;border-radius:14px;background:var(--lg-act);color:var(--lg-on);font-size:17px;font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;width:100%}
+#login .lgbtn:disabled{opacity:.6}
+#login .lgbtn.busy span{opacity:.5}
+#login .lglink{align-self:center;border:0;background:transparent;color:var(--lg-red);font-size:15px;font-weight:400;padding:8px 12px;min-height:44px;font-family:inherit}
+#login .lglink.b{font-weight:600}
+#login .lglink:disabled{color:var(--lg-3)}
+#login .lgmsg{margin:0;font-size:14px;text-align:center;color:var(--lg-2);min-height:0}
+#login .lgmsg:empty{display:none}
+#login .lgmsg.err{color:var(--lg-red)}
+#login .lgmsg.ok{color:#1E9E50}
+#login .lgfirst{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;align-items:center;gap:0;text-align:center}
+#login .lgfirst>span{font-size:14px;color:var(--lg-2)}
+#login .lgback{align-self:flex-start;display:flex;align-items:center;gap:4px;border:0;background:transparent;color:var(--lg-red);font-size:17px;padding:0;min-height:44px;font-family:inherit}
+#login .lgstep{display:flex;flex-direction:column;gap:8px}
+#login .lgstep>span{font-size:13px;font-weight:600;color:var(--lg-2);text-transform:uppercase;letter-spacing:.04em}
+#login .lgstep>span[hidden]{display:none}
+#login .lgstep h2{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em;color:var(--lg-ink);font-family:inherit;text-transform:none}
+#login .lgstep p{margin:0;font-size:16px;color:var(--lg-2);line-height:1.4}
+#login .lgstep b{color:var(--lg-ink)}
+#login .otpbox{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+#login .otpbox input{height:60px;border:2px solid transparent;border-radius:14px;background:var(--lg-card);text-align:center;font-size:26px;font-weight:700;font-family:inherit;color:var(--lg-ink);width:100%;box-sizing:border-box;padding:0;outline:none}
+#login .otpbox input:focus{border-color:var(--lg-act)}
+#login .lgnext{display:flex;align-items:center;gap:14px;background:var(--lg-card);border-radius:16px;padding:14px 16px;margin-top:8px}
+#login .lgnext .n{width:36px;height:36px;border-radius:18px;background:var(--lg-sep);color:var(--lg-2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex:none}
+#login .lgnext>span:last-child{display:flex;flex-direction:column} #login .lgnext b{font-size:16px} #login .lgnext span span{font-size:13px;color:var(--lg-2)}
+#login .pwmeter{height:5px;border-radius:3px;background:var(--lg-sep);overflow:hidden;margin:0}
+#login .pwhint{margin:-6px 0 0;font-size:13px;color:var(--lg-2)}
+#login .lgok{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:240px}
+#login .lgok span{width:76px;height:76px;border-radius:38px;background:#1E9E50;color:#FFFFFF;display:flex;align-items:center;justify-content:center}
+#login .lgok b{font-size:17px;color:var(--lg-ink)}
+#login .shake{animation:lgShake .3s}
+@keyframes lgShake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* Movimiento mínimo */
+@media (prefers-reduced-motion:no-preference){
+  #login:not([hidden]) .lgpeak{transform-box:fill-box;transform-origin:50% 100%;animation:lgPeak .6s cubic-bezier(.2,.8,.2,1) .2s both}
+  #login .lgok:not([hidden]) span{animation:lgPop .35s cubic-bezier(.2,1.4,.4,1) both}
+  #login .lgok:not([hidden]) path{stroke-dasharray:24;stroke-dashoffset:24;animation:lgDraw .3s ease-out .15s forwards}
+  /* Entrada suave al inicio, solo al abrir sesión */
+  body.lg-enter #athleteApp .po-body>*,body.lg-enter #athleteApp .po-grid>*,body.lg-enter #home .fx-page>*{animation:lgIn .45s cubic-bezier(.2,.8,.2,1) both}
+  body.lg-enter #home .fx-page>:nth-child(2),body.lg-enter #athleteApp .po-body>:nth-child(2){animation-delay:.05s}
+  body.lg-enter #home .fx-page>:nth-child(3),body.lg-enter #athleteApp .po-body>:nth-child(3){animation-delay:.1s}
+  body.lg-enter #home .fx-page>:nth-child(4),body.lg-enter #athleteApp .po-body>:nth-child(4){animation-delay:.15s}
+  body.lg-enter #home .fx-page>:nth-child(n+5),body.lg-enter #athleteApp .po-body>:nth-child(n+5){animation-delay:.2s}
+}
+@keyframes lgPeak{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+@keyframes lgPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes lgDraw{to{stroke-dashoffset:0}}
+@keyframes lgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#login[data-v="otp"] .lgtop,#login[data-v="pwd"] .lgtop{display:none}
+#login[data-v="otp"] .lgwrap,#login[data-v="pwd"] .lgwrap{padding-top:calc(env(safe-area-inset-top,0px) + 24px)}
