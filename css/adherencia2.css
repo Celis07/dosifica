@@ -9,3 +9,10 @@
 .om-chips{display:flex;flex-wrap:wrap;gap:8px}
 .om-chips button{min-height:38px;padding:0 14px;border-radius:19px;border:0;background:var(--h-fill,rgba(120,120,128,.12));color:inherit;font:inherit;font-size:15px;font-weight:500}
 .om-card .po-plain{align-self:flex-start}
+.ap-fold>.ap-head{cursor:pointer;user-select:none}
+.ap-fchev{margin-left:auto;display:flex;color:var(--h-2,#6E6E73);transition:transform .2s}
+.ap-fold.ap-closed>.ap-head .ap-fchev{transform:rotate(-90deg)}
+.ap-fold.ap-closed>:not(.ap-head){display:none!important}
+.px-lgall{margin-top:8px}
+.px-tec{display:none!important}
+.tcal-card>.ap-card{margin-top:0}

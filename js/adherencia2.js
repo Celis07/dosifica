@@ -151,3 +151,24 @@ render = function(){
   if(tags && a && !tags.querySelector('.ag-tag')) tags.insertAdjacentHTML('beforeend', `<span class="fx-tag ag-tag" title="Días, hora y lugar que eligió">${esc(agTxt(a))}</span>`);
   return r;
 };
+
+/* ---------- Vista del usuario: secciones plegables y logros ---------- */
+const AP_FOLD = /^(Torneos|Mis sesiones|Mis ejercicios)$/;
+function apFold(){
+  document.querySelectorAll('#athleteApp .ap-sec').forEach(sec => {
+    const h = sec.querySelector(':scope > .ap-head h2'); if(!h || !AP_FOLD.test(h.textContent.trim()) || sec.dataset.fold) return;
+    const k = 'apex_apf_' + h.textContent.trim(), open = LS.get(k) === '1';
+    sec.dataset.fold = k; sec.classList.add('ap-fold'); sec.classList.toggle('ap-closed', !open);
+    const head = sec.querySelector(':scope > .ap-head'); head.setAttribute('role', 'button'); head.tabIndex = 0; head.setAttribute('aria-expanded', String(open));
+    head.insertAdjacentHTML('beforeend', '<span class="ap-fchev" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>');
+  });
+}
+const _renderAthleteFold = renderAthlete;
+renderAthlete = function(){ _renderAthleteFold.apply(this, arguments); apFold(); };
+$('#athleteApp').addEventListener('click', e => {
+  if(e.target.closest('[data-lgall]')){ A.lgAll = !A.lgAll; return renderAthlete(); }
+  const head = e.target.closest('.ap-fold > .ap-head'); if(!head || e.target.closest('input,a,button:not(.ap-head)')) return;
+  const sec = head.parentElement, open = sec.classList.toggle('ap-closed') === false;
+  LS.set(sec.dataset.fold, open ? '1' : '0'); head.setAttribute('aria-expanded', String(open));
+});
+$('#athleteApp').addEventListener('keydown', e => { if((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.ap-fold > .ap-head')){ e.preventDefault(); e.target.click(); } });

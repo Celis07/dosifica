@@ -43,13 +43,13 @@ function poSemana(c){
   const planned = Math.max(1, (c.dias || []).length), lun = adMonday();
   const W = adWeeks(sessions, planned, (A.plan?.publicado_at || '').slice(0, 10)), s = Math.min(W.actual, planned);
   const dias = Math.round((new Date(todayISO() + 'T12:00:00') - new Date(lun + 'T12:00:00')) / 864e5) + 1;
-  const chk = new Set(wellness.filter(x => x.fecha >= lun && x.fecha <= todayISO()).map(x => x.fecha)).size;
-  return {W, html: `<button type="button" class="po-w po-sq" data-po="prog" aria-label="Semana: ${s} de ${planned} sesiones, ${chk} de ${dias} chequeos">
+  const chk = Math.min(planned, new Set(wellness.filter(x => x.fecha >= lun && x.fecha <= todayISO()).map(x => x.fecha)).size);   // chequeos contra los días de entrenamiento, como las sesiones
+  return {W, html: `<button type="button" class="po-w po-sq" data-po="prog" aria-label="Semana: ${s} de ${planned} sesiones, ${chk} de ${planned} chequeos">
     <span class="po-l">Semana</span>
     <svg class="po-rings" viewBox="0 0 96 96" width="70" height="70" aria-hidden="true">
       <circle class="tr ses" cx="48" cy="48" r="39"/><circle class="v ses" cx="48" cy="48" r="39" ${poRing(39, s / planned)} transform="rotate(-90 48 48)"/>
-      <circle class="tr chk" cx="48" cy="48" r="24"/><circle class="v chk" cx="48" cy="48" r="24" ${poRing(24, chk / dias)} transform="rotate(-90 48 48)"/></svg>
-    <span class="po-s"><b class="ses">${s}/${planned}</b> sesiones · <b class="chk">${chk}/${dias}</b> chequeos</span></button>`};
+      <circle class="tr chk" cx="48" cy="48" r="24"/><circle class="v chk" cx="48" cy="48" r="24" ${poRing(24, chk / planned)} transform="rotate(-90 48 48)"/></svg>
+    <span class="po-s"><b class="ses">${s}/${planned}</b> sesiones · <b class="chk">${chk}/${planned}</b> chequeos</span></button>`};
 }
 function poTorneo(c){
   const t = (c.semanas || []).flatMap(w => w.t || []).filter(t => t.f >= todayISO()).sort((a, b) => a.f.localeCompare(b.f))[0];

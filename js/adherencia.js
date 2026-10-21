@@ -45,7 +45,7 @@ function adSemana(big){
   const planned = Math.max(1, (c.dias || []).length), lun = adMonday();
   const W = adWeeks(sessions, planned, (A.plan.publicado_at || '').slice(0, 10));
   const dias = Math.round((new Date(todayISO() + 'T12:00:00') - new Date(lun + 'T12:00:00')) / 864e5) + 1;
-  const chk = new Set(wellness.filter(x => x.fecha >= lun && x.fecha <= todayISO()).map(x => x.fecha)).size;
+  const chk = Math.min(planned, new Set(wellness.filter(x => x.fecha >= lun && x.fecha <= todayISO()).map(x => x.fecha)).size);   // chequeos contra los días de entrenamiento, como las sesiones
   const s = Math.min(W.actual, planned);
   const msg = W.cumple ? '¡Semana cumplida! Todo lo que sigue suma.'
     : planned - s === 1 ? 'Te falta 1 sesión para cumplir la semana.' : `Te faltan ${planned - s} sesiones para cumplir la semana.`;
@@ -55,11 +55,11 @@ function adSemana(big){
     <p class="ad-cap">Últimas ${Math.min(8, W.hist.length)} semanas. Cada marca es una semana con todas sus sesiones.</p>` : '';
   return `<section class="ap-card ad-week${big ? ' big' : ''}">
     <div class="ad-row">
-      <svg class="ad-rings" viewBox="0 0 88 88" width="${big ? 104 : 84}" height="${big ? 104 : 84}" role="img" aria-label="Sesiones ${s} de ${planned}; chequeos ${chk} de ${dias}">
-        ${adRing(38, s / planned, 'ses')}${adRing(26, chk / dias, 'chk')}</svg>
+      <svg class="ad-rings" viewBox="0 0 88 88" width="${big ? 104 : 84}" height="${big ? 104 : 84}" role="img" aria-label="Sesiones ${s} de ${planned}; chequeos ${chk} de ${planned}">
+        ${adRing(38, s / planned, 'ses')}${adRing(26, chk / planned, 'chk')}</svg>
       <div class="ad-txt">
         <span class="ad-l"><i class="ses"></i>Sesiones <b>${s} de ${planned}</b></span>
-        <span class="ad-l"><i class="chk"></i>Chequeos <b>${chk} de ${dias}</b></span>
+        <span class="ad-l"><i class="chk"></i>Chequeos <b>${chk} de ${planned}</b></span>
         <span class="ad-m">${esc(msg)}</span>
       </div>
     </div>

@@ -162,9 +162,10 @@ function pxProgreso(c){
   // Rachas y logros
   const got = log.filter(l => l[2]).length;
   const racha = `<section class="ap-sec"><div class="ap-head"><h2>Rachas</h2></div><div class="ap-stats">
-      <div><b>${st.sem}</b><span>semanas seguidas cumplidas</span></div><div><b>${st.chk}</b><span>días seguidos con chequeo</span></div><div><b>${st.ses}</b><span>sesiones en total</span></div></div></section>
-    <section class="ap-sec"><div class="ap-head"><h2>Logros</h2><span class="ap-muted">${got} de ${log.length}</span></div><div class="px-logros">${log.map(([t, d, ok]) =>
-      `<div class="px-logro${ok ? ' ok' : ''}"><span class="px-lic" aria-hidden="true">${ok ? P_ICON.ok : ''}</span><b>${esc(t)}</b><span>${esc(d)}</span><span class="sr">${ok ? 'Conseguido' : 'Pendiente'}</span></div>`).join('')}</div></section>`;
+      <div><b>${st.sem}</b><span>semanas seguidas cumplidas</span></div><div><b>${typeof mkRacha === 'function' ? mkRacha() : st.chk}</b><span>días de racha</span></div><div><b>${st.ses}</b><span>sesiones en total</span></div></div></section>
+    <section class="ap-sec"><div class="ap-head"><h2>Logros</h2><span class="ap-muted">${got} de ${log.length}</span></div><div class="px-logros">${(A.lgAll ? log : log.filter(l => !l[2]).slice(0, 4)).map(([t, d, ok]) =>
+      `<div class="px-logro${ok ? ' ok' : ''}"><span class="px-lic" aria-hidden="true">${ok ? P_ICON.ok : ''}</span><b>${esc(t)}</b><span>${esc(d)}</span><span class="sr">${ok ? 'Conseguido' : 'Pendiente'}</span></div>`).join('') || '<p class="ap-muted">¡Los conseguiste todos!</p>'}</div>
+      <button type="button" class="ap-btn ap-plain px-lgall" data-lgall>${A.lgAll ? 'Ver solo los que faltan' : `Ver todos (${got} conseguidos)`}</button></section>`;
   return hit + graf + rec + racha;
 }
 
@@ -249,7 +250,7 @@ function pxAprende(c){
       <div class="ap-list">${list.length ? list.map(x => `<div class="ap-row px-ex"><span class="ap-l"><b>${x.ter ? '<span class="ap-ter">T</span> ' : ''}${esc(x.e)}</b>${x.cue ? `<span>${esc(x.cue)}</span>` : ''}<span class="ap-muted">${esc([...x.dias].join(', '))}</span></span>
         <span class="px-exb">${x.video ? `<a class="px-vid" href="${esc(x.video)}" target="_blank" rel="noopener" aria-label="Ver video de ${esc(x.e)}">${P_ICON.play}<span>Video</span></a>` : ''}<button type="button" class="px-tec" data-tecex="${esc(x.e)}" aria-label="Enviar mi técnica de ${esc(x.e)}">${P_ICON.cam}</button></span></div>`).join('')
         : '<div class="ap-row"><span class="ap-l"><span>No hay ejercicios con ese nombre.</span></span></div>'}</div>
-      <p class="ap-note">El ícono de cámara te deja grabarte haciendo el ejercicio para que tu fisioterapeuta revise la técnica.</p></section>
+</section>
     <section class="ap-sec"><div class="ap-head"><h2>Lecciones</h2></div><div class="ap-list">${lecc.map(l => {
       const op = A.apr.open === l.id;
       return `<div class="px-lec${op ? ' open' : ''}"><button type="button" class="ap-row px-lh" data-lec="${l.id}" aria-expanded="${op}"><span class="ap-l"><b>${esc(l.t)}</b><span>${l.min} min de lectura</span></span>${H_ICON.chev}</button>
@@ -344,7 +345,7 @@ renderAthlete = function(){
   }
   if(A.tab === 'fisio'){
     const first = body.querySelector('.ap-sec');
-    const html = pxChat() + pxTecSec(c);
+    const html = pxChat();   // revisión de técnica oculta por ahora (oct 2026)
     if(first) first.insertAdjacentHTML('beforebegin', html); else body.insertAdjacentHTML('afterbegin', html);
     const th = $('#pxThread'); if(th) th.scrollTop = th.scrollHeight;
     if(A.tecFocus){ A.tecFocus = false; $('#pxTec')?.scrollIntoView({block:'start'}); }
