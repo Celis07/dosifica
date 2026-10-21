@@ -297,8 +297,7 @@ function fxFicha(){
     else nav.insertAdjacentHTML('afterend', '<p class="fx-hint">Datos de la persona, diagnóstico y planificación. Los cambios se guardan solos.</p>');
   } else if(view === 'plan'){
     const card = document.createElement('section'); card.className = 'card fx-phase';
-    card.innerHTML = `<div><span class="fx-eye">Fase actual · ${esc(phs.when)}</span><h2>${esc(phs.name)}</h2><p>${esc(phs.goal)}</p></div><div class="actions"></div>`;
-    if(ex) card.querySelector('.actions').appendChild(ex);
+    card.innerHTML = `<div><span class="fx-eye">Fase actual · ${esc(phs.when)}</span><h2>${esc(phs.name)}</h2><p>${esc(phs.goal)}</p></div><div class="actions"><button type="button" data-tplopen>Mis plantillas</button><button type="button" data-blank>Empezar en blanco</button></div>`;
     nav.after(card);
   }
   fxFold(out);
@@ -310,7 +309,6 @@ FX.dayOpen = new Set();
 try{ FX.open = new Set(JSON.parse(LS.get('apex_fxopen') || '[]')); }catch(e){ FX.open = new Set(); }
 const fxT = c => ((c.querySelector('h3.sec, h3, h2') || {}).textContent || '').trim();
 function fxFold(out){
-  if(editMode) return;
   [...out.children].forEach(c => {
     if(c.tagName !== 'SECTION' || c.id === 'accCard' || c.classList.contains('day') || c.classList.contains('dlbar')) return;
     const t = c.querySelector('h3.sec, h3, h2'); if(!t) return;
@@ -323,8 +321,9 @@ function fxFold(out){
 }
 // Días del plan plegados: se ve el título y los bloques; se abre el que se toque
 function fxDays(out){
-  if(view !== 'plan' || editMode) return;
+  if(view !== 'plan') return;
   out.querySelectorAll(':scope > section.card.day').forEach((c, i) => {
+    if(c.classList.contains('editing')) return;
     if(typeof logOpen !== 'undefined' && logOpen === i) FX.dayOpen.add(i);
     const open = FX.dayOpen.has(i), h = c.querySelector('.dayhead'); if(!h) return;
     c.classList.add('fx-day'); c.classList.toggle('fx-closed', !open);

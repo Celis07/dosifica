@@ -796,7 +796,7 @@ table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
 .po-fmeta i{font-style:normal;color:var(--muted)}
 
 /* Editor del plan: el nombre y la nota nunca se cortan (oct 2026) */
-table.pl textarea.grow{display:block;width:100%;min-width:12em;min-height:0;height:auto;box-sizing:border-box;resize:none;overflow:hidden;border:1px solid var(--line);border-radius:5px;padding:4px 6px;font:inherit;font-size:.84rem;line-height:1.35;background:var(--field,var(--soft));color:var(--ink)}
+table.pl textarea.grow{display:block;width:100%;min-width:12em;min-height:calc(1.35em + 10px);height:auto;box-sizing:border-box;resize:none;overflow:hidden;border:1px solid var(--line);border-radius:5px;padding:4px 6px;font:inherit;font-size:.84rem;line-height:1.35;background:var(--field,var(--soft));color:var(--ink)}
 table.pl td.e textarea.grow{font-weight:600;min-width:15em}
 table.pl td.e{position:relative}
 .exsug{position:absolute;left:10px;right:10px;top:calc(100% - 4px);z-index:20;display:flex;flex-direction:column;background:var(--paper,#fff);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);overflow:hidden}
@@ -806,3 +806,10 @@ table.pl td.e{position:relative}
 .drpe{margin:8px 2px 0;font-size:.86rem;color:var(--muted);display:flex;align-items:center;gap:8px}
 .drpe b{color:var(--ink);font-family:var(--mono)}
 table.pl td.c textarea.grow{min-width:7em;font-weight:600} table.pl td.c:has(textarea){white-space:normal}
+.dbtns{display:flex;gap:6px;flex:none}
+.dsave{border:0;border-radius:8px;background:var(--red,#E5202E);color:#fff;font-weight:700;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
+.dfoot{display:flex;justify-content:flex-end;margin-top:10px}
+.dfoot .dsave{padding:10px 22px}
+.draft{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:.88rem;color:var(--muted)}
+.draft b{color:var(--ink);margin-right:6px}
+.draft button{border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 12px;font:inherit;font-weight:600;color:var(--ink)}

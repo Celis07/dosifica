@@ -66,22 +66,28 @@ function logForm(day, di){
     <div class="actions"><button class="primary" id="lfSave" data-day="${di}">Guardar sesión</button><button id="lfCancel">Cancelar</button></div>
   </div>`;
 }
+let editDay = null;   // día que se está editando (null = ninguno)
 function dayHTML(day, di){
-  return `<section class="card day" style="padding:12px">
-  <div class="dayhead"><h3>${esc(day.name)}</h3>${!editMode?`<button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button>`:''}</div>
+  const ed = editMode && (editDay==null || editDay===di);
+  const saveBtn = `<button type="button" class="dsave" data-dsave="${di}">Guardar</button>`;
+  const headBtns = ed ? saveBtn
+    : `<span class="dbtns"><button type="button" class="lbtn dedit" data-dedit="${di}">Editar</button><button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button></span>`;
+  return `<section class="card day${ed?' editing':''}" style="padding:12px" data-day="${di}">
+  <div class="dayhead"><h3>${esc(day.name)}</h3>${headBtns}</div>
   ${(()=>{ const auto=(()=>{ const d=clone(day); delete d.rpe; return rpeSes(d); })(), v=rpeSes(day);
-    return editMode ? `<label class="drpe">RPE de la sesión <input value="${esc(day.rpe||'')}" placeholder="${esc(auto||'7')}" data-drpe="${di}" aria-label="RPE de la sesión" style="width:6em"></label>`
+    return ed ? `<label class="drpe">RPE de la sesión <input value="${esc(day.rpe||'')}" placeholder="${esc(auto||'7')}" data-drpe="${di}" aria-label="RPE de la sesión" style="width:6em"></label>`
       : v ? `<p class="drpe">RPE de la sesión <b>${esc(v)}</b></p>` : ''; })()}
-  ${logOpen===di && !editMode ? logForm(day, di) : ''}
+  ${logOpen===di && !ed ? logForm(day, di) : ''}
   ${day.segs.map((sg,gi)=>`<div class="blk t-${sg.type}">
     <div class="bh"><b>${esc(SEGS[sg.type]||sg.type)}</b><i>${esc([sg.sub, fmtLabel(sg.fmt)].filter(Boolean).join(' · '))}</i></div>
-    ${editMode?fmtEditor(sg.fmt,di,gi):''}
-    ${sg.type==='act'&&gi===0?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
-    <div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${editMode?'<th></th>':''}</tr></thead><tbody>
-    ${sg.rows.map((r,ri)=> editMode ? rowEdit(r,di,gi,ri) : rowView(r)).join('')}
-    </tbody></table></div>
-    ${editMode?`<div class="addrow"><button class="ghost" data-add="${di}|${gi}">+ Añadir ejercicio</button></div>`:''}
+    ${ed?fmtEditor(sg.fmt,di,gi):''}
+    ${sg.type==='act'&&gi===0&&!ed?`<div class="bn">${isRod(st)?'Antes de empezar: dolor y derrame de hoy frente a ayer. El semáforo decide si hoy se progresa, se mantiene o se baja.':'Antes de empezar: bienestar del día (sueño, estrés, fatiga y dolor muscular). En rojo, baja 1–2 puntos de RPE o recorta series.'}</div>`:''}
+    ${sg.rows.length||ed?`<div class="tbl"><table class="pl"><thead><tr><th>Ejercicio</th>${isRod(st)?'<th>Lado</th>':''}<th>Series</th><th>Reps</th><th>Carga</th><th>Nota</th>${ed?'<th></th>':''}</tr></thead><tbody>
+    ${sg.rows.map((r,ri)=> ed ? rowEdit(r,di,gi,ri) : rowView(r)).join('')}
+    </tbody></table></div>`:'<p class="small" style="margin:6px 0 0">Sin ejercicios.</p>'}
+    ${ed?`<div class="addrow"><button class="ghost" data-add="${di}|${gi}">+ Añadir ejercicio</button></div>`:''}
   </div>`).join('')}
+  ${ed?`<div class="dfoot">${saveBtn}</div>`:''}
   </section>`;
 }
 function fmtEditor(f,di,gi){
@@ -207,6 +213,10 @@ function evalForm(){
     ${pf.map(k=>`<label class="f">${PROMS[k].l} (0–100)<input type="number" min="0" max="100" id="ev-${k}"></label>`).join('')}</div>
     <div class="actions"><button class="primary" id="evSave">Guardar evaluación</button><button id="evCancel">Cancelar</button></div></div>`;
 }
+function exFmt(e){
+  const d = e.s && e.reps ? e.s+'×'+e.reps : e.reps ? '×'+e.reps : e.s ? e.s+' series' : '';
+  return esc([e.e, d, e.kg ? e.kg+' kg' : '', e.rpe ? '@'+e.rpe : ''].filter(Boolean).join(' '));
+}
 function sessionsView(){
   const ad=adherence(), pf=promsFor(st), der=['Cero','Trazas','1+','2+','3+'];
   const ses = sessions.slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''));
@@ -222,8 +232,9 @@ function sessionsView(){
     <p class="small">Úsala para ver tendencias y saltos bruscos de carga entre semanas, no como predictor aislado de lesión. No uso la relación aguda:crónica (ACWR) por sus problemas conceptuales.</p>${refList(['foster01','haddad17','impellizzeri20'])}</section>
   ${wellCard()}
   <section class="card"><h3 class="sec">Sesiones registradas</h3>
+    ${typeof sesEdit!=='undefined' && sesEdit && sessions.find(x=>x.id===sesEdit) ? logForm(null, null, sessions.find(x=>x.id===sesEdit)) : ''}
     ${ses.length?`<div class="tbl"><table class="data"><thead><tr><th>Fecha</th><th>Semana</th><th>Día</th><th>Min</th><th>RPE</th><th>Carga</th><th>Dolor</th><th>24 h</th><th>Ejercicios</th><th></th></tr></thead><tbody>
-    ${ses.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.semana)}</td><td>${esc(x.dia)}</td><td>${esc(x.min)}</td><td>${esc(x.srpe)}</td><td>${Math.round((num(x.min)||0)*(num(x.srpe)||0))}</td><td>${esc(x.dolor)}/10</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td class="wrap">${(x.ex||[]).filter(e=>e.kg||e.rpe).map(e=>esc(`${e.e} ${e.kg?e.kg+' kg':''}${e.reps?'×'+e.reps:''}${e.rpe?' @'+e.rpe:''}`)).join('<br>')||'—'}</td><td>${curId?`<button class="xbtn" data-delses="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
+    ${ses.map(x=>`<tr><td>${esc(x.fecha)}</td><td>${esc(x.semana)}</td><td>${esc(x.dia)}</td><td>${esc(x.min)}</td><td>${esc(x.srpe)}</td><td>${Math.round((num(x.min)||0)*(num(x.srpe)||0))}</td><td>${esc(x.dolor)}/10</td><td>${esc({mejor:'Mejor',igual:'Basal',peor:'Peor'}[x.d24]||'—')}</td><td class="wrap">${(x.ex||[]).filter(e=>e.e).map(exFmt).join('<br>')||'—'}</td><td style="white-space:nowrap">${curId?`<button class="mini-btn" data-editses="${esc(x.id)}">Editar</button><button class="xbtn" data-delses="${esc(x.id)}" aria-label="Borrar sesión">×</button>`:''}</td></tr>`).join('')}
     </tbody></table></div>`:'<p class="small">Registra sesiones desde cada día del plan con "Registrar sesión".</p>'}
   </section>
   <section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 class="sec" style="margin:0">Evaluaciones y cuestionarios</h3>${!evalOpen?'<button class="dark" id="bEval">Nueva evaluación</button>':''}</div>
@@ -275,7 +286,6 @@ function render(){
       <div class="phase"><h2>${esc(ph.name.split(' · ').slice(1).join(' · ')||ph.name)}</h2><p>${esc(ph.goal)}</p><p class="small" style="margin-top:4px">${esc(ph.when)}</p></div>
       <div class="actions">
         <button id="bSave">Guardar</button>
-        ${view==='plan'?`<button id="bEdit">${editMode?'Terminar edición':'Editar ejercicios'}</button>`:''}
         <button class="primary" id="bPub">Publicar al deportista</button>
       </div>
     </div>
@@ -324,12 +334,15 @@ $('#out').addEventListener('click', async e=>{
   if(q('#bSave')) return save(false);
   if(q('#bPdf')) return pdf();
   if(q('#bXls')) return excel();
-  if(q('#bEdit')){ editMode=!editMode; subOpen=null; logOpen=null; return render(); }
+  if((b=q('[data-dedit]'))){ const d=+b.dataset.dedit; if(editMode) await save(true); editMode=true; editDay=d; subOpen=null; logOpen=null; if(typeof FX!=='undefined') FX.dayOpen.add(d); render();
+    document.querySelector(`section.day[data-day="${d}"]`)?.scrollIntoView({block:'start'}); return; }
+  if((b=q('[data-dsave]'))){ const d=+b.dataset.dsave; editMode=false; editDay=null; if(!st.rev) st.rev={}; st.rev[planKey(st)]=true; markDirty(); render();
+    document.querySelector(`section.day[data-day="${d}"]`)?.scrollIntoView({block:'nearest'}); return save(false); }
   if(q('#bReset')){ delete st.plans[planKey(st)]; render(); return markDirty(); }
-  if((b=q('[data-view]'))){ view=b.dataset.view; editMode=false; logOpen=null; return render(); }
+  if((b=q('[data-view]'))){ view=b.dataset.view; editMode=false; editDay=null; logOpen=null; return render(); }
   if((b=q('[data-del]'))){ const [d,g,r]=b.dataset.del.split('|').map(Number); ensureCustom()[d].segs[g].rows.splice(r,1); subOpen=null; render(); return markDirty(); }
   if((b=q('[data-add]'))){ const [d,g]=b.dataset.add.split('|').map(Number); const days=ensureCustom(); days[d].segs[g].rows.push({e:'',lado:days[d].segs[g].type==='central'?'Ambas':'',s:'3',r:'',c:'RPE 8',n:'',ter:false}); render(); markDirty();
-    const inp=document.querySelector(`input[data-d="${d}"][data-g="${g}"][data-r="${days[d].segs[g].rows.length-1}"][data-f="e"]`); if(inp) inp.focus(); return; }
+    const inp=document.querySelector(`[data-d="${d}"][data-g="${g}"][data-r="${days[d].segs[g].rows.length-1}"][data-f="e"]`); if(inp) inp.focus(); return; }
   if((b=q('[data-sub]'))){ subOpen = subOpen===b.dataset.sub ? null : b.dataset.sub; return render(); }
   if((b=q('[data-pick]'))){ const p=b.dataset.pick.split('|'); const [d,g,r]=p.slice(0,3).map(Number); const name=p.slice(3).join('|'); const row=ensureCustom()[d].segs[g].rows[r]; row.e=name; subOpen=null; render(); return markDirty(); }
   if((b=q('[data-log]'))){ const d=+b.dataset.log; logOpen = logOpen===d ? null : d; return render(); }
