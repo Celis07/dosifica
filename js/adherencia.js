@@ -141,7 +141,7 @@ const AD_PRESETS = {
 };
 function adCompose(pid, motivo){
   const p = patients.find(x => x.id === pid); if(!p) return;
-  if(!p.email){ toast('Este paciente no tiene acceso al portal: agrégale un correo para poder escribirle.'); return; }
+  if(!p.email){ toast('Esta persona no tiene acceso al portal: agrégale un correo para poder escribirle.'); return; }
   let d = $('#msgDlg');
   if(!d){ d = document.createElement('div'); d.id = 'msgDlg'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'msgDlgT'); document.body.appendChild(d); }
   const pre = [...(AD_PRESETS[motivo] || []), ...(motivo === 'semana' ? [] : AD_PRESETS.ajuste)];

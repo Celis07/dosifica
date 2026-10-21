@@ -413,11 +413,11 @@ const _adComposePx = adCompose;
 adCompose = function(pid, motivo){ if(motivo === 'semana') return _adComposePx(pid, motivo); pxOpenChat(pid); };
 async function pxOpenChat(pid){
   const p = patients.find(x => x.id === pid); if(!p) return;
-  if(!p.email){ toast('Este paciente no tiene acceso al portal: agrégale un correo para poder escribirle.'); return; }
+  if(!p.email){ toast('Esta persona no tiene acceso al portal: agrégale un correo para poder escribirle.'); return; }
   let d = $('#chatDlg');
   if(!d){ d = document.createElement('div'); d.id = 'chatDlg'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'chatDlgT'); document.body.append(d); }
   d.dataset.pid = pid; d.hidden = false;
-  d.innerHTML = `<div class="md-card px-fchat"><div class="px-fch"><h2 id="chatDlgT">${esc(p.nombre || 'Paciente')}</h2><button type="button" class="xbtn" id="chatX" aria-label="Cerrar">×</button></div>
+  d.innerHTML = `<div class="md-card px-fchat"><div class="px-fch"><h2 id="chatDlgT">${esc(p.nombre || 'Usuario')}</h2><button type="button" class="xbtn" id="chatX" aria-label="Cerrar">×</button></div>
     <div class="px-thread" id="fThread"><p class="small">Cargando…</p></div>
     <span class="px-qr">Respuestas rápidas</span><div class="md-pre px-pre">${[...AD_PRESETS.animo, ...AD_PRESETS.ajuste].map((t, i) => `<button type="button" data-cpre="${i}">${esc(t)}</button>`).join('')}</div>
     <div class="px-compose"><textarea id="fTxt" rows="3" maxlength="1000" placeholder="Escribe un mensaje" aria-label="Mensaje"></textarea><button type="button" class="primary" id="fSend">Enviar</button></div></div>`;
@@ -428,7 +428,7 @@ async function pxOpenChat(pid){
 }
 function pxPaintThread(ms){
   const th = $('#fThread'); if(!th) return; th._ms = ms;
-  th.innerHTML = ms.length ? ms.map(m => `<div class="px-msg ${m.autor === 'deportista' ? 'fi' : 'me'}"><p>${esc(m.texto)}</p><span>${m.autor === 'deportista' ? 'Paciente' : 'Tú'} · ${esc(fmtD((m.created_at || '').slice(0, 10)))} ${esc((m.created_at || '').slice(11, 16))}${m.autor !== 'deportista' && m.leido_at ? ' · leído' : ''}</span></div>`).join('')
+  th.innerHTML = ms.length ? ms.map(m => `<div class="px-msg ${m.autor === 'deportista' ? 'fi' : 'me'}"><p>${esc(m.texto)}</p><span>${m.autor === 'deportista' ? (p.nombre || 'Usuario').split(' ')[0] : 'Tú'} · ${esc(fmtD((m.created_at || '').slice(0, 10)))} ${esc((m.created_at || '').slice(11, 16))}${m.autor !== 'deportista' && m.leido_at ? ' · leído' : ''}</span></div>`).join('')
     : '<p class="small">Aún no hay mensajes. Escríbele el primero.</p>';
   th.scrollTop = th.scrollHeight;
 }

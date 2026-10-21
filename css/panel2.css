@@ -244,3 +244,34 @@ body.fx .fx-pat{min-height:62px}
 .rvselx{max-width:100%;margin-top:6px}
 .px-sel{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--h-2,#6E6E73)}
 .px-sel select{flex:1;min-height:36px;border-radius:10px;border:0;background:var(--h-fill,rgba(120,120,128,.12));color:inherit;padding:0 10px;font-size:15px;font-weight:600}
+/* Lápiz de datos, campanita, cuadro de guardar, evaluación agrupada (oct 2026) */
+.fx-pen{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;margin-left:6px;vertical-align:middle;border:0;border-radius:15px;background:var(--fx-fill,rgba(120,120,128,.12));color:var(--fx-2,#6E6E73);padding:0}
+.fx-pen.on{background:var(--fx-ink,#1D1D1F);color:var(--fx-w,#fff)}
+.fx-bell{position:relative}
+.fx-bell.on{background:var(--fx-ink,#1D1D1F);color:var(--fx-w,#fff)}
+.fx-bdot{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:#E5202E;color:#fff;font-size:11px;font-weight:700;font-style:normal;display:flex;align-items:center;justify-content:center;padding:0 4px;box-sizing:border-box}
+#fxSaveBar{white-space:nowrap;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;gap:14px;background:#1D1D1F;color:#fff;border-radius:16px;padding:10px 10px 10px 18px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:15px;max-width:calc(100% - 32px)}
+#fxSaveBar[hidden]{display:none}
+#fxSaveBar button{border:0;border-radius:11px;background:#E5202E;color:#fff;font:inherit;font-weight:700;padding:9px 18px}
+@media (min-width:900px){#fxSaveBar{bottom:24px}}
+@media (prefers-color-scheme:dark){#fxSaveBar{background:#F5F5F7;color:#000}}
+body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
+.fx-group>.card,.fx-group section.card{border:0!important;box-shadow:none!important;padding:12px 0!important;margin:0!important;background:transparent!important}
+.fx-group>.card+.card{border-top:.5px solid var(--fx-sep,#E5E5EA)!important}
+/* Torneos */
+.tcal-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.tcal b{display:block;font-size:15px;font-weight:600;margin-bottom:6px}
+.tcal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;font-size:13px}
+.tcal-g i{font-style:normal;color:var(--fx-2,#6E6E73);font-size:11px;padding-bottom:2px}
+.tcal-g span{height:30px;display:flex;align-items:center;justify-content:center;border-radius:15px;font-variant-numeric:tabular-nums}
+.tcal-g span.hoy{box-shadow:inset 0 0 0 1.5px currentColor;font-weight:700}
+.tcal-g span.tor{background:#E5202E;color:#fff;font-weight:700}
+.tcal-g span.tor.pB{background:#FF9F0A}
+.tcal-g span.tor.pC{background:#8E8E93}
+.tcal-list{display:flex;flex-direction:column;margin-top:14px}
+.tcal-r{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:.5px solid var(--fx-sep,#E5E5EA)}
+.tcal-n{flex:1;display:flex;flex-direction:column;min-width:0} .tcal-n span{font-size:13px;color:var(--fx-2,#6E6E73)}
+.tcal-card .ghost{margin-top:10px}
+.fx-mk{margin:4px 0 14px}
+.tcal-r .prio{display:inline-flex;flex:none;width:22px;height:22px;border-radius:6px;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#8E8E93;color:#fff;border:0;padding:0}
+.tcal-r .prio.A{background:#E5202E} .tcal-r .prio.B{background:#FF9F0A}

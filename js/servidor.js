@@ -17,12 +17,12 @@ function markDirty(){ if(!curId) return; $('#saveState').textContent='Cambios si
 function renderSel(){
   const sel=$('#psel');
   const opts = patients.slice().sort((a,b)=> (b.updated||'').localeCompare(a.updated||'')).map(p=>`<option value="${esc(p.id)}">${esc(p.nombre||'Sin nombre')}${pendingBy[p.id]?` (${pendingBy[p.id]} solicitud${pendingBy[p.id]>1?'es':''})`:''}</option>`).join('');
-  sel.innerHTML = ((typeof homeVisible==='function' && homeVisible()) ? '<option value="">Abrir paciente…</option>' : isExample ? '<option value="">Ejemplo (sin guardar)</option>' : (curId ? '' : '<option value="">Paciente sin guardar</option>')) + opts;
+  sel.innerHTML = ((typeof homeVisible==='function' && homeVisible()) ? '<option value="">Abrir usuario…</option>' : isExample ? '<option value="">Ejemplo (sin guardar)</option>' : (curId ? '' : '<option value="">Usuario sin guardar</option>')) + opts;
   sel.value = (typeof homeVisible==='function' && homeVisible()) ? '' : (curId||'');
 }
 async function loadPatients(){
   const {data, error} = await sb.from('pacientes').select('id,nombre,email,estado,consent,updated_at').order('updated_at',{ascending:false});
-  if(error){ toast('No se pudieron cargar los pacientes.'); return; }
+  if(error){ toast('No se pudo cargar la lista de usuarios.'); return; }
   patients = (data||[]).map(p=>({id:p.id, nombre:p.nombre, email:p.email, st:Object.assign({}, p.estado, {nombre:(p.estado&&p.estado.nombre)||p.nombre, email:p.email||'', consent:p.consent}), updated:p.updated_at}));
   const [{data:ses},{data:sol}] = await Promise.all([
     sb.from('sesiones').select('id,paciente_id,fecha,dolor,semana,dia,srpe,autor,created_at').order('fecha',{ascending:false}).limit(2000),
@@ -59,7 +59,7 @@ async function save(quiet){
   let res;
   if(curId) res = await sb.from('pacientes').update(row).eq('id',curId).select('id,updated_at').single();
   else res = await sb.from('pacientes').insert(row).select('id,updated_at').single();
-  if(res.error){ $('#saveState').textContent='No se pudo guardar'; if(!quiet) toast(/pacientes_email_unico|duplicate/.test(res.error.message)?'Ese correo ya está asignado a otro paciente.':'No se pudo guardar. Revisa la conexión e inténtalo de nuevo.'); return; }
+  if(res.error){ $('#saveState').textContent='No se pudo guardar'; if(!quiet) toast(/pacientes_email_unico|duplicate/.test(res.error.message)?'Ese correo ya está asignado a otra persona.':'No se pudo guardar. Revisa la conexión e inténtalo de nuevo.'); return; }
   const wasNew=!curId; curId=res.data.id; isExample=false;
   const p={id:curId, nombre:name, email, st:clone(st), updated:res.data.updated_at, sum:(patients.find(x=>x.id===curId)||{}).sum};
   const i=patients.findIndex(x=>x.id===curId); if(i<0) patients.push(p); else patients[i]=p;
@@ -93,7 +93,7 @@ function collectLog(day){
     d24:$('#lf-d24').value||'', nota:($('#lf-nota').value||'').slice(0,2000), ex:ex.filter(x=>x.kg!=null||x.rpe!=null||x.reps!=null)};
 }
 async function saveSession(di){
-  if(!curId){ toast('Guarda el paciente antes de registrar sesiones.'); return; }
+  if(!curId){ toast('Guarda la ficha antes de registrar sesiones.'); return; }
   const day=viewWeek(st).days[di];
   const row=Object.assign(collectLog(day), {paciente_id:curId, semana:num(st.semPlan)||1, fase:P[pkey(st)].phases[phaseIdx(st)].name.split(' · ')[0], autor:'fisio'});
   const {data,error}=await sb.from('sesiones').insert(row).select('*').single();
@@ -103,7 +103,7 @@ async function saveSession(di){
   logOpen=null; await save(true); render(); toast('Sesión registrada');
 }
 async function saveEval(){
-  if(!curId){ toast('Guarda el paciente antes de registrar evaluaciones.'); return; }
+  if(!curId){ toast('Guarda la ficha antes de registrar evaluaciones.'); return; }
   const prom={}; promsFor(st).forEach(k=>{ const v=num($('#ev-'+k).value); if(v!=null) prom[k]=Math.max(0,Math.min(100,v)); });
   const datos={semana:num(st.semPlan)||1, fase:P[pkey(st)].phases[phaseIdx(st)].name.split(' · ')[0], dolor:st.dolor, der:st.derrame, flex:num(st.flexL), ext:num(st.extDef), chk:clone(st.chk||{}), prom};
   const {data,error}=await sb.from('evaluaciones').insert({paciente_id:curId, fecha:$('#ev-fecha').value||todayISO(), datos}).select('*').single();
@@ -133,7 +133,7 @@ async function answerReq(id, estado){
 }
 function requestsView(){
   const est={pendiente:'<span class="pill y">Pendiente</span>',aprobada:'<span class="pill g">Aprobada</span>',rechazada:'<span class="pill r">Rechazada</span>'};
-  if(!curId) return '<section class="card"><p class="small">Guarda el paciente para recibir solicitudes.</p></section>';
+  if(!curId) return '<section class="card"><p class="small">Guarda la ficha para recibir solicitudes.</p></section>';
   return `<section class="card"><h3 class="sec">Solicitudes de cambio del deportista</h3>
   <p class="small">Si apruebas un cambio, edita el plan y publícalo de nuevo; la respuesta le llega al deportista en su portal.</p>
   ${solicitudes.length? solicitudes.map(r=>`<div class="req"><div class="reqh">${est[r.estado]||''}<span class="small">${esc((r.created_at||'').slice(0,10))}</span></div><p>${esc(r.texto)}</p>
@@ -149,14 +149,14 @@ function openPatient(id, toView){
 }
 $('#psel').addEventListener('change', e=>{ if(e.target.value) openPatient(e.target.value); });
 $('#bNew').onclick=()=>{ showWork(); st=blank(); curId=null; isExample=false; editMode=false; sessions=[]; evals=[]; solicitudes=[]; view='plan'; fillForm(); render(); renderSel(); $('#saveState').textContent=''; $('#nombre').focus(); };
-$('#bDel').onclick=()=>{ if(!curId){ toast('Este paciente no está guardado'); return; } $('#delTxt').textContent=`¿Eliminar a ${st.nombre||'este paciente'} con sus planes, sesiones y evaluaciones? No se puede deshacer.`; $('#delConfirm').hidden=false; };
+$('#bDel').onclick=()=>{ if(!curId){ toast('Esta ficha no está guardada'); return; } $('#delTxt').textContent=`¿Eliminar a ${st.nombre||'esta persona'} con sus planes, sesiones y evaluaciones? No se puede deshacer.`; $('#delConfirm').hidden=false; };
 $('#bDelNo').onclick=()=>{ $('#delConfirm').hidden=true; };
 $('#bDelYes').onclick=async()=>{
   $('#delConfirm').hidden=true;
   const {error}=await sb.from('pacientes').delete().eq('id',curId);
   if(error){ toast('No se pudo eliminar.'); return; }
   patients=patients.filter(p=>p.id!==curId);
-  st=clone(EXAMPLE); curId=null; isExample=true; sessions=clone(EX_SESSIONS); evals=clone(EX_EVALS); solicitudes=[]; fillForm(); render(); renderSel(); toast('Paciente eliminado');
+  st=clone(EXAMPLE); curId=null; isExample=true; sessions=clone(EX_SESSIONS); evals=clone(EX_EVALS); solicitudes=[]; fillForm(); render(); renderSel(); toast('Ficha eliminada');
 };
 $('#out').addEventListener('click', e=>{
   const b=e.target.closest('[data-ans]'); if(b){ const [id,estado]=b.dataset.ans.split('|'); answerReq(id, estado); return; }
@@ -262,7 +262,7 @@ $('#athleteApp').addEventListener('click', async e=>{
    La sesión se guarda en el dispositivo (supabase-js persistSession) y se renueva sola; el correo se recuerda. */
 const LS = { get:k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set:(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} } };
 let lgMode='pass', lgRole=LS.get('apex_role')==='fisio'?'fisio':'deportista';
-const LG_SUB={fisio:{pass:'Accede a tus pacientes y planes.', link:'Te enviamos un enlace para crear o cambiar tu contraseña.'},
+const LG_SUB={fisio:{pass:'Accede a tus usuarios y sus planes.', link:'Te enviamos un enlace para crear o cambiar tu contraseña.'},
   deportista:{pass:'Entra con el correo que registró tu fisioterapeuta.', link:'Te enviamos un enlace para crear o cambiar tu contraseña. Usa el correo que registró tu fisioterapeuta.'}};
 function setRole(r){ lgRole=r; LS.set('apex_role', r);
   document.querySelectorAll('.rolesel [data-role]').forEach(b=>b.setAttribute('aria-checked', String(b.dataset.role===r)));

@@ -69,7 +69,7 @@ function pfLoadPre(){
   if(!curId || typeof sb === 'undefined' || !sb || pfPreFor === curId) return;
   pfPreFor = curId; pfPre = null;
   sb.from('prechequeo').select('id,fecha,nivel,puntaje,resp,created_at').eq('paciente_id', curId).order('created_at', {ascending:false}).limit(8)
-    .then(({data}) => { if(pfPreFor !== curId) return; pfPre = data || []; if(view === 'eval') render(); });
+    .then(({data}) => { if(pfPreFor !== curId) return; pfPre = data || []; if(view === 'eval' || view === 'datos') render(); });
 }
 function evalView(){
   const p = pfGet();
@@ -128,7 +128,7 @@ function evalView(){
 
 /* ---------- Interacción ---------- */
 $('#out').addEventListener('click', e => {
-  if(view !== 'eval') return;
+  if(!['eval', 'datos'].includes(view)) return;
   const b = e.target.closest('button'); if(!b) return;
   const p = pfGet(), d = b.dataset;
   if(d.pfsave !== undefined){ if(typeof save === 'function') save(false); return; }
@@ -170,17 +170,17 @@ $('#out').addEventListener('click', e => {
   }
 });
 $('#out').addEventListener('input', e => {
-  if(view !== 'eval') return;
+  if(!['eval', 'datos'].includes(view)) return;
   const t = e.target;
   if(t.dataset.pfk){ const p = pfGet(); p[t.dataset.pfk] = t.type === 'number' ? num(t.value) : t.value; pfTouch(); }
   if(t.dataset.pfzt !== undefined && pfZona) pfZona.nota = t.value;
 });
 $('#out').addEventListener('change', e => {
-  if(view !== 'eval' || !e.target.dataset.pfk || e.target.tagName !== 'SELECT') return;
+  if(!['eval', 'datos'].includes(view) || !e.target.dataset.pfk || e.target.tagName !== 'SELECT') return;
   render();   // el sexo cambia los puntos de corte de prensión
 });
 $('#out').addEventListener('keydown', e => {
-  if(view !== 'eval' || e.key !== 'Enter') return;
+  if(!['eval', 'datos'].includes(view) || e.key !== 'Enter') return;
   const t = e.target;
   if(t.dataset.pfv){ e.preventDefault(); $(`#out [data-pfadd="${t.dataset.pfv}"]`)?.click(); }
   if(t.dataset.pfov){ e.preventDefault(); $(`#out [data-pfoadd="${t.dataset.pfov}"]`)?.click(); }

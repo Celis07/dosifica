@@ -14,7 +14,7 @@ let foldOpen = new Set(JSON.parse(LS.get('apex_fold') || '[]'));
   t.type = 'button'; t.id = 'formToggle'; t.className = 'ftoggle'; t.setAttribute('aria-expanded', 'false'); t.setAttribute('aria-controls', 'form');
   aside.prepend(t);
   const del = document.createElement('button');
-  del.type = 'button'; del.className = 'fdel'; del.textContent = 'Eliminar paciente';
+  del.type = 'button'; del.className = 'fdel'; del.textContent = 'Eliminar ficha';
   del.onclick = () => { $('#bDel').click(); window.scrollTo({top:0, behavior:'smooth'}); };
   aside.append(del);
   t.onclick = () => { const c = aside.classList.toggle('collapsed'); t.setAttribute('aria-expanded', String(!c)); if(!c) aside.scrollIntoView({block:'start'}); };
@@ -22,7 +22,7 @@ let foldOpen = new Set(JSON.parse(LS.get('apex_fold') || '[]'));
 })();
 function formSummary(){
   const t = $('#formToggle'); if(!t) return;
-  const name = (st && st.nombre) || 'Paciente nuevo';
+  const name = (st && st.nombre) || 'Usuario nuevo';
   let sub = '';
   try{ const P0 = P[pkey(st)]; sub = subLabel(st, P0) + ' · S' + (st.semPlan || 1); }catch(e){}
   t.innerHTML = `<span class="ft"><b>${esc(name)}</b><i>${esc(sub)}</i></span><span class="fe">Editar ficha<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>`;

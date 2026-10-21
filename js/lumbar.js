@@ -94,7 +94,7 @@ P['lum-cronico'] = {label:LUM_C.cronico, phases:[
     neuro:[X('Pallof press','3 × 10 por lado',{rpe:'7'}), X('Bird dog con resistencia','3 × 8 por lado',{rpe:'7'})],
     central:[X('Peso muerto con barra hexagonal','4 × 6–8',{rpe:'7–8',t:'Sube la carga 2,5–5 % cuando el dolor sea ≤ 3/10 y vuelva a basal en 24 h.'}), X('Sentadilla goblet o frontal','3 × 8',{rpe:'7–8'}), X('Hip thrust','3 × 8–10',{rpe:'8'}), X('Remo con mancuerna','3 × 8–10',{rpe:'8'}), X('Extensión de espalda en banco romano','3 × 10–12',{rpe:'7',t:'Rango completo, controlado.'})],
     home:LW('30 min, 5 días por semana'), ev:['l_owen20','l_fernandez22','l_hayden21','l_aasa15'] }),
-  lph('Fase 3 · Autonomía', 'Desde las 12 semanas', 'Que el paciente maneje solo su espalda: programa propio, plan para las recaídas y una sesión de refuerzo.', {
+  lph('Fase 3 · Autonomía', 'Desde las 12 semanas', 'Que la persona maneje sola su espalda: programa propio, plan para las recaídas y una sesión de refuerzo.', {
     next:['l_dol2','l_odi10','l_auto'], nextLabel:'Criterios de alta',
     act:[X('Movilidad general','1 × 5 min')],
     neuro:[X('Kettlebell swing','3 × 10',{rpe:'7'}), X('Lanzamiento de balón medicinal rotacional','3 × 5 por lado')],

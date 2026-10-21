@@ -224,7 +224,7 @@ async function loadAlerts(){
     .or('dolor.gt.5,d24.eq.peor').is('revisada_at',null).gte('fecha',desde).order('fecha',{ascending:false}).limit(50);
   if(error) return; alertas=(data||[]).filter(isAlerta); renderAlerts();
 }
-function alertName(pid){ return (patients.find(p=>p.id===pid)||{}).nombre || 'Paciente'; }
+function alertName(pid){ return (patients.find(p=>p.id===pid)||{}).nombre || 'Usuario'; }
 function alertWhy(s){ return [s.dolor!=null&&s.dolor>5?`Dolor ${s.dolor}/10`:'', s.d24==='peor'?'Peor a las 24 h':''].filter(Boolean).join(' · '); }
 function renderAlerts(){
   const b=$('#bAlert'); if(!b) return;

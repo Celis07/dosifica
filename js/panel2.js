@@ -9,8 +9,10 @@
    - Tema según el celular (claro u oscuro). */
 
 const FX = {tab: 'inicio', from: 'inicio', q: '', f: 'todos', pre: null};
-const FX_TABS = [['inicio', 'Inicio'], ['pacientes', 'Pacientes'], ['vivo', 'En vivo'], ['cuenta', 'Cuenta']];
-const FX_SECS = [['resumen', 'Resumen'], ['plan', 'Plan'], ['eval', 'Evaluación'], ['ses', 'Sesiones'], ['req', 'Solicitudes'], ['cal', 'Calendario'], ['hist', 'Historia'], ['datos', 'Datos']];
+const FX_TABS = [['inicio', 'Inicio'], ['pacientes', 'Usuarios'], ['vivo', 'En vivo'], ['cuenta', 'Cuenta']];
+const FX_SECS = [['resumen', 'Resumen'], ['plan', 'Plan'], ['ses', 'Sesiones'], ['cal', 'Torneos']];
+// Fuera del menú: Datos (lápiz junto al nombre, con Historia y Evaluación plegables) y Solicitudes (campanita)
+const FX_SEC_X = {datos: 'Datos', req: 'Solicitudes'};
 const FX_I = {
   inicio: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>',
   pacientes: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17.5 14.5c2.2.3 3.6 1.9 4 4.5"/></svg>',
@@ -88,7 +90,7 @@ function fxInicio(){
       <button type="button" class="fx-w fx-tile" data-fxf="msg"><span class="fx-ic c-msg">${FX_I.msg}</span><b>${nMsg}</b><span>Mensajes sin leer</span></button>
       <button type="button" class="fx-w fx-tile" data-fxf="req"><span class="fx-ic c-req">${FX_I.req}</span><b>${nReq}</b><span>Solicitudes de cambio</span></button>
       <button type="button" class="fx-w fx-tile" data-fxf="vid"><span class="fx-ic c-vid">${FX_I.vid}</span><b>${nVid}</b><span>Videos de técnica</span></button>
-      <button type="button" class="fx-w fx-tile" data-fxf="todos"><span class="fx-ic">${FX_I.pacientes}</span><b>${act}<small>/${infos.length}</small></b><span>Pacientes activos (7 días)</span></button>
+      <button type="button" class="fx-w fx-tile" data-fxf="todos"><span class="fx-ic">${FX_I.pacientes}</span><b>${act}<small>/${infos.length}</small></b><span>Activos (7 días)</span></button>
     </div>
 
     <button type="button" class="fx-w fx-live" data-fx="rcp"><span class="fx-lt"><span class="fx-lk">En vivo</span><b>Bienestar antes de entrenar</b><span>${preHoy.length ? `${preHoy.length} hoy` : 'Para quien entrena contigo hoy'}</span></span><span class="fx-play">${FX_I.play}</span></button>
@@ -128,10 +130,10 @@ function fxPacientes(){
   const fl = (FX_F.find(x => x[0] === FX.f) || [FX.f, /^st-/.test(FX.f) ? ST_L[FX.f.slice(3)] : 'Todos'])[1];
   const ICF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
   return `<div class="fx-page">
-    <header class="fx-hd"><div><span class="fx-eye">${patients.length} paciente${patients.length === 1 ? '' : 's'}</span><h1>Pacientes</h1></div>
-      <button type="button" class="fx-avb red" data-fx="nuevo" aria-label="Nuevo paciente">${FX_I.plus}</button></header>
+    <header class="fx-hd"><div><span class="fx-eye">${patients.length} ${patients.length === 1 ? 'persona' : 'personas'}</span><h1>Usuarios</h1></div>
+      <button type="button" class="fx-avb red" data-fx="nuevo" aria-label="Nuevo usuario">${FX_I.plus}</button></header>
     <div class="fx-sbar fx-secsel">
-      <label class="fx-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="fxQ" placeholder="Buscar" aria-label="Buscar paciente o condición" value="${esc(FX.q)}" autocomplete="off"></label>
+      <label class="fx-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="fxQ" placeholder="Buscar" aria-label="Buscar nombre o condición" value="${esc(FX.q)}" autocomplete="off"></label>
       <button type="button" class="fx-fbtn${FX.f !== 'todos' ? ' on' : ''}" data-fxfm aria-haspopup="true" aria-expanded="false" aria-label="Filtrar: ${esc(fl)}">${ICF}</button>
       <div class="fx-menu" role="menu" hidden>${FX_F.map(([k, l]) => `<button type="button" role="menuitem" data-fxf="${k}"${FX.f === k ? ' aria-current="true"' : ''}><span>${esc(l)}</span>${FX.f === k ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : ''}</button>`).join('')}</div>
     </div>
@@ -140,8 +142,8 @@ function fxPacientes(){
       <i class="fx-d ${i.ds.k}" aria-label="${esc(ST_L[i.ds.k])}"></i>
       <span class="fx-rt"><b>${esc(i.p.nombre || 'Sin nombre')}</b><span>${esc(fxCorto(i.s))}</span></span>
       ${pend ? `<span class="fx-bdg"><em class="${i.al ? 'r' : 'b'}" aria-label="${pend} pendiente${pend > 1 ? 's' : ''}">${pend}</em></span>` : `<span class="fx-when">${esc(i.sm.last ? hace(i.sm.last) : '')}</span>`}${FX_I.chev}</button>`; }).join('')}</div>`
-      : '<p class="fx-empty">Ningún paciente coincide.</p>')
-      : '<div class="fx-w fx-emptyw"><p>Aún no tienes pacientes guardados.</p><button type="button" class="primary" data-fx="nuevo">Crear el primero</button></div>'}
+      : '<p class="fx-empty">Nadie coincide.</p>')
+      : '<div class="fx-w fx-emptyw"><p>Aún no tienes usuarios ni usuarias.</p><button type="button" class="primary" data-fx="nuevo">Crear el primero</button></div>'}
   </div>`;
 }
 function fxVivo(){
@@ -162,7 +164,7 @@ function fxCuenta(){
     <div class="fx-w fx-me"><span class="fx-av big">${esc(fxIni(fisioNombre || (me && me.email) || 'F'))}</span><span><b>${esc(fisioNombre || 'Fisioterapeuta')}</b><span>${esc((me && me.email) || '')}</span></span></div>
     <section class="fx-sec"><h2>Herramientas</h2><div class="fx-list">
       <button type="button" class="fx-rb" data-fx="banco"><span class="fx-ic sq">${FX_I.req}</span><span class="fx-rt"><b>Banco de ejercicios</b><span>Tus ejercicios, videos y claves</span></span>${FX_I.chev}</button>
-      <button type="button" class="fx-rb" data-fx="tabla"><span class="fx-ic sq">${FX_I.pacientes}</span><span class="fx-rt"><b>Tabla de pacientes</b><span>Fase, adherencia y dolor de todos</span></span>${FX_I.chev}</button>
+      <button type="button" class="fx-rb" data-fx="tabla"><span class="fx-ic sq">${FX_I.pacientes}</span><span class="fx-rt"><b>Tabla de usuarios</b><span>Fase, adherencia y dolor de todos</span></span>${FX_I.chev}</button>
     </div></section>
     <section class="fx-sec"><h2>Notificaciones</h2><div class="fx-list">
       <div class="fx-rb"><span class="fx-ic sq">${FX_I.msg}</span><span class="fx-rt"><b>Alertas de dolor y mensajes</b><span>${esc(pushTxt || 'Apagadas')}</span></span>${FISIO_PUSH && FISIO_PUSH !== 'on' && FISIO_PUSH !== 'unsupported' && FISIO_PUSH !== 'install' && FISIO_PUSH !== 'denied' ? '<button type="button" class="fx-ok" data-fx="push">Activar</button>' : ''}</div>
@@ -266,16 +268,16 @@ function fxFicha(){
   const hdr = document.createElement('header'); hdr.className = 'phead fx-fhead';
   const backL = sp ? 'Cuenta' : (FX_TABS.find(t => t[0] === FX.from) || ['', 'Inicio'])[1];
   if(sp){
-    hdr.innerHTML = `<div class="fx-fbar"><button type="button" class="fx-back" data-fxback>${FX_I.back}${esc(backL)}</button></div><h1 class="fx-tt">${view === 'banco' ? 'Banco de ejercicios' : 'Tabla de pacientes'}</h1>`;
+    hdr.innerHTML = `<div class="fx-fbar"><button type="button" class="fx-back" data-fxback>${FX_I.back}${esc(backL)}</button></div><h1 class="fx-tt">${view === 'banco' ? 'Banco de ejercicios' : 'Tabla de usuarios'}</h1>`;
   } else {
     hdr.innerHTML = `<div class="fx-fbar"><button type="button" class="fx-back" data-fxback>${FX_I.back}${esc(backL)}</button><span class="fx-save" id="fxSave">${esc($('#saveState')?.textContent || '')}</span></div>
-      <div class="fx-who"><span class="fx-av">${esc(fxIni(st.nombre || 'N'))}</span><div class="fx-wn"><div class="client">${esc(st.nombre || 'Paciente nuevo')}</div><p class="fx-cond">${esc(subLabel(st, P0))}${st.deporte && !depNorm(subLabel(st, P0)).includes(depNorm(st.deporte)) ? ' · ' + esc(st.deporte) : ''}</p></div></div>
+      <div class="fx-who"><span class="fx-av">${esc(fxIni(st.nombre || 'N'))}</span><div class="fx-wn"><div class="client">${esc(st.nombre || 'Usuario nuevo')}${curId && !isExample ? `<button type="button" class="fx-pen${view === 'datos' ? ' on' : ''}" data-view="datos" aria-label="Editar datos" title="Editar datos"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg></button>` : ''}</div><p class="fx-cond">${esc(subLabel(st, P0))}${st.deporte && !depNorm(subLabel(st, P0)).includes(depNorm(st.deporte)) ? ' · ' + esc(st.deporte) : ''}</p></div></div>
       <div class="fx-tags">${ds ? `<span class="fx-tag st-${ds.k}"><i class="fx-d ${ds.k}"></i>${esc(ST_L[ds.k])}</span>` : ''}<span class="fx-tag">Semana ${esc(num(st.semPlan) || 1)} · ${esc(m.l)}</span>${!consent && !isExample ? '<span class="fx-tag bad">Falta consentimiento</span>' : ''}</div>
       <div class="fx-acts"></div>`;
     const acts = hdr.querySelector('.fx-acts');
     const pub = ph.querySelector('#bPub'); if(pub){ pub.textContent = 'Publicar'; acts.appendChild(pub); }
     const msg = ph.querySelector('#bMsg'); if(msg){ msg.className = 'fx-icb'; [...msg.childNodes].forEach(n => { if(n.nodeType === 3) n.remove(); }); msg.title = 'Mensaje'; acts.appendChild(msg); }
-    if(curId && !isExample) acts.insertAdjacentHTML('beforeend', `<button type="button" class="fx-icb" data-fx="rcpp" aria-label="Bienestar en vivo" title="Bienestar en vivo">${FX_I.heart}</button>`);
+    if(curId && !isExample){ const nr = pendingBy[curId] || 0; acts.insertAdjacentHTML('beforeend', `<button type="button" class="fx-icb" data-fx="rcpp" aria-label="Bienestar en vivo" title="Bienestar en vivo">${FX_I.heart}</button><button type="button" class="fx-icb fx-bell${view === 'req' ? ' on' : ''}" data-view="req" aria-label="Solicitudes${nr ? ': ' + nr + ' sin responder' : ''}" title="Solicitudes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>${nr ? `<i class="fx-bdot">${nr}</i>` : ''}</button>`); }
     const sv = ph.querySelector('#bSave'); if(sv){ sv.className = 'fx-savebtn'; hdr.querySelector('.fx-fbar').appendChild(sv); }
   }
   const ex = ph.querySelector('#bEdit');
@@ -284,7 +286,7 @@ function fxFicha(){
   if(view !== 'plan' && tail) tail.remove();
   if(sp){ tabs.remove(); return; }
   const badge = k => { const n = k === 'req' ? (pendingBy[curId] || 0) : k === 'ses' ? (tecPendBy[curId] || 0) : 0; return n ? `<span class="fx-pb">${n}</span>` : ''; };
-  const cur = FX_SECS.find(x => x[0] === view) || FX_SECS[0], tot = (pendingBy[curId] || 0) + (tecPendBy[curId] || 0);
+  const cur = FX_SECS.find(x => x[0] === view) || (FX_SEC_X[view] ? [view, FX_SEC_X[view]] : FX_SECS[0]), tot = (tecPendBy[curId] || 0);
   const nav = document.createElement('div'); nav.className = 'fx-secsel';
   nav.innerHTML = `<button type="button" class="fx-secbtn" data-fxmenu aria-haspopup="true" aria-expanded="false"><span>Sección</span><b>${esc(cur[1])}</b>${cur[0] === 'resumen' && tot ? `<span class="fx-pb">${tot}</span>` : ''}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
     <div class="fx-menu" role="menu" hidden>${FX_SECS.map(([k, l]) => `<button type="button" role="menuitem" data-view="${k}"${k === view ? ' aria-current="true"' : ''}><span>${l}</span>${badge(k)}${k === view ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>' : ''}</button>`).join('')}</div>`;
@@ -294,7 +296,7 @@ function fxFicha(){
   if(view === 'resumen' || view === 'datos'){
     [...out.children].forEach(el => { if(!keep(el)) el.remove(); });
     if(view === 'resumen') nav.insertAdjacentHTML('afterend', `<div class="fx-res">${fxResumen()}</div>`);
-    else nav.insertAdjacentHTML('afterend', '<p class="fx-hint">Datos de la persona, diagnóstico y planificación. Los cambios se guardan solos.</p>');
+    else if(curId && !isExample) nav.insertAdjacentHTML('afterend', `${typeof histView === 'function' ? histView() : ''}${typeof evalView === 'function' ? `<section class="card fx-group"><h3 class="sec">Evaluación</h3>${evalView()}</section>` : ''}`);
   } else if(view === 'plan'){
     const card = document.createElement('section'); card.className = 'card fx-phase';
     card.innerHTML = `<div><span class="fx-eye">Fase actual · ${esc(phs.when)}</span><h2>${esc(phs.name)}</h2><p>${esc(phs.goal)}</p></div><div class="actions"><button type="button" data-tplopen>Mis plantillas</button><button type="button" data-blank>Empezar en blanco</button></div>`;

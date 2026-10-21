@@ -40,17 +40,17 @@ async function loadHistoria(){
   if(!curId) return;
   const {data} = await sb.from('historias').select('datos,updated_at').eq('paciente_id',curId).maybeSingle();
   historia = data?.datos || {};
-  if(view==='hist') render();
+  if(view==='hist' || view==='datos') render();
 }
 async function saveHistoria(){
-  if(!curId){ toast('Guarda el paciente antes de llenar la historia.'); return; }
+  if(!curId){ toast('Guarda la ficha antes de llenar la historia.'); return; }
   const {error} = await sb.from('historias').upsert({paciente_id:curId, datos:historia, updated_at:new Date().toISOString()});
   if(error){ toast('No se pudo guardar la historia.'); return; }
   histDirty=false; toast('Historia clínica guardada'); render();
 }
 function histView(){
-  if(!curId) return `<section class="card"><p class="small" style="margin:0">Guarda el paciente para abrir su historia clínica.</p></section>`;
-  return `<section class="card"><div class="rowhead"><h3 class="sec" style="margin:0">Historia clínica y evaluación inicial</h3><button class="primary" id="hSave">${histDirty?'Guardar cambios':'Guardar'}</button></div>
+  if(!curId) return `<section class="card"><p class="small" style="margin:0">Guarda la ficha para abrir su historia clínica.</p></section>`;
+  return `<section class="card"><div class="rowhead"><h3 class="sec" style="margin:0">Historia clínica</h3><button class="primary" id="hSave">${histDirty?'Guardar cambios':'Guardar'}</button></div>
   <p class="small">Solo tú la ves. El deportista no tiene acceso a esta información.</p>
   ${HIST_CAMPOS.map(([t,campos])=>`<fieldset class="hist"><legend>${esc(t)}</legend><div class="hgrid">${campos.map(([k,l,tp])=>`<label class="f${tp==='area'?' wide':''}">${esc(l)}${tp==='area'?`<textarea data-h="${k}" rows="2">${esc(historia[k]||'')}</textarea>`:`<input type="${tp}" data-h="${k}" value="${esc(historia[k]||'')}">`}</label>`).join('')}</div></fieldset>`).join('')}
   </section>`;
@@ -123,8 +123,8 @@ function tplCard(){
     <div class="tplsave"><input id="tplName" placeholder="Nombre, p. ej. LCA HTH fase 3 · 3 días" value="${esc(`${subLabel(st,P0)} · ${ph.name.split(' · ')[0]} · ${nDias(st)} días`)}"><button class="primary" id="tplSave">Guardar semana actual como plantilla</button></div>
     ${plantillas.length?`<div class="tbl"><table class="data"><thead><tr><th>Plantilla</th><th>Condición</th><th>Fase</th><th>Días</th><th></th></tr></thead><tbody>
     ${plantillas.map(t=>`<tr><td><b>${esc(t.nombre)}</b></td><td>${esc(t.condicion||'')}</td><td>${esc((t.fase||'').split(' · ')[0])}</td><td>${esc(t.dias||'')}</td><td><button class="mini-btn" data-tpl-apply="${esc(t.id)}">Aplicar</button><button class="xbtn" data-tpl-del="${esc(t.id)}" aria-label="Eliminar plantilla">×</button></td></tr>`).join('')}
-    </tbody></table></div>`:'<p class="small">Aún no tienes plantillas. Ajusta una semana a tu gusto y guárdala aquí para reutilizarla con otros pacientes.</p>'}
-    <p class="small">Al aplicar, la plantilla reemplaza la semana base de la fase y los días actuales de este paciente. La progresión del mesociclo se aplica encima.</p>
+    </tbody></table></div>`:'<p class="small">Aún no tienes plantillas. Ajusta una semana a tu gusto y guárdala aquí para reutilizarla con otros usuarios y usuarias.</p>'}
+    <p class="small">Al aplicar, la plantilla reemplaza la semana base de la fase y los días actuales de esta persona. La progresión del mesociclo se aplica encima.</p>
   </section>`;
 }
 async function saveTpl(){

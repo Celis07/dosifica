@@ -9,7 +9,7 @@ const sbInvite = supabase.createClient(SB_URL, SB_KEY, {auth:{persistSession:fal
 let ACC = {id:null, link:'', busy:'', msg:'', kind:''};
 
 function accRowHTML(){
-  if(!curId || isExample) return '<p class="small" style="margin:0">Guarda el paciente para darle acceso a su portal.</p>';
+  if(!curId || isExample) return '<p class="small" style="margin:0">Guarda la ficha para darle acceso a su portal.</p>';
   const email=(st.email||'').trim();
   if(!email) return '<p class="small" style="margin:0">Escribe su correo: será su usuario para entrar y crear su contraseña.</p>';
   const a = ACC.id===curId ? ACC : {link:'', busy:'', msg:'', kind:''};

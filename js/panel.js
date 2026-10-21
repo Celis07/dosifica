@@ -66,7 +66,7 @@ function renderHome(){
   infos.filter(i=>!i.consent).forEach(i=>att.push({k:'n', pid:i.p.id, t:i.p.nombre, d:'Falta consentimiento informado', view:'hist'}));
 
   // Actividad reciente
-  const nameOf=id=>(patients.find(p=>p.id===id)||{}).nombre||'Paciente';
+  const nameOf=id=>(patients.find(p=>p.id===id)||{}).nombre||'Usuario';
   const recent=allSes.slice().sort((a,b)=>(b.created_at||b.fecha||'').localeCompare(a.created_at||a.fecha||'')).slice(0,8);
 
   // Pacientes (filtro y orden: primero los que necesitan atención)
@@ -77,18 +77,18 @@ function renderHome(){
   el.innerHTML = `
   <section class="hhero">
     <div><span class="heye">${esc(hoy)}</span><h1>${nom?'Hola, '+esc(nom):'Inicio'}</h1></div>
-    <div class="hact"><button class="primary" data-h="new">+ Nuevo paciente</button><button data-h="banco">Banco de ejercicios</button></div>
+    <div class="hact"><button class="primary" data-h="new">+ Nuevo usuario</button><button data-h="banco">Banco de ejercicios</button></div>
   </section>
   <section class="hkpis">
-    <div class="kpi"><span>Pacientes activos</span><b>${act}<small>/${patients.length}</small></b><i>con sesión en 7 días</i></div>
+    <div class="kpi"><span>Usuarios activos</span><b>${act}<small>/${patients.length}</small></b><i>con sesión en 7 días</i></div>
     <div class="kpi"><span>Sesiones esta semana</span><b>${sesSem}</b><i>desde el lunes</i></div>
     <button class="kpi kbtn${alertas.length?' hot':''}" data-h="alertas"><span>Alertas de dolor</span><b>${alertas.length}</b><i>${alertas.length?'sin revisar':'todo en orden'}</i></button>
     <div class="kpi${pend?' warm':''}"><span>Solicitudes</span><b>${pend}</b><i>por responder</i></div>
   </section>
   <div class="hgrid2">
     <section class="card hpats">
-      <div class="rowhead"><h2 class="hsec">Pacientes</h2>
-        <label class="hsearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="hq" placeholder="Buscar paciente o condición" aria-label="Buscar paciente" value="${esc(homeQ)}"></label></div>
+      <div class="rowhead"><h2 class="hsec">Usuarios</h2>
+        <label class="hsearch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="hq" placeholder="Buscar nombre o condición" aria-label="Buscar usuario" value="${esc(homeQ)}"></label></div>
       <p class="slegend"><span class="st-r"><i></i>Requiere atención</span><span class="st-y"><i></i>Amarillo</span><span class="st-g"><i></i>Verde</span><span class="st-n"><i></i>No respondió el chequeo</span></p>
       ${patients.length ? (list.length ? `<div class="pcards">${list.map(i=>`
         <button class="pcard st-${i.ds.k}" data-open-h="${esc(i.p.id)}">
@@ -98,13 +98,13 @@ function renderHome(){
           <span class="pcond">${esc(i.cond)}</span>
           <span class="pmeta"><span>${esc(i.fase)} · S${esc(i.sem)}</span><span>Adh. ${esc(i.sm.adh||'—')}</span><span class="${i.sm.dolor>5?'bad':''}">Dolor ${i.sm.dolor!=null?esc(i.sm.dolor)+'/10':'—'}</span></span>
           <span class="plast ${i.inact?'old':''}">Última sesión: ${esc(hace(i.sm.last))}</span>
-        </button>`).join('')}</div>` : '<p class="small">Ningún paciente coincide con la búsqueda.</p>')
-      : `<div class="empty"><p>Aún no tienes pacientes guardados.</p><button class="primary" data-h="new">Crear el primero</button></div>`}
+        </button>`).join('')}</div>` : '<p class="small">Nadie coincide con la búsqueda.</p>')
+      : `<div class="empty"><p>Aún no tienes usuarios ni usuarias.</p><button class="primary" data-h="new">Crear el primero</button></div>`}
     </section>
     <div class="hside">
       <section class="card"><h2 class="hsec">Requiere atención</h2>
         ${att.length?`<ul class="hlist">${att.slice(0,10).map(a=>`<li><button data-open-h="${esc(a.pid)}" data-v="${a.view}"><span class="dot ${a.k}" aria-hidden="true"></span><span class="t"><b>${esc(a.t)}</b><i>${esc(a.d)}</i></span><span class="go" aria-hidden="true">›</span></button></li>`).join('')}</ul>`
-          :'<p class="small" style="margin:0">Nada pendiente. Aquí verás alertas de dolor, solicitudes, bienestar en rojo y pacientes sin registrar.</p>'}
+          :'<p class="small" style="margin:0">Nada pendiente. Aquí verás alertas de dolor, solicitudes, bienestar en rojo y quién no ha registrado.</p>'}
       </section>
       <section class="card"><h2 class="hsec">Actividad reciente</h2>
         ${recent.length?`<ul class="hlist">${recent.map(s=>`<li><button data-open-h="${esc(s.paciente_id)}" data-v="ses"><span class="t"><b>${esc(nameOf(s.paciente_id))}</b><i>${esc([s.dia, s.srpe!=null?'RPE '+s.srpe:'', s.dolor!=null?'dolor '+s.dolor+'/10':''].filter(Boolean).join(' · '))}</i></span><span class="when">${esc(hace(s.fecha))}</span></button></li>`).join('')}</ul>`

@@ -253,18 +253,18 @@ function panelView(){
   const rows = patients.slice().sort((a,b)=>(b.updated||'').localeCompare(a.updated||''));
   const by={}; rows.forEach(p=>{ const k=P[pkey(Object.assign(blank(),p.st||{}))]?.label||'—'; by[k]=(by[k]||0)+1; });
   return `<section class="card"><div class="kpis">
-    <div class="kpi"><span>Pacientes</span><b>${rows.length}</b><i>guardados</i></div>
+    <div class="kpi"><span>Usuarios</span><b>${rows.length}</b><i>guardados</i></div>
     <div class="kpi"><span>Con sesión en los últimos 7 días</span><b>${rows.filter(p=>p.sum?.last && p.sum.last>=daysAgo(7)).length}</b><i>activos</i></div>
     <div class="kpi"><span>Solicitudes pendientes</span><b>${Object.values(pendingBy).reduce((a,b)=>a+b,0)}</b><i>por responder</i></div>
     <div class="kpi"><span>Bienestar en rojo</span><b>${rows.filter(p=>{ const wl=wellLight(wellBy[p.id]||[]); return wl && wl.c==='r' && wl.e.fecha>=daysAgo(1); }).length}</b><i>hoy o ayer</i></div>
     <div class="kpi"><span>Sin consentimiento</span><b>${rows.filter(p=>!p.st?.consent && !consentBy[p.id]).length}</b><i>pendientes</i></div>
   </div>
   ${Object.keys(by).length?`<div class="legend" style="margin-top:10px">${Object.entries(by).map(([k,v])=>`<span>${esc(k)}: <b>${v}</b></span>`).join('')}</div>`:''}</section>
-  <section class="card"><h3 class="sec">Pacientes</h3>
-  ${rows.length?`<div class="tbl"><table class="data"><thead><tr><th>Paciente</th><th>Condición</th><th>Fase</th><th>Semana</th><th>Adherencia semana</th><th>Último dolor</th><th>Bienestar</th><th>Próximo torneo</th><th>Última sesión</th><th>Consentimiento</th></tr></thead><tbody>
+  <section class="card"><h3 class="sec">Usuarios</h3>
+  ${rows.length?`<div class="tbl"><table class="data"><thead><tr><th>Nombre</th><th>Condición</th><th>Fase</th><th>Semana</th><th>Adherencia semana</th><th>Último dolor</th><th>Bienestar</th><th>Próximo torneo</th><th>Última sesión</th><th>Consentimiento</th></tr></thead><tbody>
   ${rows.map(p=>{ const s=Object.assign(blank(),p.st||{}); const k=pkey(s); const P0=P[k]; const ph=P0.phases[phaseIdx(s)]; const sm=p.sum||{};
     return `<tr class="click st-${typeof dayState==='function'?dayState(p).k:'n'}" data-open="${esc(p.id)}"><td><b>${esc(p.nombre)}</b></td><td>${esc(subLabel(s,P0))}</td><td>${esc(ph.name.split(' · ')[0])}</td><td>${esc(s.semPlan)}</td><td>${sm.adh??'—'}</td><td>${sm.dolor!=null?esc(sm.dolor)+'/10':'—'}</td><td>${(()=>{ const wl=wellLight(wellBy[p.id]||[]); return wl?`<span class="wl ${wl.c}"></span>${wl.sum}/28 · ${esc(wl.e.fecha.slice(5))}`:'—'; })()}</td><td>${(()=>{ const t=tourns(s).find(t=>t.f>=todayISO()); return t?`<span class="prio ${esc(t.p)}">${esc(t.p)}</span> ${esc(fmtD(t.f))}`:'—'; })()}</td><td>${esc(sm.last||'—')}</td><td>${consentBy[p.id]?'<span class="pill g">Firmado</span>':s.consent?'<span class="pill g">En papel</span>':'<span class="pill r">No</span>'}</td></tr>`; }).join('')}
-  </tbody></table></div>`:'<p class="small">Cuando guardes pacientes aparecerán aquí con su fase, adherencia y último dolor.</p>'}
+  </tbody></table></div>`:'<p class="small">Cuando guardes usuarios aparecerán aquí con su fase, adherencia y último dolor.</p>'}
   </section>`;
 }
 
@@ -272,7 +272,7 @@ function panelView(){
 function render(){
   const key=pkey(st), P0=P[key], i=phaseIdx(st), ph=P0.phases[i], m=mesoWeek(st);
   const nd = nDias(st);
-  const head = `${isExample?'<div class="example">Estás viendo un caso de ejemplo con sesiones de muestra. Crea un paciente nuevo o elige uno guardado; nada se guarda hasta que pulses Guardar.</div>':''}
+  const head = `${isExample?'<div class="example">Estás viendo un caso de ejemplo con sesiones de muestra. Crea un usuario nuevo o elige uno guardado; nada se guarda hasta que pulses Guardar.</div>':''}
   <div class="phead"><div class="acc"></div><div>
     <div class="in">
       <div style="min-width:0;flex:1 1 300px">
@@ -298,7 +298,7 @@ function render(){
     <button role="tab" data-view="cal" aria-selected="${view==='cal'}">Calendario</button>
     <button role="tab" data-view="eval" aria-selected="${view==='eval'}">Evaluación</button>
     <button role="tab" data-view="hist" aria-selected="${view==='hist'}">Historia clínica</button>
-    <button role="tab" data-view="panel" aria-selected="${view==='panel'}">Panel de pacientes</button>
+    <button role="tab" data-view="panel" aria-selected="${view==='panel'}">Panel de usuarios</button>
     <button role="tab" data-view="banco" aria-selected="${view==='banco'}">Banco</button>
   </nav>`;
   const body = view==='plan' ? planView() : view==='eval' && typeof evalView==='function' ? evalView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
@@ -306,7 +306,7 @@ function render(){
   const tail = `${view==='plan' && tplOpen ? tplCard() : ''}<section class="card dlbar"><h3 class="sec">Descargar y plantillas</h3><div class="actions">
     <button id="bPdf">Descargar PDF</button><button id="bXls">Descargar Excel</button>${view==='plan'?'<button id="bTpl">Plantillas</button>':''}</div></section>`;
   $('#out').innerHTML = head + body + tail + `<footer class="foot">Herramienta de apoyo a la decisión clínica; no reemplaza el juicio del fisioterapeuta. ${esc(VERSION)}.</footer>`;
-  $('#pidRow').innerHTML = curId ? `ID del paciente: <code>${esc(curId)}</code> <button class="mini-btn" id="bCopyId">Copiar</button>` : 'ID del paciente: se asigna al guardar';
+  $('#pidRow').innerHTML = curId ? `ID: <code>${esc(curId)}</code> <button class="mini-btn" id="bCopyId">Copiar</button>` : 'ID: se asigna al guardar';
   const cb=$('#bCopyId'); if(cb) cb.onclick=()=>{ try{ navigator.clipboard.writeText(curId).then(()=>toast('ID copiado'),()=>toast(curId)); }catch(e){ toast(curId); } };
 }
 /* ===================== INTERACCIÓN ===================== */
