@@ -2,10 +2,10 @@
    - Archivos propios (HTML, CSS, JS): primero la red (para recibir cambios al instante), si falla, la copia guardada.
    - Librerías y fuentes de CDN (con versión fija): copia guardada primero y se renueva en segundo plano.
    - Supabase (datos y acceso) nunca pasa por aquí: lo maneja la app con su propia cola. */
-const V = 'apex-v42';
-const CORE = ['./', 'index.html', 'css/app.css', 'css/ios.css', 'css/hoy.css', 'css/tabata.css', 'css/recepcion.css', 'css/panel2.css', 'css/login.css', 'css/mascota.css', 'css/mascota2.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/favicon-32.png',
+const V = 'apex-v43';
+const CORE = ['./', 'index.html', 'css/app.css', 'css/ios.css', 'css/hoy.css', 'css/tabata.css', 'css/recepcion.css', 'css/panel2.css', 'css/login.css', 'css/mascota.css', 'css/mascota2.css', 'css/adherencia2.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/favicon-32.png',
   'js/datos.js', 'js/banco.js', 'js/plan.js', 'js/modulos.js', 'js/bienestar.js', 'js/vistas.js', 'js/lumbar.js', 'js/rutinas.js', 'js/rehabdep.js', 'js/hombro.js', 'js/servidor.js',
-  'js/fase1.js', 'js/revision.js', 'js/bancoui.js', 'js/exportar.js', 'js/vivo.js', 'js/chequeo.js', 'js/panel.js', 'js/push.js', 'js/offline.js', 'js/movil.js', 'js/hoy.js', 'js/adherencia.js', 'js/portal.js', 'js/frases.js', 'js/portada.js', 'js/acceso.js', 'js/tabata.js', 'js/recepcion.js', 'js/evaluacion.js', 'js/mascota.js', 'js/deportes.js', 'js/panel2.js', 'js/editor.js', 'js/mascota2.js', 'js/panel3.js', 'js/atras.js', 'js/inicio.js'];
+  'js/fase1.js', 'js/revision.js', 'js/bancoui.js', 'js/exportar.js', 'js/vivo.js', 'js/chequeo.js', 'js/panel.js', 'js/push.js', 'js/offline.js', 'js/movil.js', 'js/hoy.js', 'js/adherencia.js', 'js/portal.js', 'js/frases.js', 'js/portada.js', 'js/acceso.js', 'js/tabata.js', 'js/recepcion.js', 'js/evaluacion.js', 'js/mascota.js', 'js/deportes.js', 'js/panel2.js', 'js/editor.js', 'js/mascota2.js', 'js/panel3.js', 'js/adherencia2.js', 'js/atras.js', 'js/inicio.js'];
 const CDN = /^(https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|fonts\.googleapis\.com|fonts\.gstatic\.com))\//;
 
 self.addEventListener('install', e => {

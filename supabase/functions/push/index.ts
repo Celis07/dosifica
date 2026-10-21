@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
 // tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (cada chequeo del deportista → fisio, en verde, amarillo o rojo),
-//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), agenda (30 min antes de la hora elegida), semanal (lunes, resumen al fisio), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -150,6 +150,39 @@ Deno.serve(async (req) => {
         if (!quiere(p, "chequeo") || !(await tieneSubs(p?.email)) || !(await unaVez(`racha-${pl.paciente_id}-${hoy}`))) continue;
         const quien = pl.mascota === "pesi" ? "Pesi" : pl.mascota === "nutria" ? "Nutria" : "Tu compañero";
         n += await enviar(p!.email, { title: `${quien} te está esperando`, body: `Llevas ${racha} días de racha. Haz tu chequeo hoy para no perderla: son 30 segundos.`, tag: "racha" });
+      }
+    }
+    if (b.tipo === "agenda") { // cada hora a los :30 → recordatorio 30 min antes de la hora que eligió la persona
+      const ahora = new Date(Date.now() - 5 * 3600e3), hora = (ahora.getUTCHours() + 1) % 24, dia = (ahora.getUTCDay() + 6) % 7, hoy = hoyCO();
+      const { data: ps } = await db.from("pacientes").select("id,email,avisos,agenda").not("agenda", "is", null);
+      for (const p of (ps || []) as any[]) {
+        const a = p.agenda || {};
+        if (+a.hora !== hora || !(a.dias || []).includes(dia) || !quiere(p, "agenda")) continue;
+        const { count } = await db.from("sesiones").select("id", { count: "exact", head: true }).eq("paciente_id", p.id).eq("fecha", hoy);
+        if ((count || 0) > 0 || !(await tieneSubs(p.email)) || !(await unaVez(`agenda-${p.id}-${hoy}`))) continue;
+        const h = hora % 12 || 12, hh = `${h}:00 ${hora < 12 ? "a. m." : "p. m."}`;
+        n += await enviar(p.email, { title: "Tu sesión de hoy", body: `A las ${hh}${a.lugar ? " en " + a.lugar : ""}. Abre Ápex y entrena en modo en vivo.`, tag: "agenda" });
+      }
+    }
+    if (b.tipo === "semanal") { // lunes en la mañana → resumen de la semana anterior para cada fisio
+      const lunes = hoyCO(-7), domingo = hoyCO(-1);
+      const { data: fs } = await db.from("fisios").select("email");
+      for (const f of (fs || []) as any[]) {
+        if (!f.email || !(await tieneSubs(f.email)) || !(await unaVez(`semanal-${f.email}-${hoyCO()}`))) continue;
+        const { data: ps } = await db.from("pacientes").select("id,nombre").eq("fisio_email", f.email);
+        const filas: { nom: string; h: number; e: number }[] = [];
+        for (const p of (ps || []) as any[]) {
+          const { data: pl } = await db.from("planes").select("dias:contenido->dias,publicado_at").eq("paciente_id", p.id).order("publicado_at", { ascending: false }).limit(1);
+          const ult = (pl || [])[0] as any; if (!ult || String(ult.publicado_at).slice(0, 10) > domingo) continue;
+          if (String(ult.publicado_at).slice(0, 10) < hoyCO(-60)) continue;
+          const e = Math.max(1, Array.isArray(ult.dias) ? ult.dias.length : 3);
+          const { data: ss } = await db.from("sesiones").select("fecha").eq("paciente_id", p.id).gte("fecha", lunes).lte("fecha", domingo);
+          filas.push({ nom: (p.nombre || "Sin nombre").split(" ")[0], h: new Set((ss || []).map((x: any) => x.fecha)).size, e });
+        }
+        if (!filas.length) continue;
+        const ok = filas.filter((x) => x.h >= x.e).length, bajos = filas.filter((x) => x.h / x.e < 0.6).sort((a, b) => a.h / a.e - b.h / b.e);
+        const body = `${ok} de ${filas.length} cumplieron su semana.` + (bajos.length ? ` Por debajo: ${bajos.slice(0, 4).map((x) => `${x.nom} ${x.h}/${x.e}`).join(", ")}${bajos.length > 4 ? "…" : ""}.` : " Nadie por debajo del 60 %.");
+        n += await enviar(f.email, { title: "Tu semana en Ápex", body, tag: "semanal" });
       }
     }
     if (b.tipo === "mensaje") { // chat: fisio → deportista o deportista → fisio

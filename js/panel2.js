@@ -75,6 +75,7 @@ function fxInicio(){
   infos.filter(i => tecPendBy[i.p.id]).forEach(i => att.push({k: 'b', pid: i.p.id, t: i.p.nombre, d: 'Video de técnica por revisar', v: 'ses'}));
   infos.filter(i => i.inact).forEach(i => att.push({k: 'n', pid: i.p.id, t: i.p.nombre, d: `Sin registrar sesión desde ${hace(i.sm.last)}`, v: 'ses'}));
   infos.filter(i => !i.consent).forEach(i => att.push({k: 'n', pid: i.p.id, t: i.p.nombre, d: 'Falta consentimiento informado', v: 'hist'}));
+  if(typeof fxAttExtra === 'function') att.push(...fxAttExtra(infos));
   const nom = (fisioNombre || '').split(' ')[0];
   return `<div class="fx-page">
     <header class="fx-hd"><div><span class="fx-eye">${esc(hoy)}</span><h1>${nom ? 'Hola, ' + esc(nom) : 'Inicio'}</h1></div>

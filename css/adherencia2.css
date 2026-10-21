@@ -1,0 +1,11 @@
+.ag-form{display:flex;flex-direction:column;gap:10px}
+.ag-q{margin:0;font-size:15px}
+.ag-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.ag-days button{height:40px;border-radius:20px;border:0;background:var(--h-fill,rgba(120,120,128,.12));color:inherit;font:inherit;font-weight:600;font-size:15px}
+.ag-days button[aria-pressed="true"]{background:var(--h-ink,#1D1D1F);color:var(--h-bg,#fff)}
+@media (prefers-color-scheme:dark){.ag-days button[aria-pressed="true"]{background:#F5F5F7;color:#000}}
+.om-card{display:flex;flex-direction:column;gap:10px}
+.om-t{font-size:17px}
+.om-chips{display:flex;flex-wrap:wrap;gap:8px}
+.om-chips button{min-height:38px;padding:0 14px;border-radius:19px;border:0;background:var(--h-fill,rgba(120,120,128,.12));color:inherit;font:inherit;font-size:15px;font-weight:500}
+.om-card .po-plain{align-self:flex-start}

@@ -87,6 +87,7 @@ const AV_TIPOS = [
   ['plan', 'Plan nuevo', 'Cuando tu fisioterapeuta publica tu plan.', 'plan nuevo'],
   ['chequeo', 'Recordatorio del chequeo', 'En la mañana, si no has hecho el chequeo del día.', 'recordatorio del chequeo'],
   ['d24', '¿Cómo amaneciste?', 'La mañana después de entrenar, para contar cómo amaneció la zona.', '“¿cómo amaneciste?”'],
+  ['agenda', 'Recordatorio de tu sesión', '30 minutos antes de la hora que elegiste para entrenar.', 'recordatorio de tu sesión'],
   ['inactivo', 'Días sin entrenar', 'Si llevas 3 días sin registrar sesión.', 'días sin entrenar']
 ];
 function avisoOn(t){ return A.p?.avisos?.[t] !== false; }
