@@ -186,7 +186,6 @@ function consentGate(){
   return `<section class="card consent"><div class="trainer">Antes de ver tu plan</div><h2 class="cg">Consentimiento informado</h2>
   <p class="small">${old ? 'Actualizamos el consentimiento con más información sobre tu tratamiento. Léelo y vuelve a aceptarlo.' : 'Léelo con calma. Si tienes dudas, pregúntale a tu fisioterapeuta antes de aceptar.'}</p>
   <div class="cg-txt">${consentBlockHTML()}</div>
-  <p class="small">Versión ${esc(CONSENT_VERSION)}</p>
   <label class="chk"><input type="checkbox" id="cgT"> Leí y entendí la información, pude hacer preguntas y acepto el tratamiento de fisioterapia con sus riesgos.</label>
   <label class="chk"><input type="checkbox" id="cgD"> Autorizo el tratamiento de mis datos personales y de salud.</label>
   <label class="chk"><input type="checkbox" id="cgM"> Soy menor de 18 años.</label>

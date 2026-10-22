@@ -4,14 +4,14 @@
 let cfOpen = false;
 const cfFmt = iso => { if(!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('es-CO', {day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'}); };
 const CF_MEDIO = {app: 'en la app', whatsapp: 'por WhatsApp', presencial: 'en persona'};
-const cfFrase = () => `Yo, [nombre completo], con documento [número], leí el consentimiento informado de fisioterapia ${CONSENT_VERSION} y lo acepto.`;
+const cfFrase = () => `Yo, [nombre completo], con documento [número], leí el consentimiento informado de fisioterapia y lo acepto.`;
 function cfMsgWA(nombre){
   return `Hola${nombre ? ' ' + nombre.split(' ')[0] : ''}. Te envío el consentimiento informado para tu tratamiento de fisioterapia. Léelo con calma y, si estás de acuerdo, respóndeme este mensaje así:\n\n"${cfFrase()}"\n\nSi eres menor de edad, debe responder también tu papá, mamá o representante con su nombre y documento.`;
 }
 function cfCard(){
   const c = consentBy[curId], o = consentOld[curId], nom = st.nombre || '';
   const est = c ? `<div class="cf-ok"><b>Aceptado ${esc(CF_MEDIO[c.medio] || '')}</b><span>${esc(c.nombre_firma)}${c.documento ? ' · ' + esc(c.documento) : ''} · ${esc(cfFmt(c.firmado_at))}${c.menor && c.representante ? ` · representante: ${esc(c.representante.nombre)} (${esc(c.representante.parentesco || '')})` : ''}</span></div>`
-    : `<div class="cf-no"><b>Pendiente</b><span>${o ? `Aceptó la versión anterior (${esc(o.version)}). Debe aceptar la ${esc(CONSENT_VERSION)}: la app se la pide al entrar.` : 'Si tiene acceso a la app, se lo pide al entrar. Si no, envíaselo por WhatsApp o fírmenlo en persona.'}</span></div>`;
+    : `<div class="cf-no"><b>Pendiente</b><span>${o ? `Aceptó el consentimiento anterior. Debe aceptar el actualizado: la app se lo pide al entrar.` : 'Si tiene acceso a la app, se lo pide al entrar. Si no, envíaselo por WhatsApp o fírmenlo en persona.'}</span></div>`;
   const tp = LS.get('apex_tp') || '';
   const form = cfOpen ? `<div class="cf-form">
       <label class="f">¿Cómo aceptó?<select id="cfMedio"><option value="whatsapp">Respondió por WhatsApp</option><option value="presencial">En persona, en este dispositivo</option></select></label>
@@ -29,7 +29,7 @@ function cfCard(){
     <div class="cf-acts"><button type="button" data-cf="pdf">PDF para enviar</button><button type="button" data-cf="wa">Mensaje de WhatsApp</button>${!c ? '<button type="button" class="primary" data-cf="reg">Registrar aceptación</button>' : ''}</div>
     <label class="f cf-tp">Tu tarjeta profesional (sale en el PDF)<input id="cfTP" value="${esc(tp)}" placeholder="Número de TP"></label>
     ${form}
-    <details class="cf-txt"><summary>Ver el texto completo (${esc(CONSENT_VERSION)})</summary>${consentBlockHTML()}</details>
+    <details class="cf-txt"><summary>Ver el texto completo</summary>${consentBlockHTML()}</details>
   </section>`;
 }
 const _renderCf = render;
@@ -52,7 +52,7 @@ function cfPDF(nom){
   const linea = (lab, val) => { need(10); doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.text(lab, M, y); doc.setDrawColor(150); doc.line(M + 48, y + 0.8, W - M, y + 0.8); if(val){ doc.setFont('helvetica', 'bold'); doc.text(val, M + 50, y); } y += 9; };
   doc.setFillColor(229, 32, 46); doc.rect(0, 0, W, 4, 'F');
   txt('CONSENTIMIENTO INFORMADO PARA TRATAMIENTO DE FISIOTERAPIA', 13, 'bold', 1);
-  txt(`Versión ${CONSENT_VERSION} · Ápex`, 9, 'normal', 3);
+  y += 2;
   const tp = (LS.get('apex_tp') || '').trim();
   txt(`Fisioterapeuta tratante: ${fisioNombre || 'Manuel Celis'}${tp ? ' · Tarjeta profesional ' + tp : ' · Tarjeta profesional ________'}`, 9.5, 'normal', 1);
   txt(`Usuario o usuaria: ${nom || '______________________________'}`, 9.5, 'normal', 4);
@@ -115,7 +115,7 @@ renderHome = function(){
   const r = _renderHomeCf.apply(this, arguments);
   if(typeof FX !== 'undefined' && FX.tab === 'cuenta'){
     const tabla = document.querySelector('#home [data-fx="tabla"]');
-    if(tabla && !document.querySelector('#home [data-cfc]')) tabla.insertAdjacentHTML('afterend', `<button type="button" class="fx-rb" data-cfc="open"><span class="fx-ic sq"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h4"/></svg></span><span class="fx-rt"><b>Consentimiento informado</b><span>Ver, enviar en PDF o por WhatsApp · ${esc(CONSENT_VERSION)}</span></span>${FX_I.chev}</button>`);
+    if(tabla && !document.querySelector('#home [data-cfc]')) tabla.insertAdjacentHTML('afterend', `<button type="button" class="fx-rb" data-cfc="open"><span class="fx-ic sq"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h4"/></svg></span><span class="fx-rt"><b>Consentimiento informado</b><span>Ver, enviar en PDF o por WhatsApp</span></span>${FX_I.chev}</button>`);
   }
   return r;
 };
@@ -124,7 +124,7 @@ function cfSheet(){
   if(!d){ d = document.createElement('div'); d.id = 'cfDlg'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'cfDlgT'); document.body.appendChild(d); }
   d.hidden = false;
   d.innerHTML = `<div class="md-card cf-sheet"><div class="px-fch"><h2 id="cfDlgT">Consentimiento informado</h2><button type="button" class="xbtn" data-cfc="close" aria-label="Cerrar">×</button></div>
-    <p class="small" style="margin:0 0 10px">Versión ${esc(CONSENT_VERSION)}. Quien tiene la app lo acepta al entrar. A quien no, envíaselo y registra su aceptación en la ficha (lápiz → Consentimiento).</p>
+    <p class="small" style="margin:0 0 10px">Quien tiene la app lo acepta al entrar. A quien no, envíaselo y registra su aceptación en la ficha (lápiz → Consentimiento).</p>
     <label class="f">Nombre de la persona (opcional, sale en el PDF)<input id="cfcN" placeholder="Déjalo vacío para un PDF en blanco"></label>
     <div class="cf-acts"><button type="button" class="primary" data-cfc="pdf">PDF para enviar</button><button type="button" data-cfc="wa">Mensaje de WhatsApp</button></div>
     <label class="f cf-tp">Tu tarjeta profesional (sale en el PDF)<input id="cfTP2" value="${esc(LS.get('apex_tp') || '')}" placeholder="Número de TP"></label>
