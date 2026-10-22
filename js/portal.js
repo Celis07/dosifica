@@ -286,7 +286,7 @@ adMsgList = function(){ return ''; };   // la conversación la pinta pxChat
 function pxChat(){
   const ms = (A.msgs || []).slice().reverse();
   return `<section class="ap-sec"><div class="ap-head"><h2>Conversación</h2></div><div class="ap-card px-chat">
-    <div class="px-thread" id="pxThread">${ms.length ? ms.map(m => `<div class="px-msg ${m.autor === 'deportista' ? 'me' : 'fi'}"><p>${esc(m.texto)}</p><span>${m.autor === 'deportista' ? 'Tú' : 'Tu fisioterapeuta'} · ${esc(fmtD((m.created_at || '').slice(0, 10)))} ${esc((m.created_at || '').slice(11, 16))}</span></div>`).join('')
+    <div class="px-thread" id="pxThread">${ms.length ? ms.map(m => `<div class="px-msg ${m.autor === 'deportista' ? 'me' : 'fi'}"><p>${esc(m.texto)}</p><span>${m.autor === 'deportista' ? 'Tú' : 'Tu fisioterapeuta'} · ${esc(pxCuando(m.created_at))}</span></div>`).join('')
       : '<p class="ap-muted">Escríbele a tu fisioterapeuta: dudas, cómo te fue, algo que te molesta.</p>'}</div>
     <div class="px-compose"><textarea id="pxTxt" rows="2" maxlength="1000" placeholder="Escribe un mensaje" aria-label="Mensaje para tu fisioterapeuta"></textarea>
       <button type="button" class="px-send" id="pxSend" aria-label="Enviar">${P_ICON.send}</button></div></div></section>`;
@@ -427,9 +427,17 @@ async function pxOpenChat(pid){
   if((data || []).some(m => m.autor === 'deportista' && !m.leido_at)){ sb.rpc('marcar_mensajes_leidos_fisio', {pid}).then(() => {}, () => {}); unreadBy[pid] = 0; pxBadges(); pxHomeMarks(); }
   setTimeout(() => $('#fTxt')?.focus(), 30);
 }
+/* Fecha y hora del mensaje en la hora del celular (antes salía en hora UTC) */
+function pxCuando(iso){
+  if(!iso) return '';
+  const d = new Date(iso); if(isNaN(d)) return '';
+  const loc = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const h = d.getHours(), hh = `${h % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')} ${h < 12 ? 'a. m.' : 'p. m.'}`;
+  return (loc === todayISO() ? 'hoy' : fmtD(loc)) + ' ' + hh;
+}
 function pxPaintThread(ms){
   const th = $('#fThread'); if(!th) return; th._ms = ms;
-  th.innerHTML = ms.length ? ms.map(m => `<div class="px-msg ${m.autor === 'deportista' ? 'fi' : 'me'}"><p>${esc(m.texto)}</p><span>${m.autor === 'deportista' ? (p.nombre || 'Usuario').split(' ')[0] : 'Tú'} · ${esc(fmtD((m.created_at || '').slice(0, 10)))} ${esc((m.created_at || '').slice(11, 16))}${m.autor !== 'deportista' && m.leido_at ? ' · leído' : ''}</span></div>`).join('')
+  th.innerHTML = ms.length ? ms.map(m => `<div class="px-msg ${m.autor === 'deportista' ? 'fi' : 'me'}"><p>${esc(m.texto)}</p><span>${m.autor === 'deportista' ? (($('#chatDlgT')?.textContent || 'Usuario').split(' ')[0]) : 'Tú'} · ${esc(pxCuando(m.created_at))}${m.autor !== 'deportista' && m.leido_at ? ' · leído' : ''}</span></div>`).join('')
     : '<p class="small">Aún no hay mensajes. Escríbele el primero.</p>';
   th.scrollTop = th.scrollHeight;
 }

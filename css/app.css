@@ -781,7 +781,7 @@ table.banco .xbtn{font-size:1.3rem;min-width:36px;min-height:36px}
 .px-fchat .px-msg{max-width:82%;display:flex;flex-direction:column;gap:2px}
 .px-fchat .px-msg p{margin:0;padding:8px 12px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem}
 .px-fchat .px-msg span{font-size:.72rem;color:var(--muted);padding:0 6px}
-.px-fchat .px-msg.me{align-self:flex-end;align-items:flex-end} .px-fchat .px-msg.me p{background:var(--ink);color:#fff}
+.px-fchat .px-msg.me{align-self:flex-end;align-items:flex-end} .px-fchat .px-msg.me p{background:var(--ink);color:var(--paper,#fff)}
 .px-fchat .px-msg.fi{align-self:flex-start} .px-fchat .px-msg.fi p{background:var(--soft);border:1px solid var(--line)}
 .px-fchat .px-compose{display:flex;gap:8px;align-items:flex-end} .px-fchat .px-compose textarea{flex:1}
 .px-fchat .md-pre{display:flex;gap:6px;overflow-x:auto} .px-fchat .md-pre button{flex:none;max-width:260px;text-align:left;font-weight:500;font-size:.8rem}
@@ -818,3 +818,9 @@ table.pl td.c textarea.grow{min-width:7em;font-weight:600} table.pl td.c:has(tex
 table.pl td.e textarea.grow.note{margin-top:4px;font-weight:400;color:var(--muted)}
 .rnote{font-size:.8rem;font-weight:400;color:var(--muted);margin-top:2px}
 section.day table.pl td.e{width:60%} section.day.editing table.pl td.s,section.day.editing table.pl td.r{width:1%}
+/* Chat en oscuro: burbuja propia clara con letra oscura, la otra gris con letra clara */
+@media (prefers-color-scheme:dark){
+  body.fx .px-fchat .px-msg.me p,.px-fchat .px-msg.me p{background:#F5F5F7;color:#1D1D1F}
+  body.fx .px-fchat .px-msg.fi p,.px-fchat .px-msg.fi p{background:#2C2C2E;color:#F5F5F7;border-color:#3A3A3C}
+  .px-fchat textarea,.px-fchat input{color:#F5F5F7}
+}
