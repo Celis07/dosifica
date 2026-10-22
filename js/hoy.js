@@ -92,7 +92,7 @@ function hBlocks(day, k){
   const adj = k === 'y' || k === 'r';
   const ses = day.rpe ? adjRPE('RPE ' + String(day.rpe).replace(/^RPE\s*/i, '').replace('-', '–'), k === 'r' ? -2 : k === 'y' ? -1 : 0).replace(/^RPE\s*/, '') : rpeSes(day);
   const rpeLine = ses ? `<p class="ap-rpes${adj ? ' k-' + k : ''}">Esfuerzo de la sesión <b>RPE ${esc(ses)}${adj ? ' hoy' : ''}</b></p>` : '';
-  return rpeLine + `<div class="ap-list">${day.segs.map(sg => {
+  return rpeLine + `<div class="ap-list">${day.segs.filter(sg => sg.rows.length).map(sg => {
     const n = sg.rows.length, rpe = '', mark = false;
     const sub = [sg.sub, fmtLabel(sg.fmt), blkInt(sg) ? 'máxima intención' : '', `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
     return `<details class="ap-blk"><summary>

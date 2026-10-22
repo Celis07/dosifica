@@ -285,3 +285,12 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
 .fx-mini{border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;background:var(--fx-fill,rgba(120,120,128,.12));color:#E5202E;margin-left:auto}
 .fx-fform{flex-direction:column;align-items:stretch;gap:8px}
 .tpl-share{display:inline-flex;margin:0 6px;font-size:.8rem}
+/* Planificar con Claude */
+.cp-pasos{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:12px}
+.cp-pasos li{font-size:.92rem;line-height:1.4}
+.cp-pasos textarea{width:100%;box-sizing:border-box;margin-top:6px;font:inherit;font-size:.85rem;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--field,var(--soft));color:var(--ink)}
+.cp-pasos .actions{margin-top:6px}
+.cp-err{color:#E5202E;font-size:.85rem;margin:6px 0 0}
+.cp-prev{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.cp-d{margin:8px 0;padding:8px 10px;border-radius:10px;background:rgba(120,120,128,.08)}
+.cp-d p{margin:4px 0 0;font-size:.85rem} .cp-d i{font-style:normal;color:var(--muted)}

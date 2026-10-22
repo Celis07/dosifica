@@ -301,7 +301,7 @@ if(typeof hBlocks === 'function'){
   hBlocks = function(day, k){
     const html = _hBlocks(day, k), parts = html.split('<details class="ap-blk">');
     for(let i = 1; i < parts.length; i++){
-      const sg = day.segs[i - 1]; if(!sg || !sg.fmt || sg.fmt.t !== 'inter') continue;
+      const sg = day.segs.filter(x => x.rows.length)[i - 1]; if(!sg || !sg.fmt || sg.fmt.t !== 'inter') continue;
       const id = 'b' + (++tbRegN);
       TB_REG[id] = {pre:{work:+sg.fmt.a || 40, rest:+sg.fmt.b || 20, srest:+sg.fmt.b || 20, sets:+sg.fmt.c || 3, ex:Math.max(1, sg.rows.length), names:sg.rows.map(r => r.e)}, src:`${day.name} · ${SEGS[sg.type] || sg.type}: ${fmtLabel(sg.fmt)}`};
       const btn = `<button type="button" class="ap-btn ap-secondary tb-open" data-tbopen="${id}">Abrir en el cronómetro de intervalos</button>`;
