@@ -114,23 +114,27 @@ function bancoEdit(el){
 
 /* ---------- Plantillas ---------- */
 async function loadPlantillas(){
-  const {data} = await sb.from('plantillas').select('id,nombre,condicion,fase,dias,contenido,created_at').order('created_at',{ascending:false});
+  const {data} = await sb.from('plantillas').select('id,nombre,condicion,fase,dias,contenido,created_at,fisio_email,compartida,autor').order('created_at',{ascending:false});
   plantillas = data||[];
 }
 function tplCard(){
-  const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)];
+  const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)], yo=(me&&me.email||'').toLowerCase();
+  const mias=plantillas.filter(t=>!t.fisio_email||t.fisio_email===yo), otras=plantillas.filter(t=>t.fisio_email&&t.fisio_email!==yo);
+  const fila=(t,mia)=>`<tr><td><b>${esc(t.nombre)}</b>${!mia?`<div class="small">De ${esc(t.autor||t.fisio_email)}</div>`:''}</td><td>${esc(t.condicion||'')}</td><td>${esc((t.fase||'').split(' · ')[0])}</td><td>${esc(t.dias||'')}</td><td style="white-space:nowrap"><button class="mini-btn" data-tpl-apply="${esc(t.id)}">Aplicar</button>${mia?`<label class="chk tpl-share"><input type="checkbox" data-tpl-share="${esc(t.id)}"${t.compartida?' checked':''}> Compartida</label><button class="xbtn" data-tpl-del="${esc(t.id)}" aria-label="Eliminar plantilla">×</button>`:''}</td></tr>`;
+  const tabla=(L,mia)=>`<div class="tbl"><table class="data"><thead><tr><th>Plantilla</th><th>Condición</th><th>Fase</th><th>Días</th><th></th></tr></thead><tbody>${L.map(t=>fila(t,mia)).join('')}</tbody></table></div>`;
   return `<section class="card tplcard"><div class="rowhead"><h3 class="sec" style="margin:0">Plantillas</h3><button id="tplClose">Cerrar</button></div>
     <div class="tplsave"><input id="tplName" placeholder="Nombre, p. ej. LCA HTH fase 3 · 3 días" value="${esc(`${subLabel(st,P0)} · ${ph.name.split(' · ')[0]} · ${nDias(st)} días`)}"><button class="primary" id="tplSave">Guardar semana actual como plantilla</button></div>
-    ${plantillas.length?`<div class="tbl"><table class="data"><thead><tr><th>Plantilla</th><th>Condición</th><th>Fase</th><th>Días</th><th></th></tr></thead><tbody>
-    ${plantillas.map(t=>`<tr><td><b>${esc(t.nombre)}</b></td><td>${esc(t.condicion||'')}</td><td>${esc((t.fase||'').split(' · ')[0])}</td><td>${esc(t.dias||'')}</td><td><button class="mini-btn" data-tpl-apply="${esc(t.id)}">Aplicar</button><button class="xbtn" data-tpl-del="${esc(t.id)}" aria-label="Eliminar plantilla">×</button></td></tr>`).join('')}
-    </tbody></table></div>`:'<p class="small">Aún no tienes plantillas. Ajusta una semana a tu gusto y guárdala aquí para reutilizarla con otros usuarios y usuarias.</p>'}
-    <p class="small">Al aplicar, la plantilla reemplaza la semana base de la fase y los días actuales de esta persona. La progresión del mesociclo se aplica encima.</p>
+    <label class="chk"><input type="checkbox" id="tplShare"> Compartirla con los otros fisios (solo la plantilla, nunca los datos de la persona)</label>
+    <h4 style="margin:12px 0 4px">Mis plantillas</h4>
+    ${mias.length?tabla(mias,true):'<p class="small">Aún no tienes plantillas. Ajusta una semana a tu gusto y guárdala aquí para reutilizarla.</p>'}
+    ${otras.length?`<h4 style="margin:14px 0 4px">Compartidas por otros fisios</h4>${tabla(otras,false)}`:''}
+    <p class="small">Al aplicar, la plantilla reemplaza la semana de esta persona. La progresión del mesociclo se aplica encima.</p>
   </section>`;
 }
 async function saveTpl(){
   const nombre=($('#tplName').value||'').trim().slice(0,120); if(!nombre){ toast('Ponle un nombre a la plantilla.'); return; }
   const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)];
-  const {data,error}=await sb.from('plantillas').insert({nombre, condicion:subLabel(st,P0), fase:ph.name, dias:nDias(st), contenido:{days:clone(baseWeek(st).days)}}).select('*').single();
+  const {data,error}=await sb.from('plantillas').insert({nombre, condicion:subLabel(st,P0), fase:ph.name, dias:nDias(st), contenido:{days:clone(baseWeek(st).days)}, compartida:!!$('#tplShare')?.checked, autor:fisioNombre||null}).select('*').single();
   if(error){ toast('No se pudo guardar la plantilla.'); return; }
   plantillas.unshift(data); render(); toast('Plantilla guardada');
 }
@@ -138,7 +142,7 @@ function applyTpl(id){
   const t=plantillas.find(x=>x.id===id); if(!t) return;
   const days=clone(t.contenido?.days||[]); if(!validWeek(days)){ toast('Esa plantilla tiene un formato antiguo y no se puede aplicar.'); return; }
   if(!st.plans) st.plans={};
-  st.dias = String(Math.max(1, Math.min(6, days.length))); fillForm();
+  st.dias = String(Math.max(1, Math.min(6, days.length))); fillForm(); if(!st.rev) st.rev={}; st.rev[planKey(st)]=true;
   st.plans[planKey(st)] = days; tplOpen=false; render(); markDirty(); toast('Plantilla aplicada');
 }
 async function delTpl(id){
@@ -172,9 +176,11 @@ const CONSENT_TEXT = [
   ['9. Mis derechos', 'Puedo hacer preguntas y recibir respuestas claras, pedir una segunda opinión, rechazar una técnica o suspender el tratamiento en cualquier momento sin que eso afecte la atención que reciba, y revocar este consentimiento avisando por escrito.'],
   ['10. Menores de edad', 'Si soy menor de 18 años, mi padre, madre o representante legal también acepta este documento. Si tengo menos de 14 años, además se me explica en palabras que entienda y se tiene en cuenta mi acuerdo (asentimiento), según la Resolución 309 de 2025.'],
   ['11. Cómo acepto', 'Puedo aceptar en la app (marcando las casillas y escribiendo mi nombre y documento), en persona o respondiendo por WhatsApp desde mi número con la frase de aceptación. Queda registrada la fecha y la hora. Esta aceptación tiene la misma validez que una firma escrita (Ley 527 de 1999, arts. 5 a 7). Rige durante todo el proceso; si el tratamiento cambia de forma importante, me lo informarán de nuevo.'],
-  ['12. Datos personales y de salud', 'Autorizo al fisioterapeuta Manuel Celis, como responsable, a recolectar, guardar y usar mis datos personales y de salud (evaluación, plan, sesiones, dolor, chequeos y mensajes) solo para planear, hacer seguimiento y ajustar mi atención. Son datos sensibles según la Ley 1581 de 2012 y no estoy obligado a autorizarlos. Puedo conocerlos, actualizarlos, corregirlos, pedir que se borren y revocar esta autorización escribiendo a celisone1@gmail.com. Se guardan en un servicio en la nube con acceso restringido y no se comparten con terceros sin mi autorización, salvo obligación legal.']
+  ['12. Datos personales y de salud', 'Autorizo {FISIO}, como responsable, a recolectar, guardar y usar mis datos personales y de salud (evaluación, plan, sesiones, dolor, chequeos y mensajes) solo para planear, hacer seguimiento y ajustar mi atención. Son datos sensibles según la Ley 1581 de 2012 y no estoy obligado a autorizarlos. Puedo conocerlos, actualizarlos, corregirlos, pedir que se borren y revocar esta autorización escribiendo a {CORREO}. Se guardan en un servicio en la nube con acceso restringido y no se comparten con terceros sin mi autorización, salvo obligación legal.']
 ];
-const consentBlockHTML = () => CONSENT_TEXT.map(([t, p]) => `<h4>${esc(t)}</h4>${Array.isArray(p) ? `<ul>${p.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : `<p>${esc(p)}</p>`}`).join('');
+const consentCtx = () => (typeof me !== 'undefined' && me && me.role === 'fisio') ? {f: 'al fisioterapeuta ' + (fisioNombre || 'tratante'), c: me.email || 'mi fisioterapeuta'} : {f: A.fisio?.nombre ? 'al fisioterapeuta ' + A.fisio.nombre : 'a mi fisioterapeuta tratante', c: A.fisio?.email || 'el correo de mi fisioterapeuta'};
+const consentTxt = t => { const x = consentCtx(); return String(t).replace('{FISIO}', x.f).replace('{CORREO}', x.c); };
+const consentBlockHTML = () => CONSENT_TEXT.map(([t, p]) => `<h4>${esc(t)}</h4>${Array.isArray(p) ? `<ul>${p.map(x => `<li>${esc(consentTxt(x))}</li>`).join('')}</ul>` : `<p>${esc(consentTxt(p))}</p>`}`).join('');
 async function loadConsents(){
   const {data} = await sb.from('consentimientos').select('paciente_id,firmado_at,nombre_firma,documento,version,medio,menor,representante').order('firmado_at',{ascending:false});
   consentBy={}; consentOld={};

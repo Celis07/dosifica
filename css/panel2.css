@@ -282,3 +282,6 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
   body.fx.fx-datos #work>#form>fieldset{display:flex;flex-direction:column;gap:10px}
 }
 .regsel{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.fx-mini{border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;background:var(--fx-fill,rgba(120,120,128,.12));color:#E5202E;margin-left:auto}
+.fx-fform{flex-direction:column;align-items:stretch;gap:8px}
+.tpl-share{display:inline-flex;margin:0 6px;font-size:.8rem}

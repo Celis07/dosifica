@@ -51,7 +51,7 @@ let blankArm = 0;
 $('#out').addEventListener('click', e => {
   const q = s => e.target.closest(s); let b;
   if(q('[data-drok]')){ if(!st.rev) st.rev = {}; st.rev[planKey(st)] = true; markDirty(); render(); toast('Semana marcada como revisada'); return; }
-  if(q('[data-tplopen]')){ tplOpen = true; render(); document.querySelector('.tplcard')?.scrollIntoView({behavior: 'smooth', block: 'start'}); return; }
+  if(q('[data-tplopen]')){ tplOpen = true; if(typeof FX !== 'undefined') FX.open.add('plan:Plantillas'); render(); document.querySelector('.tplcard')?.scrollIntoView({behavior: 'smooth', block: 'start'}); return; }
   if((b = q('[data-blank]'))){
     if(Date.now() - blankArm > 4000){ blankArm = Date.now(); b.textContent = '¿Borrar la semana? Toca otra vez'; setTimeout(() => { if(b.isConnected) b.textContent = 'Empezar en blanco'; }, 4000); return; }
     blankArm = 0;

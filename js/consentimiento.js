@@ -56,7 +56,7 @@ function cfPDF(nom){
   const tp = (LS.get('apex_tp') || '').trim();
   txt(`Fisioterapeuta tratante: ${fisioNombre || 'Manuel Celis'}${tp ? ' · Tarjeta profesional ' + tp : ' · Tarjeta profesional ________'}`, 9.5, 'normal', 1);
   txt(`Usuario o usuaria: ${nom || '______________________________'}`, 9.5, 'normal', 4);
-  CONSENT_TEXT.forEach(([t, p]) => { need(10); txt(t, 10.5, 'bold', 1); if(Array.isArray(p)) p.forEach(bullet); else txt(p, 9.5, 'normal', 2.5); });
+  CONSENT_TEXT.forEach(([t, p]) => { need(10); txt(t, 10.5, 'bold', 1); if(Array.isArray(p)) p.map(consentTxt).forEach(bullet); else txt(consentTxt(p), 9.5, 'normal', 2.5); });
   need(70); y += 2; txt('ACEPTACIÓN', 10.5, 'bold', 3);
   linea('Nombre completo', nom || ''); linea('Documento de identidad', ''); linea('Firma', ''); linea('Fecha', '');
   txt('Si es menor de 18 años, firma también:', 9.5, 'bold', 3);
@@ -106,7 +106,7 @@ $('#out').addEventListener('click', async e => {
 });
 $('#out').addEventListener('change', e => {
   if(e.target.id === 'cfM'){ const m = $('#cfMen'); if(m) m.hidden = !e.target.checked; }
-  if(e.target.id === 'cfTP'){ LS.set('apex_tp', e.target.value.trim()); toast('Tarjeta profesional guardada'); }
+  if(e.target.id === 'cfTP'){ LS.set('apex_tp', e.target.value.trim()); sb.rpc('set_mi_tp', {p_tp: e.target.value.trim()}).then(() => {}, () => {}); toast('Tarjeta profesional guardada'); }
 });
 
 /* ---------- En Cuenta, debajo de Tabla de usuarios: el documento en blanco ---------- */
@@ -138,5 +138,5 @@ document.addEventListener('click', e => {
   if(k === 'pdf') return cfCompartir(nom);
   if(k === 'wa') window.open('https://wa.me/?text=' + encodeURIComponent(cfMsgWA(nom)), '_blank', 'noopener');
 });
-document.addEventListener('change', e => { if(e.target.id === 'cfTP2'){ LS.set('apex_tp', e.target.value.trim()); toast('Tarjeta profesional guardada'); } });
+document.addEventListener('change', e => { if(e.target.id === 'cfTP2'){ LS.set('apex_tp', e.target.value.trim()); sb.rpc('set_mi_tp', {p_tp: e.target.value.trim()}).then(() => {}, () => {}); toast('Tarjeta profesional guardada'); } });
 document.addEventListener('keydown', e => { const d = $('#cfDlg'); if(e.key === 'Escape' && d && !d.hidden) d.hidden = true; });
