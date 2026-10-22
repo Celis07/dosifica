@@ -16,3 +16,15 @@
 .px-lgall{margin-top:8px}
 .px-tec{display:none!important}
 .tcal-card>.ap-card{margin-top:0}
+/* Consentimiento */
+.cf-ok,.cf-no{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;margin:4px 0 10px}
+.cf-ok{background:rgba(30,158,80,.12)} .cf-ok b{color:#1E9E50}
+.cf-no{background:rgba(255,159,10,.14)} .cf-no b{color:#C77700}
+.cf-ok span,.cf-no span{font-size:.85rem;color:var(--muted)}
+.cf-acts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.cf-tp{max-width:320px}
+.cf-form{display:flex;flex-direction:column;gap:8px;margin:8px 0;padding:12px;border-radius:12px;background:rgba(120,120,128,.08)}
+.cf-txt{margin-top:10px} .cf-txt summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.cf-txt h4,.cg-txt h4{margin:12px 0 4px;font-size:.95rem} .cf-txt p,.cf-txt li,.cg-txt p,.cg-txt li{font-size:.88rem;line-height:1.45}
+.cg-txt{max-height:52vh;overflow:auto;padding-right:6px;margin:8px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.cf-txt ul,.cg-txt ul{padding-left:18px;margin:4px 0}

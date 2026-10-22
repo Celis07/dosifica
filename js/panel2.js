@@ -74,7 +74,7 @@ function fxInicio(){
   infos.filter(i => unreadBy[i.p.id]).forEach(i => att.push({k: 'b', pid: i.p.id, t: i.p.nombre, d: `${unreadBy[i.p.id]} mensaje${unreadBy[i.p.id] > 1 ? 's' : ''} sin leer`, v: 'chat'}));
   infos.filter(i => tecPendBy[i.p.id]).forEach(i => att.push({k: 'b', pid: i.p.id, t: i.p.nombre, d: 'Video de técnica por revisar', v: 'ses'}));
   infos.filter(i => i.inact).forEach(i => att.push({k: 'n', pid: i.p.id, t: i.p.nombre, d: `Sin registrar sesión desde ${hace(i.sm.last)}`, v: 'ses'}));
-  infos.filter(i => !i.consent).forEach(i => att.push({k: 'n', pid: i.p.id, t: i.p.nombre, d: 'Falta consentimiento informado', v: 'hist'}));
+  infos.filter(i => !i.consent).forEach(i => att.push({k: 'n', pid: i.p.id, t: i.p.nombre, d: typeof consentOld !== 'undefined' && consentOld[i.p.id] ? 'Consentimiento por actualizar a la versión nueva' : 'Falta consentimiento informado', v: 'datos'}));
   if(typeof fxAttExtra === 'function') att.push(...fxAttExtra(infos));
   const nom = (fisioNombre || '').split(' ')[0];
   return `<div class="fx-page">

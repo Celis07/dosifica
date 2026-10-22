@@ -221,11 +221,11 @@ async function startAthlete(p){
       sb.from('planes').select('*').eq('paciente_id',p.id).order('publicado_at',{ascending:false}).limit(1),
       sb.from('sesiones').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}),
       sb.from('solicitudes').select('*').eq('paciente_id',p.id).order('created_at',{ascending:false}),
-      sb.from('consentimientos').select('id').eq('paciente_id',p.id).limit(1),
+      sb.from('consentimientos').select('id,version').eq('paciente_id',p.id),
       sb.from('bienestar').select('*').eq('paciente_id',p.id).order('fecha',{ascending:false}).limit(60)
     ]);
     if([pl,se,so,cs,wb].some(r=>r.error && isNetErr(r.error))) throw new Error('network');
-    A.consent=!!(cs.data&&cs.data.length); A.plan=(pl.data||[])[0]||null; solicitudes=so.data||[];
+    A.consent=(cs.data||[]).some(r=>r.version===CONSENT_VERSION); A.consentOld=!A.consent&&!!(cs.data||[]).length; A.plan=(pl.data||[])[0]||null; solicitudes=so.data||[];
     sessions=[...pendingRows('sesiones'), ...(se.data||[])]; wellness=[...pendingRows('bienestar'), ...(wb.data||[])];
     cacheAthlete();
   }catch(e){ const c=loadAthleteCache(me.uid); if(c) applyAthleteCache(c); else { A.plan=null; A.consent=true; toast('Sin conexión. Abre la app una vez con internet para guardar tu plan en el teléfono.'); } }

@@ -148,32 +148,71 @@ async function delTpl(id){
 }
 
 /* ---------- Consentimiento informado ---------- */
-const CONSENT_VERSION = 'v1 · octubre 2026';
+const CONSENT_VERSION = 'v2 · octubre 2026';
+/* v2: consentimiento informado de tratamiento completo (Ley 528 de 1999, arts. 12, 25, 26 y 27; Ley 1751 de 2015;
+   Resolución 309 de 2025 para menores) + autorización de datos (Ley 1581 de 2012). Aceptación electrónica válida por
+   la Ley 527 de 1999 (arts. 5 a 7). Cada bloque: [título, párrafo] o [título, [viñetas]]. */
 const CONSENT_TEXT = [
-  ['Tratamiento de datos personales y de salud', 'Autorizo al fisioterapeuta Manuel Celis, como responsable, a recolectar, almacenar y usar mis datos personales y de salud (lesión, evaluación, plan de ejercicios, sesiones registradas, dolor y cuestionarios) con la única finalidad de planear, hacer seguimiento y ajustar mi rehabilitación. Entiendo que son datos sensibles según la Ley 1581 de 2012 y que no estoy obligado a autorizar su tratamiento. Puedo conocer, actualizar, rectificar y pedir la supresión de mis datos, y revocar esta autorización, escribiendo a celisone1@gmail.com. Mis datos se guardan en un servicio en la nube con acceso restringido y no se compartirán con terceros sin mi autorización, salvo obligación legal.'],
-  ['Consentimiento para el programa de ejercicio', 'Entiendo que el programa incluye ejercicio terapéutico y de fuerza dosificado por esfuerzo percibido, y que puede producir dolor muscular, molestias o, con baja probabilidad, una lesión. Me comprometo a seguir la regla de dolor, registrar mis sesiones con honestidad y avisar de inmediato si aparece dolor alto, inflamación, bloqueo, inestabilidad o cualquier síntoma nuevo. Puedo suspender el programa en cualquier momento. Esta herramienta no reemplaza la valoración presencial ni las indicaciones de mi médico o cirujano.'],
+  ['1. Qué voy a recibir', 'Atención de fisioterapia: valoración, ejercicio terapéutico y de fuerza dosificado, entrenamiento funcional, educación sobre mi condición y, según el caso, terapia manual, vendaje y agentes físicos (frío, calor, electroterapia). Puede ser presencial o con seguimiento a distancia en la app Ápex (plan, chequeo diario, registro de sesiones y mensajes). Si en algún momento se propone una técnica invasiva, como la punción seca, me pedirán un consentimiento aparte.'],
+  ['2. Para qué', 'Disminuir el dolor, recuperar la función y la capacidad de carga, prevenir nuevas lesiones y, si aplica, volver a mi deporte o actividad.'],
+  ['3. Riesgos previsibles', [
+    'Frecuentes y pasajeros: dolor muscular de 24 a 72 horas después de entrenar, aumento temporal del dolor, cansancio y molestias en articulaciones.',
+    'Poco frecuentes: mareo, náuseas o baja de presión durante el esfuerzo, calambres, irritación de la piel por vendajes o electrodos, enrojecimiento o quemadura leve por frío o calor, y moretones por terapia manual.',
+    'Raros: distensión muscular, esguince, caída o reagudización de la lesión.',
+    'Muy raros: eventos graves del corazón durante el ejercicio intenso, más probables si hay una enfermedad cardiaca no diagnosticada.']],
+  ['4. Cómo se reducen', 'Con una valoración antes de empezar, una carga que sube de forma progresiva, una regla de dolor clara, el chequeo diario que ajusta el plan del día y la revisión de mi evolución por parte del fisioterapeuta.'],
+  ['5. Alternativas', 'Existen otras opciones, como el manejo con medicamentos, la cirugía, otros profesionales o no hacer tratamiento. No tratar la lesión puede hacer que el dolor o la limitación duren más. Puedo preguntar por cualquiera de ellas.'],
+  ['6. Mis compromisos', [
+    'Dar información completa y verdadera sobre mi salud: enfermedades, cirugías, medicamentos, embarazo y síntomas.',
+    'Seguir las indicaciones y la dosis del plan, sin aumentarla por mi cuenta, y registrar con honestidad mis sesiones y mi dolor.',
+    'Cuando haga los ejercicios sin supervisión, hacerlos como me fueron enseñados.',
+    'Suspender el ejercicio y avisar de inmediato si tengo dolor en el pecho, falta de aire desproporcionada, mareo intenso o desmayo, palpitaciones, fiebre, hinchazón con calor o enrojecimiento, adormecimiento o pérdida de fuerza, o un dolor que no cede. En una urgencia debo ir a urgencias o llamar al 123: la app no es un servicio de urgencias.']],
+  ['7. Sin garantía de resultados', 'La fisioterapia es una obligación de medio y no de resultado (Ley 528 de 1999, art. 12): el fisioterapeuta pone todo su conocimiento y cuidado, pero no puede garantizar un resultado.'],
+  ['8. Responsabilidad', 'Según el artículo 26 de la Ley 528 de 1999, el fisioterapeuta no responde por reacciones adversas de imposible o difícil previsión, ni por los efectos de los riesgos previstos que acepto en este documento, cuando no se deban a culpa suya. Este consentimiento no limita los derechos que me da la ley.'],
+  ['9. Mis derechos', 'Puedo hacer preguntas y recibir respuestas claras, pedir una segunda opinión, rechazar una técnica o suspender el tratamiento en cualquier momento sin que eso afecte la atención que reciba, y revocar este consentimiento avisando por escrito.'],
+  ['10. Menores de edad', 'Si soy menor de 18 años, mi padre, madre o representante legal también acepta este documento. Si tengo menos de 14 años, además se me explica en palabras que entienda y se tiene en cuenta mi acuerdo (asentimiento), según la Resolución 309 de 2025.'],
+  ['11. Cómo acepto', 'Puedo aceptar en la app (marcando las casillas y escribiendo mi nombre y documento), en persona o respondiendo por WhatsApp desde mi número con la frase de aceptación. Queda registrada la fecha y la hora. Esta aceptación tiene la misma validez que una firma escrita (Ley 527 de 1999, arts. 5 a 7). Rige durante todo el proceso; si el tratamiento cambia de forma importante, me lo informarán de nuevo.'],
+  ['12. Datos personales y de salud', 'Autorizo al fisioterapeuta Manuel Celis, como responsable, a recolectar, guardar y usar mis datos personales y de salud (evaluación, plan, sesiones, dolor, chequeos y mensajes) solo para planear, hacer seguimiento y ajustar mi atención. Son datos sensibles según la Ley 1581 de 2012 y no estoy obligado a autorizarlos. Puedo conocerlos, actualizarlos, corregirlos, pedir que se borren y revocar esta autorización escribiendo a celisone1@gmail.com. Se guardan en un servicio en la nube con acceso restringido y no se comparten con terceros sin mi autorización, salvo obligación legal.']
 ];
+const consentBlockHTML = () => CONSENT_TEXT.map(([t, p]) => `<h4>${esc(t)}</h4>${Array.isArray(p) ? `<ul>${p.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : `<p>${esc(p)}</p>`}`).join('');
 async function loadConsents(){
-  const {data} = await sb.from('consentimientos').select('paciente_id,firmado_at,nombre_firma,version').order('firmado_at',{ascending:false});
-  consentBy={}; (data||[]).forEach(c=>{ if(!consentBy[c.paciente_id]) consentBy[c.paciente_id]=c; });
+  const {data} = await sb.from('consentimientos').select('paciente_id,firmado_at,nombre_firma,documento,version,medio,menor,representante').order('firmado_at',{ascending:false});
+  consentBy={}; consentOld={};
+  (data||[]).forEach(c=>{ if(c.version===CONSENT_VERSION){ if(!consentBy[c.paciente_id]) consentBy[c.paciente_id]=c; } else if(!consentOld[c.paciente_id]) consentOld[c.paciente_id]=c; });
 }
+let consentOld = {};
 function consentGate(){
+  const old = A.consentOld;
   return `<section class="card consent"><div class="trainer">Antes de ver tu plan</div><h2 class="cg">Consentimiento informado</h2>
-  ${CONSENT_TEXT.map(([t,p])=>`<h4>${esc(t)}</h4><p>${esc(p)}</p>`).join('')}
+  <p class="small">${old ? 'Actualizamos el consentimiento con más información sobre tu tratamiento. Léelo y vuelve a aceptarlo.' : 'Léelo con calma. Si tienes dudas, pregúntale a tu fisioterapeuta antes de aceptar.'}</p>
+  <div class="cg-txt">${consentBlockHTML()}</div>
   <p class="small">Versión ${esc(CONSENT_VERSION)}</p>
+  <label class="chk"><input type="checkbox" id="cgT"> Leí y entendí la información, pude hacer preguntas y acepto el tratamiento de fisioterapia con sus riesgos.</label>
   <label class="chk"><input type="checkbox" id="cgD"> Autorizo el tratamiento de mis datos personales y de salud.</label>
-  <label class="chk"><input type="checkbox" id="cgT"> Acepto participar en el programa de ejercicio en las condiciones descritas.</label>
-  <div class="row2"><label class="f">Nombre completo (firma)<input id="cgN" autocomplete="name"></label><label class="f">Documento (opcional)<input id="cgDoc" autocomplete="off"></label></div>
-  <div class="actions"><button class="primary" id="cgSign">Firmar y continuar</button></div>
+  <label class="chk"><input type="checkbox" id="cgM"> Soy menor de 18 años.</label>
+  <div id="cgMen" hidden>
+    <div class="row2"><label class="f">Nombre del padre, madre o representante<input id="cgRN" autocomplete="off"></label><label class="f">Documento del representante<input id="cgRD" autocomplete="off"></label></div>
+    <label class="f">Parentesco<input id="cgRP" placeholder="Madre, padre, tutor…" autocomplete="off"></label>
+    <label class="chk"><input type="checkbox" id="cgRA"> Como representante, acepto este consentimiento y la persona menor está de acuerdo.</label>
+  </div>
+  <div class="row2"><label class="f">Nombre completo (firma)<input id="cgN" autocomplete="name"></label><label class="f">Documento de identidad<input id="cgDoc" autocomplete="off"></label></div>
+  <div class="actions"><button class="primary" id="cgSign">Aceptar y continuar</button></div>
   </section>`;
 }
+document.addEventListener('change', e => { if(e.target.id === 'cgM'){ const m = $('#cgMen'); if(m) m.hidden = !e.target.checked; } });
 async function signConsent(){
-  const n=($('#cgN').value||'').trim(), d=$('#cgD').checked, t=$('#cgT').checked;
-  if(!d||!t){ toast('Debes aceptar ambos puntos para continuar.'); return; }
+  const n=($('#cgN').value||'').trim(), doc=($('#cgDoc').value||'').trim(), d=$('#cgD').checked, t=$('#cgT').checked, menor=$('#cgM').checked;
+  if(!d||!t){ toast('Debes marcar las dos casillas de aceptación para continuar.'); return; }
   if(n.length<3){ toast('Escribe tu nombre completo como firma.'); return; }
-  const {error}=await sb.from('consentimientos').insert({paciente_id:A.p.id, version:CONSENT_VERSION, nombre_firma:n.slice(0,120), documento:($('#cgDoc').value||'').trim().slice(0,30)||null, acepta_datos:true, acepta_tratamiento:true, user_agent:navigator.userAgent.slice(0,400)});
-  if(error){ toast('No se pudo registrar la firma. Inténtalo de nuevo.'); return; }
-  A.consent=true; renderAthlete(); toast('Consentimiento firmado. ¡Gracias!');
+  if(doc.length<4){ toast('Escribe tu número de documento.'); return; }
+  let rep=null;
+  if(menor){
+    rep={nombre:($('#cgRN').value||'').trim().slice(0,120), documento:($('#cgRD').value||'').trim().slice(0,30), parentesco:($('#cgRP').value||'').trim().slice(0,40)};
+    if(rep.nombre.length<3||rep.documento.length<4||!$('#cgRA').checked){ toast('Falta el nombre, el documento y la aceptación del representante.'); return; }
+  }
+  const {error}=await sb.from('consentimientos').insert({paciente_id:A.p.id, version:CONSENT_VERSION, nombre_firma:n.slice(0,120), documento:doc.slice(0,30), acepta_datos:true, acepta_tratamiento:true, menor, representante:rep, medio:'app', user_agent:navigator.userAgent.slice(0,400)});
+  if(error){ toast('No se pudo registrar la aceptación. Inténtalo de nuevo.'); return; }
+  A.consent=true; A.consentOld=false; renderAthlete(); toast('Consentimiento aceptado. ¡Gracias!');
 }
 
 /* ---------- Eventos ---------- */
