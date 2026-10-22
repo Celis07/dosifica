@@ -138,7 +138,7 @@ function applyTpl(id){
   const t=plantillas.find(x=>x.id===id); if(!t) return;
   const days=clone(t.contenido?.days||[]); if(!validWeek(days)){ toast('Esa plantilla tiene un formato antiguo y no se puede aplicar.'); return; }
   if(!st.plans) st.plans={};
-  st.dias = String(days.length===4?4:3); fillForm();
+  st.dias = String(Math.max(1, Math.min(6, days.length))); fillForm();
   st.plans[planKey(st)] = days; tplOpen=false; render(); markDirty(); toast('Plantilla aplicada');
 }
 async function delTpl(id){

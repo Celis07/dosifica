@@ -362,7 +362,7 @@ function syncVisibility(){
   const k=pkey(st), mo=modOf(st);
   document.querySelectorAll('[data-modshow]').forEach(el=>{ el.hidden = !el.dataset.modshow.split(' ').includes(mo); if(el.tagName==='OPTION') el.disabled = el.hidden; });
   document.querySelectorAll('.modsel [data-mod]').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.mod===mo)));
-  if(!['2','3','4'].includes(String(st.dias)) || (mo==='rodilla' && String(st.dias)==='2')) st.dias='3';
+  if(!['1','2','3','4','5','6'].includes(String(st.dias))) st.dias='3';
   $('#dias').value=String(st.dias);
   document.querySelectorAll('[data-show]').forEach(el=>{
     const v=el.dataset.show;

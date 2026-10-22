@@ -275,3 +275,10 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
 .fx-mk{margin:4px 0 14px}
 .tcal-r .prio{display:inline-flex;flex:none;width:22px;height:22px;border-radius:6px;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:#8E8E93;color:#fff;border:0;padding:0}
 .tcal-r .prio.A{background:#E5202E} .tcal-r .prio.B{background:#FF9F0A}
+/* Datos: dos columnas que fluyen sin huecos (antes una cuadrícula dejaba espacios vacíos) */
+@media (min-width:761px){
+  body.fx.fx-datos #work>#form{display:block;columns:2;column-gap:28px}
+  body.fx.fx-datos #work>#form>*{break-inside:avoid;margin-bottom:14px}
+  body.fx.fx-datos #work>#form>fieldset{display:flex;flex-direction:column;gap:10px}
+}
+.regsel{grid-template-columns:repeat(3,minmax(0,1fr))!important}

@@ -207,10 +207,11 @@
     <label class="f" data-modshow="deporte salud">Nivel en fuerza<select id="nivel" data-k="nivel"><option value="ini">Principiante · menos de 1 año</option><option value="int">Intermedio · 1–3 años</option><option value="av">Avanzado · más de 3 años</option></select></label>
     <label class="f">Fase<select id="fase" data-k="fase"></select></label>
     <div class="row2">
-      <label class="f">Días por semana<select id="dias" data-k="dias"><option value="2" data-modshow="deporte salud">2 días</option><option value="3">3 días</option><option value="4">4 días</option></select></label>
-      <label class="f">Semana del plan<input type="number" id="semPlan" data-k="semPlan" min="1" max="104"></label>
+      <label class="f">Días por semana<select id="dias" data-k="dias"><option value="1">1 día</option><option value="2">2 días</option><option value="3">3 días</option><option value="4">4 días</option><option value="5">5 días</option><option value="6">6 días</option></select></label>
+      <label class="f">Inicio del plan<input type="date" id="inicioF" data-k="inicio"></label>
     </div>
-    <p class="small" style="margin:0">Torneos, fecha de inicio y semanas de descarga: pestaña Calendario.</p>
+    <input type="hidden" id="semPlan" data-k="semPlan">
+    <p class="small" id="semTxt" style="margin:0"></p>
     <label class="chk"><input type="checkbox" id="vivoOff" data-k="vivoOff"> Desactivar el modo en vivo en el portal del deportista</label>
   </fieldset>
   <hr class="s" data-modshow="rodilla">
@@ -281,6 +282,7 @@
 <script src="js/panel3.js"></script>
 <script src="js/adherencia2.js"></script>
 <script src="js/consentimiento.js"></script>
+<script src="js/ajustes.js"></script>
 <script src="js/atras.js"></script>
 <script src="js/inicio.js"></script>
 

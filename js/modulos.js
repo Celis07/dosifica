@@ -2,7 +2,7 @@
 const MODULOS = {rodilla:'Rehabilitación', deporte:'Entrenamiento · Deporte', salud:'Entrenamiento · Salud'};
 const modOf = s => (s && MODULOS[s.modulo]) ? s.modulo : 'rodilla';
 const isRod = s => modOf(s)==='rodilla';
-const nDias = s => { const n=+((s&&s.dias)||3); return isRod(s) ? (n===4?4:3) : Math.max(2,Math.min(4,n||3)); };
+const nDias = s => { const n=+((s&&s.dias)||3); return Math.max(1,Math.min(6,n||3)); };   // 1 a 6 días; el generador adapta (ver ajustes.js)
 
 /* ---------- Referencias nuevas ---------- */
 Object.assign(R, {
