@@ -28,3 +28,11 @@
 .cf-txt h4,.cg-txt h4{margin:12px 0 4px;font-size:.95rem} .cf-txt p,.cf-txt li,.cg-txt p,.cg-txt li{font-size:.88rem;line-height:1.45}
 .cg-txt{max-height:52vh;overflow:auto;padding-right:6px;margin:8px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .cf-txt ul,.cg-txt ul{padding-left:18px;margin:4px 0}
+#cfDlg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+#cfDlg[hidden]{display:none}
+@media (min-width:700px){#cfDlg{align-items:center}}
+.cf-sheet{width:100%;max-width:620px;max-height:88vh;overflow:auto;display:flex;flex-direction:column;gap:10px;background:var(--paper,#fff);color:var(--ink);border-radius:20px;padding:18px;box-sizing:border-box}
+.cf-sheet .px-fch{display:flex;align-items:center;justify-content:space-between}
+.cf-sheet h2{margin:0;font-size:1.2rem}
+.cf-full{border-top:1px solid var(--line);padding-top:6px}
+@media (prefers-color-scheme:dark){body.fx .cf-sheet{background:#1C1C1E;color:#F5F5F7}}

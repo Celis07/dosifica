@@ -42,7 +42,8 @@ render = function(){
 };
 
 /* ---------- PDF ---------- */
-function cfPDF(){
+function cfPDF(nom){
+  if(nom === undefined) nom = st.nombre || '';
   const doc = new jspdf.jsPDF({unit: 'mm', format: 'a4'}), W = 210, M = 18, H = 297; let y = 20;
   const need = h => { if(y + h > H - 18){ doc.addPage(); y = 20; } };
   const txt = (t, size, style, gap) => { doc.setFont('helvetica', style || 'normal'); doc.setFontSize(size); doc.setTextColor(29, 29, 31);
@@ -54,10 +55,10 @@ function cfPDF(){
   txt(`Versión ${CONSENT_VERSION} · Ápex`, 9, 'normal', 3);
   const tp = (LS.get('apex_tp') || '').trim();
   txt(`Fisioterapeuta tratante: ${fisioNombre || 'Manuel Celis'}${tp ? ' · Tarjeta profesional ' + tp : ' · Tarjeta profesional ________'}`, 9.5, 'normal', 1);
-  txt(`Usuario o usuaria: ${st.nombre || '______________________________'}`, 9.5, 'normal', 4);
+  txt(`Usuario o usuaria: ${nom || '______________________________'}`, 9.5, 'normal', 4);
   CONSENT_TEXT.forEach(([t, p]) => { need(10); txt(t, 10.5, 'bold', 1); if(Array.isArray(p)) p.forEach(bullet); else txt(p, 9.5, 'normal', 2.5); });
   need(70); y += 2; txt('ACEPTACIÓN', 10.5, 'bold', 3);
-  linea('Nombre completo', st.nombre || ''); linea('Documento de identidad', ''); linea('Firma', ''); linea('Fecha', '');
+  linea('Nombre completo', nom || ''); linea('Documento de identidad', ''); linea('Firma', ''); linea('Fecha', '');
   txt('Si es menor de 18 años, firma también:', 9.5, 'bold', 3);
   linea('Representante legal', ''); linea('Documento y parentesco', ''); linea('Firma', '');
   need(24); y += 2; txt('Aceptación por WhatsApp', 10.5, 'bold', 1);
@@ -68,11 +69,12 @@ function cfPDF(){
   for(let i = 1; i <= n; i++){ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(120); doc.text(`Página ${i} de ${n}`, W - M, H - 10, {align: 'right'}); }
   return doc;
 }
-async function cfCompartir(){
-  const nombre = 'Consentimiento ' + (st.nombre || 'fisioterapia') + '.pdf';
-  const blob = cfPDF().output('blob'), file = new File([blob], nombre, {type: 'application/pdf'});
+async function cfCompartir(nom){
+  if(nom === undefined) nom = st.nombre || '';
+  const nombre = 'Consentimiento ' + (nom || 'fisioterapia') + '.pdf';
+  const blob = cfPDF(nom).output('blob'), file = new File([blob], nombre, {type: 'application/pdf'});
   try{
-    if(navigator.canShare && navigator.canShare({files: [file]})){ await navigator.share({files: [file], title: 'Consentimiento informado', text: cfMsgWA(st.nombre)}); return; }
+    if(navigator.canShare && navigator.canShare({files: [file]})){ await navigator.share({files: [file], title: 'Consentimiento informado', text: cfMsgWA(nom)}); return; }
   }catch(e){ if(e && e.name === 'AbortError') return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   toast('PDF descargado. Adjúntalo en WhatsApp.');
@@ -106,3 +108,35 @@ $('#out').addEventListener('change', e => {
   if(e.target.id === 'cfM'){ const m = $('#cfMen'); if(m) m.hidden = !e.target.checked; }
   if(e.target.id === 'cfTP'){ LS.set('apex_tp', e.target.value.trim()); toast('Tarjeta profesional guardada'); }
 });
+
+/* ---------- En Cuenta, debajo de Tabla de usuarios: el documento en blanco ---------- */
+const _renderHomeCf = renderHome;
+renderHome = function(){
+  const r = _renderHomeCf.apply(this, arguments);
+  if(typeof FX !== 'undefined' && FX.tab === 'cuenta'){
+    const tabla = document.querySelector('#home [data-fx="tabla"]');
+    if(tabla && !document.querySelector('#home [data-cfc]')) tabla.insertAdjacentHTML('afterend', `<button type="button" class="fx-rb" data-cfc="open"><span class="fx-ic sq"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h4"/></svg></span><span class="fx-rt"><b>Consentimiento informado</b><span>Ver, enviar en PDF o por WhatsApp · ${esc(CONSENT_VERSION)}</span></span>${FX_I.chev}</button>`);
+  }
+  return r;
+};
+function cfSheet(){
+  let d = $('#cfDlg');
+  if(!d){ d = document.createElement('div'); d.id = 'cfDlg'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'cfDlgT'); document.body.appendChild(d); }
+  d.hidden = false;
+  d.innerHTML = `<div class="md-card cf-sheet"><div class="px-fch"><h2 id="cfDlgT">Consentimiento informado</h2><button type="button" class="xbtn" data-cfc="close" aria-label="Cerrar">×</button></div>
+    <p class="small" style="margin:0 0 10px">Versión ${esc(CONSENT_VERSION)}. Quien tiene la app lo acepta al entrar. A quien no, envíaselo y registra su aceptación en la ficha (lápiz → Consentimiento).</p>
+    <label class="f">Nombre de la persona (opcional, sale en el PDF)<input id="cfcN" placeholder="Déjalo vacío para un PDF en blanco"></label>
+    <div class="cf-acts"><button type="button" class="primary" data-cfc="pdf">PDF para enviar</button><button type="button" data-cfc="wa">Mensaje de WhatsApp</button></div>
+    <label class="f cf-tp">Tu tarjeta profesional (sale en el PDF)<input id="cfTP2" value="${esc(LS.get('apex_tp') || '')}" placeholder="Número de TP"></label>
+    <div class="cf-txt cf-full">${consentBlockHTML()}</div></div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-cfc]'); if(!b){ const d = $('#cfDlg'); if(d && !d.hidden && e.target === d) d.hidden = true; return; }
+  const k = b.dataset.cfc, nom = ($('#cfcN')?.value || '').trim();
+  if(k === 'open') return cfSheet();
+  if(k === 'close'){ $('#cfDlg').hidden = true; return; }
+  if(k === 'pdf') return cfCompartir(nom);
+  if(k === 'wa') window.open('https://wa.me/?text=' + encodeURIComponent(cfMsgWA(nom)), '_blank', 'noopener');
+});
+document.addEventListener('change', e => { if(e.target.id === 'cfTP2'){ LS.set('apex_tp', e.target.value.trim()); toast('Tarjeta profesional guardada'); } });
+document.addEventListener('keydown', e => { const d = $('#cfDlg'); if(e.key === 'Escape' && d && !d.hidden) d.hidden = true; });
