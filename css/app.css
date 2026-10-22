@@ -824,3 +824,5 @@ section.day table.pl td.e{width:60%} section.day.editing table.pl td.s,section.d
   body.fx .px-fchat .px-msg.fi p,.px-fchat .px-msg.fi p{background:#2C2C2E;color:#F5F5F7;border-color:#3A3A3C}
   .px-fchat textarea,.px-fchat input{color:#F5F5F7}
 }
+/* Sin zoom con doble toque en toda la app (el zoom con dos dedos sigue disponible) */
+html,body,button,a,input,select,textarea,label{touch-action:manipulation}

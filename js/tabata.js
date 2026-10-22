@@ -15,7 +15,7 @@ const TB_PRESETS = [
   ['40/20', {work:40, rest:20, ex:5, sets:3}],
   ['45/15', {work:45, rest:15, ex:6, sets:2}]
 ];
-const TB_LIM = {prep:[0,60,5], work:[5,600,5], rest:[0,600,5], ex:[1,30,1], sets:[1,20,1], srest:[0,600,15]};
+const TB_LIM = {prep:[0,120,5], work:[1,3600,5], rest:[0,3600,5], ex:[1,30,1], sets:[1,50,1], srest:[0,3600,15]};
 const TB_COL = {prep:'prep', work:'work', rest:'rest', srest:'srest', done:'done'};
 let TB = null;   // {cfg, screen:'setup'|'run'|'done', ph:[], i, end, left, paused, ac, wake, lastBeep, source}
 
@@ -23,17 +23,23 @@ function tbLoad(){ try{ return Object.assign({}, TB_DEF, JSON.parse(LS.get(TB_KE
 function tbSave(c){ try{ const {names, ...rest} = c; LS.set(TB_KEY, JSON.stringify(rest)); }catch(e){} }
 const tbFmt = s => { s = Math.max(0, Math.ceil(s)); const m = Math.floor(s / 60), r = s % 60; return m ? `${m}:${String(r).padStart(2, '0')}` : String(r); };
 const tbFmtLong = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), r = s % 60; return `${m}:${String(r).padStart(2, '0')}`; };
-function tbTotal(c){ return c.prep + c.sets * (c.ex * c.work + (c.ex - 1) * c.rest) + (c.sets - 1) * c.srest; }
+function tbTotal(c){ return tbPhases(c).reduce((a, p) => a + p.d, 0); }
 function tbName(c, k){ const n = (c.names || [])[k]; return n && n.trim() ? n.trim() : `Ejercicio ${k + 1}`; }
 function tbPhases(c){
   const P = [];
   if(c.prep > 0) P.push({k:'prep', d:c.prep, ex:0, set:0});
+  // Después de cada trabajo va un descanso (salvo el último). Al cerrar una serie usa el descanso entre series;
+  // si ese es 0, usa el descanso normal (antes con 1 ejercicio por serie el descanso no se contaba nunca).
   for(let s = 0; s < c.sets; s++){
     for(let e = 0; e < c.ex; e++){
       P.push({k:'work', d:c.work, ex:e, set:s});
-      if(e < c.ex - 1 && c.rest > 0) P.push({k:'rest', d:c.rest, ex:e + 1, set:s});
+      const ultimoSet = e === c.ex - 1, ultimo = ultimoSet && s === c.sets - 1;
+      if(ultimo) continue;
+      if(!ultimoSet){ if(c.rest > 0) P.push({k:'rest', d:c.rest, ex:e + 1, set:s}); }
+      else if(c.ex === 1){ if(c.rest > 0) P.push({k:'rest', d:c.rest, ex:0, set:s + 1}); }   // 1 ejercicio: el descanso es entre vueltas
+      else if(c.srest > 0) P.push({k:'srest', d:c.srest, ex:0, set:s + 1});
+      else if(c.rest > 0) P.push({k:'rest', d:c.rest, ex:0, set:s + 1});
     }
-    if(s < c.sets - 1 && c.srest > 0) P.push({k:'srest', d:c.srest, ex:0, set:s + 1});
   }
   P.push({k:'done', d:0, ex:0, set:c.sets - 1});
   return P;
@@ -153,15 +159,15 @@ function tbSetup(){
     ${TB.source ? `<p class="tb-src">${esc(TB.source)}</p>` : ''}
     <div class="tb-total"><span>Duración total</span><b>${tbFmtLong(tot)}</b><span>${c.sets} serie${c.sets > 1 ? 's' : ''} × ${c.ex} ejercicio${c.ex > 1 ? 's' : ''}</span></div>
     <div class="tb-presets" role="group" aria-label="Plantillas">${TB_PRESETS.map(([l, p], i) => `<button type="button" data-tbp="${i}" aria-pressed="${p.work === c.work && p.rest === c.rest && p.ex === c.ex && p.sets === c.sets}">${l}</button>`).join('')}</div>
-    <div class="tb-list">${TB_ROWS.map(([k, l, u, h]) => `<div class="tb-row"><span class="tb-l"><b>${l}</b><span>${h}</span></span>
-      <span class="tb-step"><button type="button" data-tbs="${k}|-1" aria-label="Menos ${l}">${TB_I.minus}</button><output aria-live="polite" aria-label="${l}">${val(k, u)}</output><button type="button" data-tbs="${k}|1" aria-label="Más ${l}">${TB_I.plus}</button></span></div>`).join('')}</div>
+    <div class="tb-list">${TB_ROWS.filter(([k]) => !(k === 'srest' && c.ex === 1)).map(([k, l, u, h]) => `<div class="tb-row"><span class="tb-l"><b>${l}</b><span>${k === 'rest' && c.ex === 1 ? 'Entre vueltas' : h}${u === 's' ? ' · segundos' : ''}</span></span>
+      <span class="tb-step"><button type="button" data-tbs="${k}|-1" aria-label="Menos ${l}">${TB_I.minus}</button><input class="tb-val" type="text" inputmode="${u === 's' ? 'text' : 'numeric'}" data-tbv="${k}" value="${val(k, u).replace(' s', '')}" aria-label="${l}${u === 's' ? ' en segundos o minutos:segundos' : ''}" autocomplete="off"><button type="button" data-tbs="${k}|1" aria-label="Más ${l}">${TB_I.plus}</button></span></div>`).join('')}</div>
     <details class="tb-names"${(c.names || []).some(Boolean) ? ' open' : ''}><summary>Nombres de los ejercicios <span>(opcional)</span></summary>
       <div class="tb-nl">${Array.from({length:c.ex}, (_, k) => `<label><span>${k + 1}</span><input type="text" data-tbn="${k}" value="${esc((c.names || [])[k] || '')}" placeholder="Ejercicio ${k + 1}" maxlength="40"></label>`).join('')}</div></details>
     <div class="tb-list">
       <label class="tb-row tb-sw"><span class="tb-l"><b>Sonidos</b><span>Silbato al empezar, campana al terminar y 3-2-1</span></span><input type="checkbox" role="switch" data-tbo="sound"${c.sound ? ' checked' : ''}></label>
       ${'vibrate' in navigator ? `<label class="tb-row tb-sw"><span class="tb-l"><b>Vibración</b><span>Al cambiar de fase</span></span><input type="checkbox" role="switch" data-tbo="vib"${c.vib ? ' checked' : ''}></label>` : ''}
     </div>
-    <p class="tb-hint">En iPhone, sube el volumen. La pantalla se mantiene encendida mientras corre.</p>
+    <p class="tb-hint">Toca un número para escribirlo: 45 son segundos y 1:30 es minuto y medio. En iPhone, sube el volumen. La pantalla se mantiene encendida mientras corre.</p>
     <div class="tb-go"><button type="button" class="tb-start" data-tb="start">${TB_I.play}<span>Empezar</span></button></div>
   </div>`;
 }
@@ -260,6 +266,23 @@ document.addEventListener('change', e => {
   const t = e.target;
   if(t.dataset.tbo){ TB.cfg[t.dataset.tbo] = t.checked; tbSave(TB.cfg); if(t.dataset.tbo === 'sound' && t.checked){ tbAudio(); tbTone(880, .12); } }
 });
+// Tiempo libre: se escribe en segundos (45) o en minutos:segundos (1:30)
+function tbParse(k, v){
+  v = String(v || '').trim().replace(',', '.'); if(!v) return null;
+  let n;
+  if(/^\d+:\d{1,2}$/.test(v)){ const [m, x] = v.split(':').map(Number); n = m * 60 + x; }
+  else if(/^\d+(\.\d+)?$/.test(v)) n = Math.round(+v);
+  else return null;
+  const [lo, hi] = TB_LIM[k]; return Math.max(lo, Math.min(hi, n));
+}
+document.addEventListener('change', e => {
+  if(!TB || !e.target.matches?.('#tabata [data-tbv]')) return;
+  const k = e.target.dataset.tbv, n = tbParse(k, e.target.value);
+  if(n == null){ toast('Escribe segundos (45) o minutos:segundos (1:30).'); return tbRender(); }
+  TB.cfg[k] = n; tbRender();
+});
+document.addEventListener('keydown', e => { if(e.key === 'Enter' && e.target.matches?.('#tabata [data-tbv]')){ e.preventDefault(); e.target.blur(); } });
+document.addEventListener('focusin', e => { if(e.target.matches?.('#tabata [data-tbv]')) setTimeout(() => e.target.select(), 0); });
 document.addEventListener('input', e => {
   if(!TB || !e.target.closest('#tabata')) return;
   const t = e.target; if(t.dataset.tbn != null){ TB.cfg.names = TB.cfg.names || []; TB.cfg.names[+t.dataset.tbn] = t.value; }
@@ -280,7 +303,7 @@ if(typeof hBlocks === 'function'){
     for(let i = 1; i < parts.length; i++){
       const sg = day.segs[i - 1]; if(!sg || !sg.fmt || sg.fmt.t !== 'inter') continue;
       const id = 'b' + (++tbRegN);
-      TB_REG[id] = {pre:{work:+sg.fmt.a || 40, rest:+sg.fmt.b || 20, sets:+sg.fmt.c || 3, ex:Math.max(1, sg.rows.length), names:sg.rows.map(r => r.e)}, src:`${day.name} · ${SEGS[sg.type] || sg.type}: ${fmtLabel(sg.fmt)}`};
+      TB_REG[id] = {pre:{work:+sg.fmt.a || 40, rest:+sg.fmt.b || 20, srest:+sg.fmt.b || 20, sets:+sg.fmt.c || 3, ex:Math.max(1, sg.rows.length), names:sg.rows.map(r => r.e)}, src:`${day.name} · ${SEGS[sg.type] || sg.type}: ${fmtLabel(sg.fmt)}`};
       const btn = `<button type="button" class="ap-btn ap-secondary tb-open" data-tbopen="${id}">Abrir en el cronómetro de intervalos</button>`;
       const j = parts[i].lastIndexOf('</div></details>');
       if(j >= 0) parts[i] = parts[i].slice(0, j) + btn + parts[i].slice(j);
