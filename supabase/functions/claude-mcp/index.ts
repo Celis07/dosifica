@@ -11,7 +11,9 @@ const sha = async (t: string) => Array.from(new Uint8Array(await crypto.subtle.d
 
 const FORMATO = `Cada día: {"nombre":"Día 1 · Tren inferior","rpe":"7–8","bloques":[{"tipo":"act|neuro|central","formato":"series","ejercicios":[{"nombre":"Sentadilla","series":"4","reps":"6","nota":""}]}]}. ` +
   `"tipo": act = activación (movilidad, prevención, core), neuro = potencia y coordinación (saltos, lanzamientos), central = fuerza. ` +
-  `"formato": series, o intervalos con "trabajo", "descanso" y "rondas" en segundos. "rpe" es uno por día. Reps pueden ser texto (8–10, 30 s, 5 por lado).`;
+  `"formato": series, o intervalos con "trabajo", "descanso" y "rondas" en segundos. "rpe" es uno por día. Reps pueden ser texto (8–10, 30 s, 5 por lado). ` +
+  `Límite por día: máximo 3 ejercicios en act, 3 en neuro y 5 en central. Si hay un plan anterior, respeta su estructura de días y su cantidad de ejercicios: progresa cada ejercicio, no lo reemplaces por otro plan. ` +
+  `Los ejercicios unilaterales se hacen SIEMPRE con ambas piernas ("por lado"), nunca solo la lesionada o solo la sana; si hace falta, deja una nota tipo "con la operada, misma técnica y menos carga o rango".`;
 
 const TOOLS = [
   { name: "listar_usuarios", description: "Lista los usuarios (pacientes) del fisioterapeuta en Ápex con su módulo, fase y fecha del último plan. Úsala para encontrar el id de la persona.",
@@ -35,6 +37,8 @@ function validarDias(dias: any[]) {
       const b0 = bs[0] || {}, inter = /interv/i.test(b0.formato || "");
       return { type: tipo, sub: "", fmt: inter ? { t: "inter", a: +b0.trabajo || 40, b: +b0.descanso || 20, c: +b0.rondas || 3 } : { t: "series" }, rows };
     });
+    const LIM: Record<string, number> = { act: 3, neuro: 3, central: 5 };
+    segs.forEach((s) => { if (s.rows.length > LIM[s.type]) throw new Error(`El día ${k + 1} tiene ${s.rows.length} ejercicios en ${s.type}; el máximo es ${LIM[s.type]}. Ajusta y vuelve a enviar.`); });
     if (!segs.some((s) => s.rows.length)) throw new Error(`El día ${k + 1} no tiene ejercicios.`);
     const day: any = { name: String(d.nombre || `Día ${k + 1}`).slice(0, 60), segs };
     if (d.rpe) day.rpe = String(d.rpe).replace(/^RPE\s*/i, "").slice(0, 10);

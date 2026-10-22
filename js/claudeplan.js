@@ -19,7 +19,7 @@ SEMANA ACTUAL EN LA APP (JSON)
 ${JSON.stringify({dias: semana})}
 
 LO QUE NECESITO
-Arma la próxima semana de esta persona como una progresión. Si te adjunto un plan anterior (PDF o texto), úsalo como base y progrésalo con criterio: carga, volumen y complejidad, sin saltos bruscos. No pongas pierna pesada ni saltos en días seguidos. Explícame primero en 3 o 4 líneas qué cambiaste y por qué, y al final dame el plan SOLO en este formato JSON, dentro de un bloque de código:
+Arma la próxima semana de esta persona como una progresión. Si te adjunto un plan anterior (PDF o texto), úsalo como base y progrésalo con criterio: carga, volumen y complejidad, sin saltos bruscos. Respeta la estructura de días y la cantidad de ejercicios del plan anterior: progresa cada ejercicio, no lo cambies por otro plan. Máximo 3 ejercicios en activación, 3 en neuro y 5 en central por día. Lo unilateral va siempre con ambas piernas ("por lado"), nunca solo una; si hace falta, deja una nota de hacerlo más suave con la operada. No pongas pierna pesada ni saltos en días seguidos. Explícame primero en 3 o 4 líneas qué cambiaste y por qué, y al final dame el plan SOLO en este formato JSON, dentro de un bloque de código:
 
 {"dias":[{"nombre":"Día 1 · Tren inferior","rpe":"7–8","bloques":[
   {"tipo":"act","formato":"series","ejercicios":[{"nombre":"…","series":"2","reps":"10","nota":""}]},
