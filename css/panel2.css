@@ -281,7 +281,7 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
   body.fx.fx-datos #work>#form>*{break-inside:avoid;margin-bottom:14px}
   body.fx.fx-datos #work>#form>fieldset{display:flex;flex-direction:column;gap:10px}
 }
-.regsel{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.regsel{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 .fx-mini{border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;background:var(--fx-fill,rgba(120,120,128,.12));color:#E5202E;margin-left:auto}
 .fx-fform{flex-direction:column;align-items:stretch;gap:8px}
 .tpl-share{display:inline-flex;margin:0 6px;font-size:.8rem}
@@ -303,3 +303,22 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
 .cc-off{color:#E5202E}
 .cc-prop{border:2px solid #0A84FF}
 .cc-res{margin:0 0 8px;font-size:.9rem;line-height:1.45;white-space:pre-wrap}
+
+/* ---------- Trabajo en casa ---------- */
+.cs{display:flex;flex-direction:column;gap:12px}
+.cs-card{display:flex;flex-direction:column;gap:12px}
+.cs-h{margin:2px 0 0;font-size:22px;letter-spacing:-.01em}
+.cs-rows{display:flex;flex-direction:column}
+.cs-row{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:.5px solid var(--line)}
+.cs-row:last-child{border-bottom:.5px solid var(--line)}
+.cs-top{display:flex;align-items:flex-start;gap:8px}
+.cs-top .cs-e{flex:1;font-weight:600;min-height:38px;resize:none;overflow:hidden}
+.cs-x{flex:none;width:36px;height:36px;padding:0;border-radius:10px;font-size:20px;line-height:1;color:var(--muted)}
+.cs-sr{display:grid;grid-template-columns:1fr 1.6fr;gap:8px}
+.cs-sr label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.cs-sr input{width:100%;min-width:0}
+.cs-n{font-size:14px;color:var(--muted);resize:none;overflow:hidden;min-height:34px}
+.cs-add{align-self:flex-start}
+.cs-acts{flex-wrap:wrap}
+.cs-sent{margin:0}
+.cs-old{margin:0}

@@ -171,7 +171,7 @@ Object.keys(LUM_C).forEach(k=>{ STAGES['lum-'+k] = P['lum-'+k].phases.map((_,i)=
 
 /* ---------- Integración con el resto de la app ---------- */
 MODULOS.lumbar = 'Rehabilitación · Lumbar';
-const isRehab = s => ['rodilla','lumbar','hombro'].includes(modOf(s));
+const isRehab = s => ['rodilla','lumbar','hombro','tobillo'].includes(modOf(s));
 const _pkeyBase = pkey;
 pkey = function(s){ return modOf(s)==='lumbar' ? 'lum-'+(LUM_C[s.lumCond] ? s.lumCond : 'agudo') : _pkeyBase(s); };
 const _suggestedBase = suggested;
