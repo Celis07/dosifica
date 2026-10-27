@@ -71,12 +71,12 @@ async function apxPDF(D){
     F('Mono', 8, APX.mut); (pg.tags || []).slice(0, 3).forEach((t, k) => T(String(t).toUpperCase(), R, 102 + k * 15, {cs: 2, al: 'r'}));
     y = 146;
     // Si el día no cabe en una página con notas de 2 líneas, las notas van en 1 línea
-    const est = n => { let h = 0; (pg.bloques || []).forEach(b => { if(b.texto || !(b.rows || []).length) return; h += 76; b.rows.forEach(r => { F('OswaldM', 10.5); const nl = wrap(r.e, 300).length; F('OswaldL', 8.5); const ml = r.n ? Math.min(n, wrap(r.n, 330).length) : 0; h += Math.max(25, 10 + nl * 13 + ml * 10 + 4); }); }); return h; };
-    pg._nmax = est(2) <= 733 - 146 ? 2 : 1;
+    const est = (n, mn) => { let h = 0; (pg.bloques || []).forEach(b => { if(b.texto || !(b.rows || []).length) return; h += 76; b.rows.forEach(r => { F('OswaldM', 10.5); const nl = wrap(r.e, 300).length; F('OswaldL', 8.5); const ml = r.n ? Math.min(n, wrap(r.n, 330).length) : 0; h += Math.max(mn || 25, 10 + nl * 13 + ml * 10 + (mn ? 1 : 4)); }); }); return h; };
+    const AV = 733 - 146; pg._nmax = est(2) <= AV ? 2 : 1; pg._min = est(1) > AV ? 21 : 0; if(pg._min && est(1, 21) > AV) pg._nmax = 0;
     (pg.bloques || []).forEach(b => {
       const rows = b.rows || [];
       if(!rows.length && !b.texto) return;
-      const rowH = r => { F('OswaldM', 10.5); const nl = wrap(r.e, 300).length; F('OswaldL', 8.5); const ml = r.n ? Math.min(pg._nmax, wrap(r.n, 330).length) : 0; return Math.max(25, 10 + nl * 13 + ml * 10 + 4); };
+      const rowH = r => { F('OswaldM', 10.5); const nl = wrap(r.e, 300).length; F('OswaldL', 8.5); const ml = r.n ? Math.min(pg._nmax, wrap(r.n, 330).length) : 0; return Math.max(pg._min || 25, 10 + nl * 13 + ml * 10 + (pg._min ? 1 : 4)); };
       let first = rows.length ? rowH(rows[0]) + (rows[1] ? rowH(rows[1]) : 0) : 0;
       if(b.texto){ F('Oswald', 10); first = [].concat(b.texto).reduce((a, p) => a + wrap(p, CW).length * 14 + 5, 12); }
       if(y + 60 + first > 730) newPage(D.derecha || '', true);
@@ -102,7 +102,7 @@ async function apxPDF(D){
         if(y + h > 733){ newPage(D.derecha || '', true); F('OswaldSB', 12, APX.soft); T(String(b.titulo).toUpperCase() + ' (SIGUE)', L, y); y += 16; head(); }
         F('OswaldM', 10.5, APX.ink); const nl = wrap(r.e, 300); nl.forEach((l, k) => T(l, L, y + 18 + k * 13));
         let yy = y + 18 + (nl.length - 1) * 13;
-        if(r.n){ F('OswaldL', 8.5, APX.mut); const ml = wrap(r.n, 330), k2 = pg._nmax; if(ml.length > k2) ml[k2 - 1] = ml[k2 - 1].replace(/\s*\S*$/, '') + '…'; ml.slice(0, k2).forEach((l, k) => T(l, L, yy + 11 + k * 10)); }
+        if(r.n && pg._nmax){ F('OswaldL', 8.5, APX.mut); const ml = wrap(r.n, 330), k2 = pg._nmax; if(ml.length > k2) ml[k2 - 1] = ml[k2 - 1].replace(/\s*\S*$/, '') + '…'; ml.slice(0, k2).forEach((l, k) => T(l, L, yy + 11 + k * 10)); }
         F('Mono', 9, APX.ink); T(r.s || '—', 421, y + 18, {al: 'c'});
         F('Oswald', 10.5, APX.ink); const rl = wrap(r.r || '', 120); rl.slice(0, 2).forEach((l, k) => T(l, R, y + 18 + k * 13, {al: 'r'}));
         y += h; hline(y);
@@ -132,7 +132,7 @@ pdf = async function(){
     const paginas = days.map((d, i) => {
       const [, ...resto] = String(d.name).split(' · '), rpe = typeof rpeSes === 'function' ? rpeSes(d) : '';
       return {titulo: `DÍA ${apxPad(i + 1)}`, tags: [resto.join(' · ') || subLabel(st, P0).split(' (')[0], rpe ? `RPE ${String(rpe).replace(/^RPE\s*/i, '')}` : m.l].filter(Boolean),
-        bloques: d.segs.filter(sg => sg.rows.length).map(sg => ({titulo: sg.sub || SEGS[sg.type] || sg.type, derecha: [fmtLabel(sg.fmt), `${apxPad(sg.rows.length)} EJERCICIO${sg.rows.length > 1 ? 'S' : ''}`].filter(Boolean).join(' · ').toUpperCase(),
+        bloques: d.segs.filter(sg => sg.rows.length).map(sg => ({titulo: sg.sub || SEGS[sg.type] || sg.type, derecha: (fmtLabel(sg.fmt) || `${apxPad(sg.rows.length)} EJERCICIO${sg.rows.length > 1 ? 'S' : ''}`).toUpperCase(),
           rows: sg.rows.map(r => ({e: (r.ter ? '[Terapia] ' : '') + r.e, s: r.s, r: r.r, n: [isRod(st) && r.lado && r.lado !== 'Ambas' ? `Pierna ${r.lado.toLowerCase()}.` : '', r.n].filter(Boolean).join(' ')}))}))};
     });
     const regla = isRehab(st) ? ((typeof rehabInfo === 'function' && rehabInfo(st)?.regla) || 'Dolor hasta 3/10 durante el ejercicio y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.')
