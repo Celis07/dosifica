@@ -66,9 +66,14 @@ if(typeof publishPlan === 'function'){
   const _pubEd = publishPlan;
   publishPlan = async function(){
     if(!isExample && !semRev()){
-      view = 'plan'; editMode = false; editDay = null; render();
-      document.querySelector('#out .draft')?.scrollIntoView({behavior: 'smooth', block: 'center'});
-      toast('Antes de publicar, revisa la semana: edítala o toca "Lo revisé".'); return;
+      // Borrador sin revisar: se pregunta en vez de bloquear en silencio
+      if(confirm('Esta semana todavía es el borrador sugerido. ¿Ya la revisaste y quieres publicarla así?')){
+        if(!st.rev) st.rev = {}; st.rev[planKey(st)] = true; markDirty();
+      } else {
+        view = 'plan'; editMode = false; editDay = null; render();
+        document.querySelector('#out .draft')?.scrollIntoView({behavior: 'smooth', block: 'center'});
+        toast('Revisa la semana: edítala o toca "Lo revisé", y luego publica.'); return;
+      }
     }
     return _pubEd.apply(this, arguments);
   };

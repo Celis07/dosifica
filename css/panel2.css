@@ -322,3 +322,6 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
 .cs-acts{flex-wrap:wrap}
 .cs-sent{margin:0}
 .cs-old{margin:0}
+
+/* Avisos por encima de la barra de abajo */
+body.fx .toast,body.ath2b .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:75;max-width:calc(100% - 32px);text-align:center}
