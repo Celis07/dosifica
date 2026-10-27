@@ -74,7 +74,7 @@ function pushCard(){
   if(A_PUSH === null){ pushState().then(s=>{ A_PUSH=s; if(me.role==='deportista') renderAthlete(); }); return ''; }
   if(A_PUSH === 'on' || A_PUSH === 'unsupported' || LS.get('apex_push_hide')==='1') return '';
   const txt = A_PUSH === 'install'
-    ? 'En iPhone, instala la app para recibir avisos: toca <b>Compartir</b> y luego <b>Agregar a inicio</b>. Ábrela desde el ícono y vuelve aquí.'
+    ? 'En iPhone, para recibir avisos agrega Ápex a tu pantalla de inicio: en Safari toca <b>Compartir</b> (cuadro con flecha) → <b>Agregar a inicio</b>. Luego ábrela desde el ícono y vuelve aquí.'
     : A_PUSH === 'denied' ? 'Bloqueaste las notificaciones de Ápex. Para recibir avisos, actívalas en los ajustes del navegador.'
     : 'Te avisamos cuando tu fisioterapeuta publique tu plan y te recordamos registrar cómo amaneciste. Nada más.';
   return `<section class="card pushc"><div class="rowhead"><h3 class="sec" style="margin:0">Avisos en tu celular</h3><button class="linkbtn" id="pushHide" style="min-height:0;padding:0">Ahora no</button></div>
@@ -93,14 +93,16 @@ const AV_TIPOS = [
 function avisoOn(t){ return A.p?.avisos?.[t] !== false; }
 function avisosSec(){
   if(A_PUSH === null){ pushCard(); return ''; }
-  const dev = A_PUSH === 'on', ok = dev || A_PUSH === 'off';
+  const dev = A_PUSH === 'on', ok = dev || A_PUSH === 'off' || A_PUSH === 'install';
   const mod = A.plan?.contenido?.modulo || 'rodilla';
   const tipos = AV_TIPOS.filter(([t]) => t !== 'd24' || mod === 'rodilla' || mod === 'lumbar' || A.plan?.contenido?.rehab?.zona);
   const nota = A_PUSH === 'install' ? 'En iPhone primero instala la app: toca Compartir y luego Agregar a inicio. Ábrela desde el ícono.'
     : A_PUSH === 'denied' ? 'Las notificaciones están bloqueadas en este celular. Actívalas en los ajustes del navegador.'
     : A_PUSH === 'unsupported' ? 'Este navegador no permite notificaciones. Prueba con Chrome o con la app instalada.'
     : 'Elige de qué te avisamos. Lo que apagues sigue apareciendo aquí en la app.';
-  return `<section class="ap-sec"><div class="ap-head"><h2>Notificaciones</h2></div><p class="ap-note av-note">${nota}</p><div class="ap-list">${tipos.map(([t, tit, txt]) =>
+  const pasos = A_PUSH === 'install' ? `<div class="ap-card av-inst"><p><b>Para recibir avisos en iPhone, Ápex tiene que estar en tu pantalla de inicio:</b></p>
+    <ol><li>En Safari, toca <b>Compartir</b> <span aria-hidden="true">(el cuadro con la flecha hacia arriba)</span>.</li><li>Elige <b>Agregar a inicio</b> y luego <b>Agregar</b>.</li><li>Cierra Safari y abre <b>Ápex desde el ícono</b> nuevo.</li><li>Vuelve aquí y activa los avisos.</li></ol></div>` : '';
+  return `<section class="ap-sec" id="avSec"><div class="ap-head"><h2>Notificaciones</h2></div>${pasos}${A_PUSH === 'install' ? '' : `<p class="ap-note av-note">${nota}</p>`}<div class="ap-list">${tipos.map(([t, tit, txt]) =>
     `<label class="ap-row ap-swrow"><span class="ap-l"><b>${tit}</b><span>${txt}</span></span>
       <input type="checkbox" class="ap-sw" data-av="${t}" role="switch" ${dev && avisoOn(t) ? 'checked' : ''} ${ok ? '' : 'disabled'}></label>`).join('')}</div></section>`;
 }
@@ -113,6 +115,7 @@ async function setAviso(t, v){
 $('#athleteApp').addEventListener('change', async e=>{
   const sw = e.target.closest('[data-av]'); if(!sw) return;
   const t = sw.dataset.av, want = sw.checked, nom = (AV_TIPOS.find(x => x[0] === t) || [])[3] || 'avisos'; sw.disabled = true;
+  if(want && A_PUSH === 'install'){ sw.checked = false; sw.disabled = false; toast('Primero agrega Ápex a tu pantalla de inicio y ábrela desde el ícono.'); document.querySelector('#avSec .av-inst')?.scrollIntoView({behavior: 'smooth', block: 'center'}); return; }
   if(want && A_PUSH !== 'on'){
     if(await enablePush('deportista')){ A_PUSH = 'on';
     } else { renderAthlete(); return; }

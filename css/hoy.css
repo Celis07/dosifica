@@ -443,3 +443,6 @@ body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin
 .po-frase p{margin:0;font-size:20px;font-weight:600;line-height:1.3;letter-spacing:-.01em;color:var(--h-ink)}
 .ap-rpes{margin:0 0 6px;font-size:15px;color:var(--h-2)} .ap-rpes b{color:var(--h-ink);font-weight:600}
 .ap-rpes.k-y b{color:var(--h-y-txt)} .ap-rpes.k-r b{color:var(--h-r-txt)}
+
+.av-inst ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.av-inst p{margin:0}
