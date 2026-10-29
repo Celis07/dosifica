@@ -71,13 +71,14 @@ function rachaCalc(act, ses, nDiasPlan, hoy){
   const h = hoy || todayISO();
   return {n: racha, gap: gapAct, gapMax, riesgo: racha > 0 && !act.has(h) && !semHecha(h) && gapAct + 1 > gapMax};
 }
+const mkRx = () => (Array.isArray(A.p?.racha_extra) ? A.p.racha_extra : []);   // días que el fisio marcó como entrenados
 function mkRachaInfo(){
-  const ses = (sessions || []).map(s => s.fecha), act = new Set([...(wellness || []).map(w => w.fecha), ...ses]);
+  const ses = [...(sessions || []).map(s => s.fecha), ...mkRx()], act = new Set([...(wellness || []).map(w => w.fecha), ...ses]);
   return rachaCalc(act, ses, (A.plan?.contenido?.dias || []).length || 3);
 }
 function mkRacha(){ return mkRachaInfo().n; }
 function mkSemana(){
-  const days = new Set([...(wellness || []).map(w => w.fecha), ...(sessions || []).map(s => s.fecha)]), hoy = new Date(todayISO() + 'T12:00:00'), lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
+  const days = new Set([...(wellness || []).map(w => w.fecha), ...(sessions || []).map(s => s.fecha), ...mkRx()]), hoy = new Date(todayISO() + 'T12:00:00'), lun = new Date(hoy); lun.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7));
   return ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => { const x = new Date(lun); x.setDate(lun.getDate() + i); const iso = x.toISOString().slice(0, 10); return {l, ok: days.has(iso), hoy: iso === todayISO()}; });
 }
 function celHTML(elegir){

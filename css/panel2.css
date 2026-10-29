@@ -325,3 +325,24 @@ body.fx-datos #hSave,body.fx-datos [data-pfsave]{display:none}
 
 /* Avisos por encima de la barra de abajo */
 body.fx .toast,body.ath2b .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:75;max-width:calc(100% - 32px);text-align:center}
+
+/* ---------- Racha: días marcados por el fisio ---------- */
+.rx-n{margin:0 0 10px;font-size:15px;color:var(--muted)}
+.rx-n b{font-size:24px;color:var(--ink);margin-right:4px}
+.rx-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.rx-d{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;min-height:48px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.rx-d span{font-size:11px;color:var(--muted)}
+.rx-d b{font-size:15px}
+.rx-d.ses{background:#34C759;border-color:#34C759;color:#fff}
+.rx-d.ses span{color:rgba(255,255,255,.85)}
+.rx-d.fx{background:var(--ink);border-color:var(--ink);color:var(--paper,#fff)}
+.rx-d.fx span{color:inherit;opacity:.75}
+.rx-d.chk{border-color:#34C759;border-style:dashed}
+.rx-d.hoy{box-shadow:0 0 0 2px var(--fx-2,#007AFF) inset}
+.rx-d:disabled{opacity:1}
+.rx-ley{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--muted)}
+.rx-ley span{display:inline-flex;align-items:center;gap:5px}
+.rx-i{width:10px;height:10px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
+.rx-i.ses{background:#34C759;border-color:#34C759}
+.rx-i.fx{background:var(--ink);border-color:var(--ink)}
+.rx-i.chk{border:1px dashed #34C759}

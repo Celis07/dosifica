@@ -21,9 +21,9 @@ function renderSel(){
   sel.value = (typeof homeVisible==='function' && homeVisible()) ? '' : (curId||'');
 }
 async function loadPatients(){
-  const {data, error} = await sb.from('pacientes').select('id,nombre,email,estado,consent,updated_at').order('updated_at',{ascending:false});
+  const {data, error} = await sb.from('pacientes').select('id,nombre,email,estado,consent,updated_at,racha_extra').order('updated_at',{ascending:false});
   if(error){ toast('No se pudo cargar la lista de usuarios.'); return; }
-  patients = (data||[]).map(p=>({id:p.id, nombre:p.nombre, email:p.email, st:Object.assign({}, p.estado, {nombre:(p.estado&&p.estado.nombre)||p.nombre, email:p.email||'', consent:p.consent}), updated:p.updated_at}));
+  patients = (data||[]).map(p=>({id:p.id, nombre:p.nombre, email:p.email, st:Object.assign({}, p.estado, {nombre:(p.estado&&p.estado.nombre)||p.nombre, email:p.email||'', consent:p.consent}), updated:p.updated_at, rx:Array.isArray(p.racha_extra)?p.racha_extra:[]}));
   const [{data:ses},{data:sol}] = await Promise.all([
     sb.from('sesiones').select('id,paciente_id,fecha,dolor,semana,dia,srpe,autor,created_at').order('fecha',{ascending:false}).limit(2000),
     sb.from('solicitudes').select('paciente_id').eq('estado','pendiente')
@@ -407,7 +407,7 @@ async function route(session){
     await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts(); syncPush('fisio');
     fisioNombre=f.nombre||''; render(); renderSel(); showHome();
     return; }
-  const {data:p}=await sb.from('pacientes').select('id,nombre,avisos,meta,agenda').maybeSingle();
+  const {data:p}=await sb.from('pacientes').select('id,nombre,avisos,meta,agenda,racha_extra').maybeSingle();
   if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); syncPush('deportista'); return; }
   showLogin(`Entraste como <b>${esc(me.email)}</b>, ${lgRole==='fisio'?'pero este correo no está registrado como fisioterapeuta.':'pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo.'} <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
   const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await hardSignOut(); location.reload(); };

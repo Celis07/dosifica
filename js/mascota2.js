@@ -85,7 +85,7 @@ if(typeof netBadge === 'function'){
 
 /* 8 · Panel del fisio: mascota y racha de chequeos junto a cada paciente */
 function mkRachaDe(p){
-  const ses = (typeof allSes !== 'undefined' ? allSes : []).filter(x => x.paciente_id === p.id).map(x => x.fecha);
+  const ses = [...(typeof allSes !== 'undefined' ? allSes : []).filter(x => x.paciente_id === p.id).map(x => x.fecha), ...(p.rx || [])];
   const act = new Set([...(wellBy[p.id] || []).map(w => w.fecha), ...ses]);
   return rachaCalc(act, ses, nDias(p.st || {})).n;
 }
