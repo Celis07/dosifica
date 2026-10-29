@@ -61,7 +61,7 @@ async function save(quiet){
   else res = await sb.from('pacientes').insert(row).select('id,updated_at').single();
   if(res.error){ $('#saveState').textContent='No se pudo guardar'; if(!quiet) toast(/pacientes_email_unico|duplicate/.test(res.error.message)?'Ese correo ya está asignado a otra persona.':'No se pudo guardar. Revisa la conexión e inténtalo de nuevo.'); return; }
   const wasNew=!curId; curId=res.data.id; isExample=false;
-  const p={id:curId, nombre:name, email, st:clone(st), updated:res.data.updated_at, sum:(patients.find(x=>x.id===curId)||{}).sum};
+  const prevP=patients.find(x=>x.id===curId)||{}; const p={id:curId, nombre:name, email, st:clone(st), updated:res.data.updated_at, sum:prevP.sum, rx:prevP.rx||[]};
   const i=patients.findIndex(x=>x.id===curId); if(i<0) patients.push(p); else patients[i]=p;
   renderSel(); $('#saveState').textContent='Guardado';
   if(wasNew){ sessions=[]; evals=[]; solicitudes=[]; render(); }
@@ -110,16 +110,21 @@ async function saveEval(){
   if(error){ toast('No se pudo guardar la evaluación.'); return; }
   evals.push(Object.assign({}, data.datos, {id:data.id, fecha:data.fecha})); evalOpen=false; render(); toast('Evaluación guardada');
 }
-async function publishPlan(){
-  if(!curId){ await save(false); if(!curId) return; }
-  if(!(st.email||'').trim()){ toast('Agrega el correo del deportista para que pueda entrar a ver su plan.'); $('#pemail').focus(); return; }
-  await save(true);
+/* Contenido del plan tal como lo ve el deportista (publicar y actualizar usan lo mismo) */
+function planContenido(){
   const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)], m=mesoWeek(st);
   const dias = applyMeso(baseWeek(st).days, st).map(d=>({name:d.name, segs:d.segs.map(sg=>({type:sg.type, sub:sg.sub, fmt:sg.fmt, rows:sg.rows.map(r=>Object.assign({}, r, {cue:cueOf(r.e), video:videoOf(r.e)}))}))}));
   const wk=[]; for(let w=curWeek(st); w<curWeek(st)+6; w++){ const k=weekKind(st,w); wk.push({w, ini:weekStart(st,w), l:k.wt.l, k:k.wt.k, t:k.t.map(t=>({n:t.n,f:t.f,p:t.p}))}); }
   const tools=[]; if(ph.tools.includes('iso')) tools.push('Isometría: 5 × 45 s con la rodilla a 60° (RPE 6–7), antes de entrenar o si duele.'); if(ph.tools.includes('bfr')) tools.push('BFR solo supervisado y con manguito: 30-15-15-15 reps con carga muy ligera.'); if(ph.tools.includes('mi')) tools.push('Imaginería y observación de video: 10–15 min, 3–5 veces por semana.');
   const contenido={nombre:st.nombre, condicion:subLabel(st,P0), modulo:modOf(st), rodilla:st.lado==='der'?'derecha':'izquierda', deporte:st.deporte||'', fase:ph.name, objetivo:ph.goal, evitar:ph.avoid||'', semana:num(st.semPlan)||1, meso:{l:m.l,d:m.d,k:m.k}, semanas:wk, dias, tools, vivo:!st.vivoOff, mascota:(st.pf&&st.pf.sexo==='m')?'nutria':(st.pf&&st.pf.sexo==='h')?'pesi':null, rehab:(typeof rehabInfo==='function'?rehabInfo(st):null)};
   if(typeof hitosDe==='function'){ const h=hitosDe(st); if(h) contenido.hitos=h; }
+  return {contenido, ph};
+}
+async function publishPlan(){
+  if(!curId){ await save(false); if(!curId) return; }
+  if(!(st.email||'').trim()){ toast('Agrega el correo del deportista para que pueda entrar a ver su plan.'); $('#pemail').focus(); return; }
+  await save(true);
+  const {contenido, ph} = planContenido();
   const {error}=await sb.from('planes').insert({paciente_id:curId, semana:contenido.semana, fase:ph.name, titulo:`Semana ${contenido.semana}`, contenido});
   if(error){ toast('No se pudo publicar el plan.'); return; }
   toast(`Plan de la semana ${contenido.semana} publicado: ya lo ve ${st.email}`);
