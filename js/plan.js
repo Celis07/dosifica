@@ -232,6 +232,9 @@ function adjRPE(str, d){
 function applyMeso(days, s){
   const m = mesoWeek(s);
   if(!m.rpe && !m.ser) return days;
+  // Semana escrita o editada por el fisio: se respeta tal cual (series y RPE). La fase del mesociclo solo ajusta el borrador automático.
+  const b = s && s.plans && s.plans[planKey(s)];
+  if(b && (b === days || JSON.stringify(b) === JSON.stringify(days))) return clone(days);
   const taperPh = modOf(s)==='deporte' && phaseIdx(s)===3 && ['taper','torneo'].includes(m.k);
   const out = clone(days);
   out.forEach(d=>d.segs.forEach(sg=>{
