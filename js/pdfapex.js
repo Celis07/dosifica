@@ -132,13 +132,13 @@ pdf = async function(){
     const paginas = days.map((d, i) => {
       const [, ...resto] = String(d.name).split(' · '), rpe = typeof rpeSes === 'function' ? rpeSes(d) : '';
       return {titulo: `DÍA ${apxPad(i + 1)}`, tags: [resto.join(' · ') || subLabel(st, P0).split(' (')[0], rpe ? `RPE ${String(rpe).replace(/^RPE\s*/i, '')}` : m.l].filter(Boolean),
-        bloques: d.segs.filter(sg => sg.rows.length).map(sg => ({titulo: sg.sub || SEGS[sg.type] || sg.type, derecha: (fmtLabel(sg.fmt) || `${apxPad(sg.rows.length)} EJERCICIO${sg.rows.length > 1 ? 'S' : ''}`).toUpperCase(),
+        bloques: d.segs.map(sg => ({...sg, rows: sg.rows.filter(r => String(r.e || '').trim())})).filter(sg => sg.rows.length).map(sg => ({titulo: sg.sub || SEGS[sg.type] || sg.type, derecha: (fmtLabel(sg.fmt) || `${apxPad(sg.rows.length)} EJERCICIO${sg.rows.length > 1 ? 'S' : ''}`).toUpperCase(),
           rows: sg.rows.map(r => ({e: (r.ter ? '[Terapia] ' : '') + r.e, s: r.s, r: r.r, n: [isRod(st) && r.lado && r.lado !== 'Ambas' ? `Pierna ${r.lado.toLowerCase()}.` : '', r.n].filter(Boolean).join(' ')}))}))};
     });
     const regla = isRehab(st) ? ((typeof rehabInfo === 'function' && rehabInfo(st)?.regla) || 'Dolor hasta 3/10 durante el ejercicio y al día siguiente igual o mejor: vas bien. Entre 4 y 5: mantén la carga. Más de 5 o peor al día siguiente: baja la carga y avísale a tu fisioterapeuta.')
       : 'Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" es cada repetición lo más rápido posible, sin cansarte.';
     const ind = [regla, 'RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.', ph.avoid ? 'Evitar por ahora: ' + ph.avoid : '', st.notas ? 'Notas: ' + st.notas : ''].filter(Boolean);
-    paginas[paginas.length - 1].bloques.push({titulo: isRehab(st) ? 'Regla de dolor' : 'Cómo dosificar', barra: 'Indicaciones', mid: 'GUÍA', derecha: ' ', texto: ind});
+    void ind; /* La guía "Cómo dosificar" ya no se imprime en el PDF del plan. */
     const doc = await apxPDF({autor: apxAutor(), eyebrow: `PLAN DE ENTRENAMIENTO — ${new Date().getFullYear()}`, intro: ph.goal, fase: fase,
       derecha: `${fase} · ${nd} SESION${nd > 1 ? 'ES' : ''} / SEMANA`.toUpperCase(),
       info: [[quien, st.nombre || '—'], ['Fase', fase.toUpperCase(), true], ['Semana', apxPad(sem)], ['Sesiones', `${nd} / SEMANA`]], paginas});
