@@ -113,14 +113,14 @@ function bancoEdit(el){
 }
 
 /* ---------- Plantillas ---------- */
-async function loadPlantillas(){
+async function loadPlantillas(){ /* se recarga cada vez que se abre la tarjeta */
   const {data} = await sb.from('plantillas').select('id,nombre,condicion,fase,dias,contenido,created_at,fisio_email,compartida,autor').order('created_at',{ascending:false});
   plantillas = data||[];
 }
 function tplCard(){
   const key=pkey(st), P0=P[key], ph=P0.phases[phaseIdx(st)], yo=(me&&me.email||'').toLowerCase();
   const mias=plantillas.filter(t=>!t.fisio_email||t.fisio_email===yo), otras=plantillas.filter(t=>t.fisio_email&&t.fisio_email!==yo);
-  const fila=(t,mia)=>`<tr><td><b>${esc(t.nombre)}</b>${!mia?`<div class="small">De ${esc(t.autor||t.fisio_email)}</div>`:''}</td><td>${esc(t.condicion||'')}</td><td>${esc((t.fase||'').split(' · ')[0])}</td><td>${esc(t.dias||'')}</td><td style="white-space:nowrap"><button class="mini-btn" data-tpl-apply="${esc(t.id)}">Aplicar</button>${mia?`<label class="chk tpl-share"><input type="checkbox" data-tpl-share="${esc(t.id)}"${t.compartida?' checked':''}> Compartida</label><button class="xbtn" data-tpl-del="${esc(t.id)}" aria-label="Eliminar plantilla">×</button>`:''}</td></tr>`;
+  const fila=(t,mia)=>`<tr><td><b>${esc(t.nombre)}</b>${!mia?`<div class="small">De ${esc(t.autor||t.fisio_email)}</div>`:''}</td><td>${esc(t.condicion||'')}</td><td>${esc((t.fase||'').split(' · ')[0])}</td><td>${esc(t.dias||'')}</td><td style="white-space:nowrap"><button class="mini-btn" data-tpl-addday="${esc(t.id)}">Agregar como día</button> <button class="mini-btn" data-tpl-apply="${esc(t.id)}">Reemplazar semana</button>${mia?`<label class="chk tpl-share"><input type="checkbox" data-tpl-share="${esc(t.id)}"${t.compartida?' checked':''}> Compartida</label><button class="xbtn" data-tpl-del="${esc(t.id)}" aria-label="Eliminar plantilla">×</button>`:''}</td></tr>`;
   const tabla=(L,mia)=>`<div class="tbl"><table class="data"><thead><tr><th>Plantilla</th><th>Condición</th><th>Fase</th><th>Días</th><th></th></tr></thead><tbody>${L.map(t=>fila(t,mia)).join('')}</tbody></table></div>`;
   return `<section class="card tplcard"><div class="rowhead"><h3 class="sec" style="margin:0">Plantillas</h3><button id="tplClose">Cerrar</button></div>
     <div class="tplsave"><input id="tplName" placeholder="Nombre, p. ej. LCA HTH fase 3 · 3 días" value="${esc(`${subLabel(st,P0)} · ${ph.name.split(' · ')[0]} · ${nDias(st)} días`)}"><button class="primary" id="tplSave">Guardar semana actual como plantilla</button></div>
@@ -128,7 +128,7 @@ function tplCard(){
     <h4 style="margin:12px 0 4px">Mis plantillas</h4>
     ${mias.length?tabla(mias,true):'<p class="small">Aún no tienes plantillas. Ajusta una semana a tu gusto y guárdala aquí para reutilizarla.</p>'}
     ${otras.length?`<h4 style="margin:14px 0 4px">Compartidas por otros fisios</h4>${tabla(otras,false)}`:''}
-    <p class="small">Al aplicar, la plantilla reemplaza la semana de esta persona. La progresión del mesociclo se aplica encima.</p>
+    <p class="small"><b>Agregar como día</b> suma la plantilla como un día más de entreno, sin tocar los días que ya tiene. <b>Reemplazar semana</b> cambia toda la semana de esta persona. La progresión del mesociclo se aplica encima.</p>
   </section>`;
 }
 async function saveTpl(){
@@ -144,6 +144,17 @@ function applyTpl(id){
   if(!st.plans) st.plans={};
   st.dias = String(Math.max(1, Math.min(6, days.length))); fillForm(); if(!st.rev) st.rev={}; st.rev[planKey(st)]=true;
   st.plans[planKey(st)] = days; tplOpen=false; render(); markDirty(); toast('Plantilla aplicada');
+}
+function addDayTpl(id){
+  const t=plantillas.find(x=>x.id===id); if(!t) return;
+  const extra=clone(t.contenido?.days||[]); if(!extra.length || !validWeek(extra)){ toast('Esa plantilla tiene un formato antiguo y no se puede agregar.'); return; }
+  const actual=clone(baseWeek(st).days);
+  if(actual.length+extra.length>6){ toast('Máximo 6 días por semana. Quita un día antes de agregar esta plantilla.'); return; }
+  const days=actual.concat(extra.map(d=>Object.assign(d,{name:t.nombre})));
+  days.forEach((d,i)=>{ if(i<actual.length && !d.name) d.name='Día '+(i+1); });
+  if(!st.plans) st.plans={};
+  st.dias=String(days.length); fillForm(); if(!st.rev) st.rev={}; st.rev[planKey(st)]=true;
+  st.plans[planKey(st)]=days; tplOpen=false; render(); markDirty(); toast('Día agregado. Recuerda Guardar.');
 }
 async function delTpl(id){
   const {error}=await sb.from('plantillas').delete().eq('id',id);
@@ -233,15 +244,16 @@ $('#out').addEventListener('change', e=>{
   if(t.id==='br'){ bancoQ.reg=t.value; bancoQ.pag=0; render(); }
   if(t.id==='bs'){ bancoQ.solo=t.value; bancoQ.pag=0; render(); }
 });
-$('#out').addEventListener('click', e=>{
+$('#out').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s); let b;
   if(q('#hSave')) return saveHistoria();
   if(q('#bPrev')){ bancoQ.pag=Math.max(0,bancoQ.pag-1); return render(); }
   if(q('#bNext')){ bancoQ.pag++; return render(); }
-  if(q('#bTpl')){ tplOpen=!tplOpen; render(); if(tplOpen){ const c=document.querySelector('.tplcard'); if(c) c.scrollIntoView({behavior:'smooth', block:'start'}); } return; }
+  if(q('#bTpl')){ tplOpen=!tplOpen; if(tplOpen) await loadPlantillas(); render(); if(tplOpen){ const c=document.querySelector('.tplcard'); if(c) c.scrollIntoView({behavior:'smooth', block:'start'}); } return; }
   if(q('#tplClose')){ tplOpen=false; return render(); }
   if(q('#tplSave')) return saveTpl();
-  if((b=q('[data-tpl-apply]'))) return applyTpl(b.dataset.tplApply);
+  if((b=q('[data-tpl-addday]'))) return addDayTpl(b.dataset.tplAddday);
+  if((b=q('[data-tpl-apply]'))){ if(!confirm('Esto reemplaza TODA la semana de esta persona. ¿Seguir?')) return; return applyTpl(b.dataset.tplApply); }
   if((b=q('[data-tpl-del]'))) return delTpl(b.dataset.tplDel);
   if(q('[data-view="hist"]')) loadHistoria();
 });
