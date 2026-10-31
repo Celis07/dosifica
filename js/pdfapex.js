@@ -128,7 +128,7 @@ pdf = async function(){
   try{
     const key = pkey(st), P0 = P[key], ph = P0.phases[phaseIdx(st)], days = applyMeso(baseWeek(st).days, st), m = mesoWeek(st);
     const fase = ph.name.split(' · ')[0], nd = days.length, sem = num(st.semPlan) || 1;
-    const quien = (st.pf && st.pf.sexo === 'm') ? 'Usuaria' : isRehab(st) ? 'Usuario' : 'Atleta';
+    const quien = /^\s*equipo\b/i.test(st.nombre || '') ? 'Equipo' : (st.pf && st.pf.sexo === 'm') ? 'Usuaria' : isRehab(st) ? 'Usuario' : 'Atleta';
     const paginas = days.map((d, i) => {
       const [, ...resto] = String(d.name).split(' · '), rpe = typeof rpeSes === 'function' ? rpeSes(d) : '';
       return {titulo: `DÍA ${apxPad(i + 1)}`, tags: [resto.join(' · ') || subLabel(st, P0).split(' (')[0], rpe ? `RPE ${String(rpe).replace(/^RPE\s*/i, '')}` : m.l].filter(Boolean),
