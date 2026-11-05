@@ -1,0 +1,78 @@
+/* ===================== Ficha del usuario · orden visual (nov 2026) ===================== */
+/* Cabecera */
+body.fx #out.f2>.fx-fhead{gap:14px;position:relative;z-index:20;overflow:visible}
+.f2-head .fx-fbar{gap:8px}
+.f2-head .fx-save{font-size:12.5px;color:var(--t-mut)}
+.f2-more{position:relative;flex:none}
+body.fx .f2-head .f2-mb{width:44px;height:44px;border-radius:22px;border:0;background:var(--t-chip);color:var(--t-ink);display:flex;align-items:center;justify-content:center;padding:0}
+.f2-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:40;width:min(300px,calc(100vw - 32px));background:var(--t-card);border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.22);padding:6px;display:flex;flex-direction:column}
+.f2-menu[hidden]{display:none}
+body.fx .f2-head .f2-menu .f2-mi{display:grid;grid-template-columns:22px 1fr auto;align-items:center;column-gap:12px;width:100%;min-height:48px;border:0!important;border-radius:10px;background:transparent!important;color:var(--t-ink)!important;padding:6px 10px;font:inherit;font-size:15.5px;font-weight:500;text-align:left;box-shadow:none;height:auto}
+body.fx .f2-head .f2-menu .f2-mi:hover,body.fx .f2-head .f2-menu .f2-mi:focus-visible{background:var(--t-chip)!important;outline:none}
+.f2-menu .f2-mi svg{width:20px;height:20px;color:var(--t-mut)}
+.f2-menu .f2-mi .fx-bdot,.f2-menu .f2-mi .fx-pb{position:static}
+.f2-menu .f2-mi small{grid-column:2/4;font-size:12.5px;color:var(--t-mut);font-weight:400}
+body.fx .f2-head .f2-menu .f2-danger{color:var(--t-r)!important}
+.f2-menu .f2-danger svg{color:var(--t-r)}
+.f2-msep{height:1px;background:var(--t-line);margin:6px 4px}
+.f2-mh{margin:4px 10px 2px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--t-mut)}
+
+/* Avatar con el punto del chequeo */
+.f2-avw{position:relative;flex:none;display:inline-flex}
+.f2-avw .fx-av{width:56px;height:56px;border-radius:28px;font-size:19px}
+.f2-dot{position:absolute;right:-1px;bottom:1px;width:15px;height:15px;border-radius:50%;border:3px solid var(--t-bg);background:var(--t-mut2);box-sizing:border-box}
+.f2-dot.g{background:var(--t-g)} .f2-dot.y{background:var(--t-y)} .f2-dot.r{background:var(--t-r)}
+.f2-head .fx-who{align-items:center}
+.f2-head .fx-wn{display:flex;flex-direction:column;gap:6px;min-width:0}
+body.fx .f2-head .client{display:flex;align-items:center;gap:6px;font-size:28px}
+body.fx .f2-head .f2-pen{width:32px;height:32px;border-radius:16px;background:transparent!important;color:var(--t-mut)!important;opacity:.9}
+.f2-cond{display:flex!important;flex-wrap:wrap;gap:6px;-webkit-line-clamp:unset!important;margin:0!important}
+.f2-chip{font-size:13px;font-weight:500;color:var(--t-ink);background:var(--t-chip);border-radius:999px;padding:4px 10px;line-height:1.25}
+
+/* Acciones */
+.f2-head .fx-acts{gap:8px;align-items:stretch}
+body.fx .f2-head .fx-acts>#bPub{height:52px;max-width:none;font-size:16.5px}
+body.fx .f2-head .fx-acts>.f2-lb{width:auto;min-width:76px;height:52px;border-radius:14px;flex-direction:column;gap:2px;padding:0 8px;font-size:12.5px;font-weight:500}
+.f2-head .f2-lb svg{width:19px!important;height:19px!important}
+.f2-head .f2-lb .px-badge,.f2-head .f2-lb .fx-bdot{position:absolute;top:-4px;right:-4px;margin:0}
+.f2-vis{margin:-6px 0 0 4px;font-size:12.5px;color:var(--t-mut)}
+.f2-vis.ok{color:var(--t-g);font-weight:500}
+
+/* Pestañas de sección */
+body.fx #out>.f2-tabs{display:flex;gap:4px;padding:4px;background:var(--t-chip);border-radius:14px;overflow-x:auto;scrollbar-width:none}
+body.fx #out>.f2-tabs::-webkit-scrollbar{display:none}
+body.fx #out>.f2-tabs button{flex:1 0 auto;min-height:40px;border:0;border-radius:10px;background:transparent;color:var(--t-mut);padding:0 10px;font:inherit;font-size:14.5px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+body.fx #out>.f2-tabs button[aria-selected="true"]{background:var(--t-card);color:var(--t-ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.f2-tabs .fx-pb{position:static}
+
+/* Plan: bloque de contexto */
+body.fx #out>.f2-ctx{display:flex;flex-direction:column;gap:4px;background:var(--t-card);border-radius:18px;padding:14px 16px}
+.f2-ce{font-size:13px;color:var(--t-mut)}
+.f2-cw{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.f2-cw b{font-size:18px;font-weight:600;letter-spacing:-.01em}
+.f2-mod{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--t-yS);color:var(--t-yI)}
+.f2-ctx .f2-tl{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px -16px 0;padding:0 16px 2px;scroll-snap-type:x proximity}
+.f2-ctx .f2-tl::-webkit-scrollbar{display:none}
+.f2-ctx .f2-tl .tw{flex:none;width:auto;min-width:92px;padding:7px 10px;border-radius:12px;scroll-snap-align:start;border:0;background:var(--t-chip)}
+.f2-ctx .f2-tl .tw b{font-size:12.5px;font-weight:600;letter-spacing:0}
+.f2-ctx .f2-tl .tw span{font-size:11.5px;color:var(--t-mut)}
+.f2-ctx .f2-tl .tw .tn{font-size:11.5px}
+.f2-ctx .f2-tl .tw.now{outline:2px solid var(--t-ink);outline-offset:-2px}
+
+/* Días */
+body.fx #out.f2 .fx-day .dayhead{display:grid;grid-template-columns:1fr;gap:8px;align-items:start}
+body.fx #out.f2 .fx-day .dbtns{display:flex;gap:8px;width:100%}
+body.fx #out.f2 .fx-day .dbtns .lbtn{min-height:44px;border-radius:12px!important;font-size:14.5px;font-weight:600}
+body.fx #out.f2 .fx-day .dbtns .lbtn:not(.dedit){flex:1;background:var(--t-gS)!important;color:var(--t-gI)!important}
+body.fx #out.f2 .fx-day .dbtns .dedit{flex:none;padding:0 18px}
+body.fx #out.f2 .fx-day.fx-closed .dbtns{margin-bottom:6px}
+
+/* Detalles del plan (después de los días) */
+.f2-dh{margin:14px 4px 0;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--t-mut)}
+body.fx #out>section.f2-det,body.fx #out>section.f2-goal{padding-top:2px;padding-bottom:2px}
+body.fx #out>section.f2-det .fx-ch,body.fx #out>section.f2-goal .fx-ch{font-size:15.5px;font-weight:600}
+.f2-gp{margin:4px 0 0;color:var(--t-ink);font-size:14.5px;line-height:1.45}
+.f2-gp.small{color:var(--t-mut);font-size:13px;margin-bottom:10px}
+
+/* Espacio final para que la barra inferior no tape el último contenido */
+@media (max-width:899px){body.fx #out.f2{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}}

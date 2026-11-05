@@ -12,7 +12,7 @@
 
 /* ---------- Paleta base (una sola fuente de verdad) ---------- */
 :root{
-  --t-bg:#F3F1EA; --t-card:#FFFFFF; --t-ink:#17201B; --t-mut:#5F675F; --t-mut2:#7B827A; --t-line:#E4E1D8; --t-chip:#ECEAE2;
+  --t-bg:#F3F1EA; --t-card:#FFFFFF; --t-ink:#17201B; --t-mut:#5F675F; --t-mut2:#636A62; --t-line:#E4E1D8; --t-chip:#ECEAE2;
   --t-acc:#8FAE8B; --t-accInk:#17201B; --t-dark:#1F2A24; --t-onDark:#F3F1EA; --t-onDarkMut:#B9C4BB;
   --t-g:#5E8C63; --t-gS:#E3ECDF; --t-gI:#21402A;
   --t-y:#C9932E; --t-yS:#F4E9D2; --t-yI:#4A3510;
@@ -22,7 +22,7 @@
   --t-mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root{
-  --t-bg:#111412; --t-card:#1B201D; --t-ink:#EEF0EA; --t-mut:#A3ACA5; --t-mut2:#868F88; --t-line:#2B312D; --t-chip:#252B27;
+  --t-bg:#111412; --t-card:#1B201D; --t-ink:#EEF0EA; --t-mut:#A3ACA5; --t-mut2:#939C95; --t-line:#2B312D; --t-chip:#252B27;
   --t-acc:#9FE3B8; --t-accInk:#0E1410; --t-dark:#24302A; --t-onDark:#EEF0EA; --t-onDarkMut:#B4C0B8;
   --t-g:#6FCF8F; --t-gS:#16261C; --t-gI:#D3F2DC;
   --t-y:#E8B44C; --t-yS:#2A2314; --t-yI:#F7E6C2;
