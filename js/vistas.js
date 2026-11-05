@@ -304,7 +304,7 @@ function render(){
   const body = view==='plan' ? planView() : view==='eval' && typeof evalView==='function' ? evalView() : view==='ses' ? sessionsView() : view==='req' ? requestsView() : view==='hist' ? histView() : view==='cal' ? calendarView() : view==='banco' ? bancoView() : panelView();
   // Descargas y plantillas: al final de la ficha
   const tail = `${view==='plan' && tplOpen ? tplCard() : ''}<section class="card dlbar"><h3 class="sec">Descargar y plantillas</h3><div class="actions">
-    <button id="bPdf">Descargar PDF</button><button id="bXls">Descargar Excel</button>${view==='plan'?'<button id="bTpl">Plantillas</button>':''}</div></section>`;
+    <button id="bPdf">Descargar PDF</button>${view==='plan'?'<button id="bTpl">Plantillas</button>':''}</div></section>`;
   $('#out').innerHTML = head + body + tail + `<footer class="foot">Herramienta de apoyo a la decisión clínica; no reemplaza el juicio del fisioterapeuta. ${esc(VERSION)}.</footer>`;
   $('#pidRow').innerHTML = curId ? `ID: <code>${esc(curId)}</code> <button class="mini-btn" id="bCopyId">Copiar</button>` : 'ID: se asigna al guardar';
   const cb=$('#bCopyId'); if(cb) cb.onclick=()=>{ try{ navigator.clipboard.writeText(curId).then(()=>toast('ID copiado'),()=>toast(curId)); }catch(e){ toast(curId); } };

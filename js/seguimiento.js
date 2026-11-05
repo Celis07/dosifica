@@ -118,7 +118,7 @@ function sgTags(){
 }
 function sgHist(){
   if(view !== 'plan') return;
-  const tpl = $('#bTpl') || $('#bXls'); if(!tpl) return;
+  const tpl = $('#bTpl') || $('#bPdf'); if(!tpl) return;
   const row = tpl.parentElement;
   if(!row.querySelector('#bHist')) row.insertAdjacentHTML('beforeend', `<button type="button" id="bHist" data-sghist="1" aria-expanded="${SG.histOpen}" aria-controls="sgHist">Historial</button>`);
   if(!SG.histOpen || $('#sgHist')) return;
@@ -130,7 +130,16 @@ function sgHist(){
       : '<p class="sg-nota">Todavía no hay versiones guardadas.</p>'}
   </section>`);
 }
+/* Orden de la vista Plan: "Consideraciones de este caso" va justo encima de "Fundamento del plan" (después de los días) */
+function sgOrden(){
+  if(view !== 'plan') return;
+  const out = $('#out'); if(!out) return;
+  const sec = t => [...out.querySelectorAll('section')].find(x => (x.querySelector('h3.sec')?.textContent || '').trim().startsWith(t));
+  const con = sec('Consideraciones de este caso'), fun = sec('Fundamento del plan');
+  if(con && fun && con.nextElementSibling !== fun) fun.before(con);
+}
 function sgInsert(){
+  try{ sgOrden(); }catch(e){}
   if(!document.body.classList.contains('fx') || !curId || isExample) return;
   sgTags(); sgHist();
 }
