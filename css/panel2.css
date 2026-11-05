@@ -346,3 +346,4 @@ body.fx .toast,body.ath2b .toast{bottom:calc(84px + env(safe-area-inset-bottom,0
 .rx-i.ses{background:#34C759;border-color:#34C759}
 .rx-i.fx{background:var(--ink);border-color:var(--ink)}
 .rx-i.chk{border:1px dashed #34C759}
+body.fx .fx-accb.on{background:var(--fx-ink);color:var(--fx-w,#fff)}
