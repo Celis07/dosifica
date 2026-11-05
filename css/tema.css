@@ -201,4 +201,6 @@ body.fx .fx-day .dayhead button{background:var(--t-chip)!important;color:var(--t
 body.fx .fx-day .dayhead h3 button,body.fx .fx-day .dayhead button:has(h3){background:transparent!important}
 #login .lglink,#login .lgback{color:var(--t-ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--t-line)}
 #login .lgback{text-decoration:none}
+#login .lgbox{fill:var(--t-card);stroke:var(--t-line);stroke-width:1.5}
+#login .lgbar{fill:var(--t-ink)}
 #login .lgpeak{fill:var(--t-acc)}
