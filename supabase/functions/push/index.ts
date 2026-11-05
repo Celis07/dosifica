@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
 // tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (cada chequeo del deportista → fisio, en verde, amarillo o rojo),
-//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), agenda (30 min antes de la hora elegida), semanal (lunes, resumen al fisio), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), registro (8:30 p. m., chequeo hecho y sesión sin registrar), finplan (fisio, el día antes del último día del plan), agenda (30 min antes de la hora elegida), semanal (lunes, resumen al fisio), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -182,7 +182,12 @@ Deno.serve(async (req) => {
         if (!filas.length) continue;
         const ok = filas.filter((x) => x.h >= x.e).length, bajos = filas.filter((x) => x.h / x.e < 0.6).sort((a, b) => a.h / a.e - b.h / b.e);
         const body = `${ok} de ${filas.length} cumplieron su semana.` + (bajos.length ? ` Por debajo: ${bajos.slice(0, 4).map((x) => `${x.nom} ${x.h}/${x.e}`).join(", ")}${bajos.length > 4 ? "…" : ""}.` : " Nadie por debajo del 60 %.");
-        n += await enviar(f.email, { title: "Tu semana en Ápex", body, tag: "semanal" });
+        const { data: dps } = await db.from("pacientes").select("nombre,dur:estado->dur").eq("fisio_email", f.email).not("estado->dur", "is", null);
+        const fin7 = ((dps || []) as any[]).filter((p) => { const d = p.dur; if (!d || !(+d.sem > 0) || !d.desde) return false;
+          const ult = new Date(new Date(d.desde + "T12:00:00Z").getTime() + (+d.sem * 7 - 1) * 864e5).toISOString().slice(0, 10); return ult >= hoyCO() && ult <= hoyCO(6); })
+          .map((p) => (p.nombre || "").split(" ")[0]);
+        const body2 = body + (fin7.length ? ` Planes que terminan esta semana: ${fin7.slice(0, 4).join(", ")}${fin7.length > 4 ? "…" : ""}.` : "");
+        n += await enviar(f.email, { title: "Tu semana en Ápex", body: body2, tag: "semanal" });
       }
     }
     if (b.tipo === "mensaje") { // chat: fisio → deportista o deportista → fisio
@@ -197,6 +202,37 @@ Deno.serve(async (req) => {
       const { data: p } = v ? await db.from("pacientes").select("nombre,email,fisio_email,avisos").eq("id", v.paciente_id).maybeSingle() : { data: null };
       if (v && b.tipo === "tecnica" && p?.fisio_email) n = await enviar(p.fisio_email, { title: "Video de técnica", body: `${p.nombre || "Paciente"} subió su ${v.ejercicio}. Revísalo y coméntale.`, tag: "tec-" + b.id, url: APP + "?tecnica=" + v.paciente_id });
       if (v && b.tipo === "tecnica_c" && p?.email && quiere(p, "mensaje")) n = await enviar(p.email, { title: "Tu fisioterapeuta revisó tu técnica", body: `${v.ejercicio}: ${(v.comentario || "").slice(0, 120)}`, tag: "tecc-" + b.id });
+    }
+    if (b.tipo === "registro") { // 8:30 p. m.: hizo el chequeo hoy pero no registró sesión (y aún le faltan sesiones en la semana)
+      const hoy = hoyCO(), x = new Date(hoy + "T12:00:00Z"), lunes = new Date(x.getTime() - ((x.getUTCDay() + 6) % 7) * 864e5).toISOString().slice(0, 10);
+      const { data: ws } = await db.from("bienestar").select("paciente_id").eq("fecha", hoy);
+      for (const pid of [...new Set((ws || []).map((w: any) => w.paciente_id))] as string[]) {
+        const { count } = await db.from("sesiones").select("id", { count: "exact", head: true }).eq("paciente_id", pid).eq("fecha", hoy);
+        if ((count || 0) > 0) continue;
+        const { data: p } = await db.from("pacientes").select("email,avisos,racha_extra").eq("id", pid).maybeSingle();
+        if (Array.isArray(p?.racha_extra) && p!.racha_extra.includes(hoy)) continue; // el fisio ya marcó el día
+        const { data: pl } = await db.from("planes").select("dias:contenido->dias").eq("paciente_id", pid).order("publicado_at", { ascending: false }).limit(1);
+        const nd = Math.max(1, Array.isArray((pl?.[0] as any)?.dias) ? (pl![0] as any).dias.length : 3);
+        const { data: ss } = await db.from("sesiones").select("fecha").eq("paciente_id", pid).gte("fecha", lunes).lte("fecha", hoy);
+        if (new Set((ss || []).map((s: any) => s.fecha)).size >= nd) continue; // ya cumplió la semana: hoy es descanso
+        if (!quiere(p, "registro") || !(await tieneSubs(p?.email)) || !(await unaVez(`reg-${pid}-${hoy}`))) continue;
+        n += await enviar(p!.email, { title: "¿Entrenaste hoy?", body: "Si ya entrenaste, regístralo en 20 segundos para que tu fisioterapeuta lo vea y tu racha siga.", tag: "registro" });
+      }
+    }
+    if (b.tipo === "finplan") { // mañana temprano: al fisio, el día antes del último día del plan (pacientes.estado.dur = {sem, desde})
+      const manana = hoyCO(1);
+      const { data: ps } = await db.from("pacientes").select("id,nombre,fisio_email,dur:estado->dur").not("estado->dur", "is", null);
+      const porFisio: Record<string, string[]> = {};
+      for (const p of (ps || []) as any[]) {
+        const d = p.dur; if (!d || !(+d.sem > 0) || !d.desde || !p.fisio_email) continue;
+        const ult = new Date(new Date(d.desde + "T12:00:00Z").getTime() + (+d.sem * 7 - 1) * 864e5).toISOString().slice(0, 10);
+        if (ult !== manana || !(await unaVez(`fin-${p.id}-${ult}`))) continue;
+        (porFisio[p.fisio_email] ||= []).push(p.nombre || "Sin nombre");
+      }
+      for (const [f, noms] of Object.entries(porFisio)) {
+        const body = noms.length === 1 ? `El plan de ${noms[0]} termina mañana. Prepárale el siguiente.` : `Terminan mañana: ${noms.slice(0, 5).join(", ")}${noms.length > 5 ? "…" : ""}. Prepárales el siguiente plan.`;
+        n += await enviar(f, { title: "Plan por actualizar", body, tag: "finplan" });
+      }
     }
     if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
 

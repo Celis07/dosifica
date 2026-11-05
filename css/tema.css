@@ -213,3 +213,23 @@ body.fx .fx-day .dayhead h3 button,body.fx .fx-day .dayhead button:has(h3){backg
 /* en la tarjeta oscura del inicio el asa de Pesi va clara también en modo claro */
 #athleteApp.ath2 .po-hero{--pz-h:#EEF0EA;--pz-m:#B4C0B8}
 #athleteApp.ath2 .po-hero{--h-act:var(--t-acc);--h-on-act:var(--t-accInk)}
+
+/* ---------- Seguimiento del plan: duración, visto e historial ---------- */
+.sg-card{display:flex;flex-direction:column;gap:12px;margin:12px 0}
+.sg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sg-k,.sg-h{font-family:var(--t-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--t-mut);margin:0}
+.sg-vis{font-size:12px;font-weight:500;padding:4px 10px;border-radius:999px;background:var(--t-chip);color:var(--t-mut)}
+.sg-vis.ok{background:var(--t-gS);color:var(--t-g)}
+.sg-chips{display:flex;gap:6px;flex-wrap:wrap}
+body.fx .sg-chips button{border:0;border-radius:999px;height:34px;padding:0 13px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:13.5px;font-weight:500}
+body.fx .sg-chips button[aria-pressed="true"]{background:var(--t-ink);color:var(--t-bg);font-weight:600}
+.sg-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sg-est{font-size:14px;color:var(--t-ink)} .sg-est.warn{color:var(--t-r);font-weight:600}
+body.fx .sg-link{border:0;background:transparent;padding:0;min-height:32px;font:inherit;font-size:14px;font-weight:500;color:var(--t-ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--t-line)}
+.sg-hist{display:flex;flex-direction:column;border-top:1px solid var(--t-line)}
+.sg-hr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--t-line)}
+.sg-hr>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sg-hr b{font-size:14px;font-weight:600} .sg-hr span{font-size:12.5px;color:var(--t-mut)}
+body.fx .sg-hr button{border:0;border-radius:10px;height:32px;padding:0 12px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:13px;font-weight:600;flex:none}
+.sg-vacio{margin:10px 0 0;font-size:13px;color:var(--t-mut)}
+.sg-home{margin-top:14px}

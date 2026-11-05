@@ -127,7 +127,8 @@ function fxCorto(s){
 function fxPacientes(){
   const q = FX.q.trim().toLowerCase();
   const list = fxInfos().filter(i => fxPass(i, FX.f) && (!q || (i.p.nombre || '').toLowerCase().includes(q) || i.cond.toLowerCase().includes(q)))
-    .sort((a, b) => b.score - a.score || (b.sm.last || '').localeCompare(a.sm.last || '') || (a.p.nombre || '').localeCompare(b.p.nombre || ''));
+    .sort((a, b) => { const A1 = (typeof SG !== 'undefined' && SG.aper[a.p.id]) || '', B1 = (typeof SG !== 'undefined' && SG.aper[b.p.id]) || '';   // último abierto arriba
+      return B1.localeCompare(A1) || b.score - a.score || (b.sm.last || '').localeCompare(a.sm.last || '') || (a.p.nombre || '').localeCompare(b.p.nombre || ''); });
   const fl = (FX_F.find(x => x[0] === FX.f) || [FX.f, /^st-/.test(FX.f) ? ST_L[FX.f.slice(3)] : 'Todos'])[1];
   const ICF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>';
   return `<div class="fx-page">
