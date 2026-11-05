@@ -2,10 +2,10 @@
 :root{
   /* Marca v2: negro de potencia, rojo de señal (solo para lo que importa: carga, alertas, acción) y grises técnicos. */
   --cream:#F1F1EF; --paper:#FFFFFF; --ink:#0E0E10; --muted:#5C5C62; --line:#E3E3E1; --soft:#F7F7F6;
-  --coral:#D71A28; --red:#E5202E; --coral-soft:#FCE6E7; --green:#2E7D5B; --green-soft:#E3F1EA; --gold:#9A6B10; --gold-soft:#F6EEDB;
+  --coral:#D71A28; --red:var(--t-r); --coral-soft:#FCE6E7; --green:#2E7D5B; --green-soft:#E3F1EA; --gold:#9A6B10; --gold-soft:#F6EEDB;
   --purple:#26262A; --purple-soft:#ECECEC; --blue:#1F5F8B; --blue-soft:#E2ECF4; --dark:#0E0E10; --dark2:#1B1B1F;
   --tech:#8A8A90;
-  --c-act:#8A8A90; --c-act-soft:#F1F1F1; --c-neuro:#26262A; --c-neuro-soft:#E9E9EA; --c-central:#E5202E; --c-central-soft:#FCE9EA;
+  --c-act:#8A8A90; --c-act-soft:#F1F1F1; --c-neuro:#26262A; --c-neuro-soft:#E9E9EA; --c-central:var(--t-r); --c-central-soft:#FCE9EA;
   --ok:#2E7D5B; --warn:#9A6B10; --bad:#C2141F;
   --display:"Archivo","Arial Narrow",Helvetica,sans-serif; --body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   color-scheme:light;
@@ -289,15 +289,15 @@ legend{color:var(--ink)}
   color-scheme:dark;
   --cream:#0B0B0D; --paper:#151518; --soft:#1C1C20; --line:#2A2A30; --field:#0F0F12;
   --ink:#F2F2F0; --muted:#A0A0A8; --tech:#8E8E96;
-  --coral:#E5202E; --red:#E5202E; --sig:#FF5A63; --coral-soft:#2E1214;
+  --coral:var(--t-r); --red:var(--t-r); --sig:#FF5A63; --coral-soft:#2E1214;
   --green:#3DBB85; --green-soft:#132A20; --gold:#D9A23A; --gold-soft:#2A2213;
   --purple:#C8C8CE; --purple-soft:#232328; --blue:#6AA8D8; --blue-soft:#13222E;
   --dark:#1E1E22; --dark2:#26262B;
-  --c-act:#8A8A90; --c-act-soft:#1C1C20; --c-neuro:#C8C8CE; --c-neuro-soft:#202024; --c-central:#E5202E; --c-central-soft:#241315;
+  --c-act:#8A8A90; --c-act-soft:#1C1C20; --c-neuro:#C8C8CE; --c-neuro-soft:#202024; --c-central:var(--t-r); --c-central-soft:#241315;
   --ok:#3DBB85; --warn:#D9A23A; --bad:#FF5A63;
 }
 body{background:var(--cream);color:var(--ink)}
-::selection{background:#E5202E;color:#fff}
+::selection{background:var(--t-r);color:#fff}
 
 /* Campos y botones */
 select,input[type=text],input[type=number],input[type=date],input[type=email],input[type=search],textarea,table.pl input,table.banco select,table.banco input{background:var(--field);border-color:var(--line);color:var(--ink)}
@@ -807,7 +807,7 @@ table.pl td.e{position:relative}
 .drpe b{color:var(--ink);font-family:var(--mono)}
 table.pl td.c textarea.grow{min-width:7em;font-weight:600} table.pl td.c:has(textarea){white-space:normal}
 .dbtns{display:flex;gap:6px;flex:none}
-.dsave{border:0;border-radius:8px;background:var(--red,#E5202E);color:#fff;font-weight:700;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
+.dsave{border:0;border-radius:8px;background:var(--red,var(--t-r));color:#fff;font-weight:700;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
 .dfoot{display:flex;justify-content:flex-end;margin-top:10px}
 .dfoot .dsave{padding:10px 22px}
 .draft{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:.88rem;color:var(--muted)}

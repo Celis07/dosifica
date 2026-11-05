@@ -4,11 +4,11 @@
    Movimiento mínimo: la cima del logo se llena al abrir, el chulito
    al entrar y una entrada suave del inicio. Nada más se mueve.
    ========================================================== */
-#login.lgA{--lg-bg:#F2F2F7;--lg-card:#FFFFFF;--lg-ink:#1D1D1F;--lg-2:#6E6E73;--lg-3:#8E8E93;--lg-sep:#E5E5EA;--lg-act:#1D1D1F;--lg-on:#FFFFFF;--lg-red:#D70015;--lg-box:#111113;
+#login.lgA{--lg-bg:#F2F2F7;--lg-card:#FFFFFF;--lg-ink:#1D1D1F;--lg-2:#6E6E73;--lg-3:var(--t-mut2);--lg-sep:#E5E5EA;--lg-act:#1D1D1F;--lg-on:#FFFFFF;--lg-red:var(--t-r);--lg-box:var(--t-dark);
   min-height:100vh;min-height:100dvh;display:flex;justify-content:center;padding:0 24px;box-sizing:border-box;background:var(--lg-bg);color:var(--lg-ink);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 #login.lgA[hidden]{display:none}
-@media (prefers-color-scheme:dark){#login.lgA{--lg-bg:#000000;--lg-card:#1C1C1E;--lg-ink:#F5F5F7;--lg-2:#98989F;--lg-3:#8E8E93;--lg-sep:#38383A;--lg-act:#F5F5F7;--lg-on:#000000;--lg-red:#FF453A;--lg-box:#1C1C1E;color-scheme:dark}}
+@media (prefers-color-scheme:dark){#login.lgA{--lg-bg:#000000;--lg-card:#1C1C1E;--lg-ink:#F5F5F7;--lg-2:#98989F;--lg-3:var(--t-mut2);--lg-sep:#38383A;--lg-act:#F5F5F7;--lg-on:#000000;--lg-red:var(--t-r);--lg-box:#1C1C1E;color-scheme:dark}}
 #login .lgwrap{width:100%;max-width:400px;display:flex;flex-direction:column;gap:28px;padding:calc(env(safe-area-inset-top,0px) + 72px) 0 calc(env(safe-area-inset-bottom,0px) + 32px);min-height:100%;box-sizing:border-box}
 #login .lgtop{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
 #login .lgbox{fill:var(--lg-box)}

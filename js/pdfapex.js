@@ -1,11 +1,12 @@
 /* ===================== PDF · ESTILO ÁPEX (oct 2026) =====================
    Mismo diseño que la plantilla "Plan de entrenamiento" (Liliana Díaz, sep 2026):
-   carta, fondo crema, negro y verde lima; Anton (títulos), Oswald (ejercicios) y Space Mono (etiquetas).
+   carta, fondo crema, negro y verde lima; ahora en bosque y salvia con Geist y Geist Mono.
    apxPDF(data) arma portada + una página por día (o por bloque de casa). Lo usan el plan semanal
    y el trabajo en casa. Las fuentes se cargan solo al generar el primer PDF. */
 
-const APX = {bg:[243,242,236], ink:[22,21,15], lime:[198,241,53], mut:[112,110,104], soft:[150,148,142], line:[214,213,207], W:612, H:792, L:42, R:570};
-const APX_FONTS = [['Anton','Anton_400Regular'], ['OswaldL','Oswald_300Light'], ['Oswald','Oswald_400Regular'], ['OswaldM','Oswald_500Medium'], ['OswaldSB','Oswald_600SemiBold'], ['Mono','SpaceMono_400Regular'], ['MonoB','SpaceMono_700Bold']];
+const APX = {bg:[243,241,234], ink:[23,32,27], dark:[31,42,36], lime:[143,174,139], mut:[95,103,95], soft:[123,130,122], line:[228,225,216], W:612, H:792, L:42, R:570};
+// Tema bosque y salvia (nov 2026): Geist para todo el texto y Geist Mono para etiquetas; los nombres internos se conservan.
+const APX_FONTS = [['Anton','Geist_600SemiBold'], ['OswaldL','Geist_400Regular'], ['Oswald','Geist_400Regular'], ['OswaldM','Geist_500Medium'], ['OswaldSB','Geist_600SemiBold'], ['Mono','GeistMono_400Regular'], ['MonoB','GeistMono_500Medium']];
 let apxFontData = null;
 async function apxLoadFonts(){
   if(apxFontData) return apxFontData;
@@ -48,9 +49,9 @@ async function apxPDF(D){
   const br = (x, yy, dx, dy) => { doc.line(x, yy, x + dx, yy); doc.line(x, yy, x, yy + dy); };
   br(L, 266, 14, 14); br(R, 266, -14, 14); br(L, 467, 14, -14); br(R, 467, -14, -14);
   F('Mono', 8, APX.mut); T(D.eyebrow, W / 2, 296, {cs: 3, al: 'c'});
-  F('Anton', 40, APX.ink); const tl = D.titulo || ['BUILT TO MOVE', 'BUILT TO PERFORM'];
-  tl.forEach((l, k) => T(l, W / 2, 346 + k * 40 - (tl.length - 2) * 20, {al: 'c'}));
-  if(D.intro){ F('OswaldL', 10.5, [60, 59, 54]); wrap(D.intro, 420).slice(0, 4).forEach((l, k) => T(l, W / 2, 404 + k * 16, {al: 'c'})); }
+  F('Anton', 32, APX.ink); const tl = D.titulo || ['BUILT TO MOVE', 'BUILT TO PERFORM'];
+  tl.forEach((l, k) => T(l, W / 2, 342 + k * 38 - (tl.length - 2) * 19, {al: 'c'}));
+  if(D.intro){ F('OswaldL', 10, [60, 68, 62]); wrap(D.intro, 400).slice(0, 4).forEach((l, k) => T(l, W / 2, 418 + k * 15, {al: 'c'})); }
   // Fila de datos
   doc.setDrawColor(...APX.ink); doc.setLineWidth(1.6); doc.line(L, 661, R, 661);
   const cw = CW / 4;
@@ -58,8 +59,8 @@ async function apxPDF(D){
     const x = L + k * cw + (k ? 10 : 0);
     if(k){ doc.setDrawColor(...APX.line); doc.setLineWidth(0.75); doc.line(L + k * cw, 662, L + k * cw, 717); }
     F('Mono', 7, APX.mut); T(String(lab).toUpperCase(), x, 682, {cs: 1.8});
-    F('OswaldSB', 15, APX.ink); let v = apxClean(val); while(doc.getTextWidth(v) > cw - 16 && v.length > 4) v = v.slice(0, -2).trim() + '…';
-    if(pill){ const w = doc.getTextWidth(v) + 14; doc.setFillColor(...APX.lime); doc.roundedRect(x, 689, w, 23, 2, 2, 'F'); T(v, x + 7, 706); }
+    F('OswaldSB', 12.5, APX.ink); let v = apxClean(val); while(doc.getTextWidth(v) > cw - 26 && v.length > 4) v = v.slice(0, -2).trim() + '…';
+    if(pill){ const w = doc.getTextWidth(v) + 14; doc.setFillColor(...APX.lime); doc.roundedRect(x, 689, w, 23, 11.5, 11.5, 'F'); T(v, x + 7, 706); }
     else T(v, x, 706);
   });
   hline(736); F('Mono', 6.5, APX.mut); T(`${D.autor} · FISIOTERAPEUTA`.toUpperCase(), L, 757, {cs: 1.2}); T('HUMAN PERFORMANCE', 384, 757, {cs: 1.2, al: 'c'}); pages.push(page);
@@ -67,7 +68,7 @@ async function apxPDF(D){
   /* ---------- Páginas ---------- */
   (D.paginas || []).forEach((pg, pi) => {
     doc.addPage(); page++; bg(); top(D.derecha || '');
-    F('Anton', 54, APX.ink); T(pg.titulo, L, 128);
+    F('Anton', 44, APX.ink); T(pg.titulo, L, 128);
     F('Mono', 8, APX.mut); (pg.tags || []).slice(0, 3).forEach((t, k) => T(String(t).toUpperCase(), R, 102 + k * 15, {cs: 2, al: 'r'}));
     y = 146;
     // Si el día no cabe en una página con notas de 2 líneas, las notas van en 1 línea
@@ -81,7 +82,7 @@ async function apxPDF(D){
       if(b.texto){ F('Oswald', 10); first = [].concat(b.texto).reduce((a, p) => a + wrap(p, CW).length * 14 + 5, 12); }
       if(y + 60 + first > 730) newPage(D.derecha || '', true);
       // Barra negra
-      doc.setFillColor(...APX.ink); doc.rect(L, y, CW, 23.5, 'F');
+      doc.setFillColor(...APX.dark); doc.roundedRect(L, y, CW, 23.5, 6, 6, 'F');
       F('Mono', 7.5, APX.bg); T(String(b.barra || b.titulo).toUpperCase(), L + 11, y + 15.5, {cs: 1.8});
       const mt = b.mid || pg.titulo, mid = `// ${mt} //`; doc.setCharSpace(1.8); const mw = doc.getTextWidth(apxClean(mid)) + 1.8 * (apxClean(mid).length - 1); doc.setCharSpace(0);
       const mx = W / 2 - mw / 2; F('Mono', 7.5, APX.lime); const w1 = T('//', mx, y + 15.5, {cs: 1.8}); F('Mono', 7.5, APX.bg); const w2 = T(` ${mt} `, mx + w1 + 1.8, y + 15.5, {cs: 1.8}); F('Mono', 7.5, APX.lime); T('//', mx + w1 + w2 + 3.6, y + 15.5, {cs: 1.8});

@@ -1,0 +1,204 @@
+/* =====================================================================
+   Ápex · Tema "Bosque y salvia" (claro) / "Grafito y menta" (oscuro)
+   Geist + Geist Mono, autoalojadas. Se carga al final: solo reescribe
+   tokens y pule componentes; la estructura sigue en cada hoja.
+   ===================================================================== */
+@font-face{font-family:'Geist';src:url(../fonts/Geist_400Regular.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Geist';src:url(../fonts/Geist_500Medium.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Geist';src:url(../fonts/Geist_600SemiBold.woff2) format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'Geist';src:url(../fonts/Geist_700Bold.woff2) format('woff2');font-weight:700 900;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url(../fonts/GeistMono_400Regular.woff2) format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url(../fonts/GeistMono_500Medium.woff2) format('woff2');font-weight:500 700;font-display:swap}
+
+/* ---------- Paleta base (una sola fuente de verdad) ---------- */
+:root{
+  --t-bg:#F3F1EA; --t-card:#FFFFFF; --t-ink:#17201B; --t-mut:#5F675F; --t-mut2:#7B827A; --t-line:#E4E1D8; --t-chip:#ECEAE2;
+  --t-acc:#8FAE8B; --t-accInk:#17201B; --t-dark:#1F2A24; --t-onDark:#F3F1EA; --t-onDarkMut:#B9C4BB;
+  --t-g:#5E8C63; --t-gS:#E3ECDF; --t-gI:#21402A;
+  --t-y:#C9932E; --t-yS:#F4E9D2; --t-yI:#4A3510;
+  --t-r:#B9503A; --t-rS:#F3DED7; --t-rI:#4D1C12;
+  --t-nav:rgba(243,241,234,.94);
+  --t-font:'Geist',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --t-mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --t-bg:#111412; --t-card:#1B201D; --t-ink:#EEF0EA; --t-mut:#A3ACA5; --t-mut2:#868F88; --t-line:#2B312D; --t-chip:#252B27;
+  --t-acc:#9FE3B8; --t-accInk:#0E1410; --t-dark:#24302A; --t-onDark:#EEF0EA; --t-onDarkMut:#B4C0B8;
+  --t-g:#6FCF8F; --t-gS:#16261C; --t-gI:#D3F2DC;
+  --t-y:#E8B44C; --t-yS:#2A2314; --t-yI:#F7E6C2;
+  --t-r:#F07A5E; --t-rS:#2E1A15; --t-rI:#FBD9D0;
+  --t-nav:rgba(17,20,18,.94);
+}}
+
+/* ---------- Tokens heredados (ios.css) ---------- */
+:root,body.fx,#athleteApp.ath2{
+  --cream:var(--t-bg); --paper:var(--t-card); --soft:var(--t-chip); --line:var(--t-line); --field:var(--t-card); --sep:var(--t-line);
+  --ink:var(--t-ink); --muted:var(--t-mut); --tech:var(--t-mut2); --on-ink:var(--t-bg); --fill:var(--t-chip); --fill2:var(--t-line);
+  --act:var(--t-ink); --on-act:var(--t-bg);
+  --coral:var(--t-r); --red:var(--t-r); --sig:var(--t-r); --coral-soft:var(--t-rS);
+  --green:var(--t-g); --green-soft:var(--t-gS); --gold:var(--t-y); --gold-soft:var(--t-yS);
+  --purple:var(--t-mut); --purple-soft:var(--t-chip); --blue:var(--t-g); --blue-soft:var(--t-gS);
+  --dark:var(--t-dark); --dark2:var(--t-chip);
+  --c-act:var(--t-mut2); --c-act-soft:var(--t-chip); --c-neuro:var(--t-mut); --c-neuro-soft:var(--t-chip); --c-central:var(--t-g); --c-central-soft:var(--t-gS);
+  --ok:var(--t-g); --warn:var(--t-y); --bad:var(--t-r);
+  --display:var(--t-font); --body:var(--t-font); --mono:var(--t-mono);
+}
+@media (prefers-color-scheme:dark){:root,body.fx,#athleteApp.ath2{color-scheme:dark}}
+body{font-family:var(--t-font);background:var(--t-bg);font-feature-settings:"ss01","tnum" 0}
+::selection{background:color-mix(in srgb,var(--t-acc) 45%,transparent)}
+
+/* ---------- Panel del fisio ---------- */
+body.fx{
+  --fx-bg:var(--t-bg); --fx-w:var(--t-card); --fx-w2:var(--t-chip); --fx-ink:var(--t-ink); --fx-2:var(--t-mut); --fx-3:var(--t-mut2); --fx-sep:var(--t-line); --fx-fill:var(--t-chip);
+  --fx-red:var(--t-r); --fx-redT:var(--t-rS); --fx-redI:var(--t-rI);
+  --fx-grn:var(--t-g); --fx-grnT:var(--t-gS); --fx-yel:var(--t-y); --fx-yelT:var(--t-yS);
+  --fx-blu:var(--t-g); --fx-bluT:var(--t-gS); --fx-pur:var(--t-mut);
+  --fx-live:var(--t-dark); --fx-liveI:var(--t-onDark); --fx-live2:var(--t-onDarkMut); --fx-nav:var(--t-nav);
+  background:var(--t-bg); font-family:var(--t-font);
+}
+@media (prefers-color-scheme:dark){body.fx{
+  --fx-bg:var(--t-bg); --fx-w:var(--t-card); --fx-w2:var(--t-chip); --fx-ink:var(--t-ink); --fx-2:var(--t-mut); --fx-3:var(--t-mut2); --fx-sep:var(--t-line); --fx-fill:var(--t-chip);
+  --fx-red:var(--t-r); --fx-redT:var(--t-rS); --fx-redI:var(--t-rI);
+  --fx-grn:var(--t-g); --fx-grnT:var(--t-gS); --fx-yel:var(--t-y); --fx-yelT:var(--t-yS);
+  --fx-blu:var(--t-g); --fx-bluT:var(--t-gS); --fx-pur:var(--t-mut);
+  --fx-live:var(--t-dark); --fx-liveI:var(--t-onDark); --fx-live2:var(--t-onDarkMut); --fx-nav:var(--t-nav);
+  --cream:var(--t-bg); --paper:var(--t-card); --soft:var(--t-chip); --line:var(--t-line); --field:var(--t-card); --sep:var(--t-line);
+  --ink:var(--t-ink); --muted:var(--t-mut); --tech:var(--t-mut2); --on-ink:var(--t-bg); --fill:var(--t-chip); --fill2:var(--t-line);
+  --act:var(--t-ink); --on-act:var(--t-bg);
+  --coral:var(--t-r); --red:var(--t-r); --sig:var(--t-r); --coral-soft:var(--t-rS);
+  --green:var(--t-g); --green-soft:var(--t-gS); --gold:var(--t-y); --gold-soft:var(--t-yS);
+  --purple:var(--t-mut); --purple-soft:var(--t-chip); --blue:var(--t-g); --blue-soft:var(--t-gS);
+  --dark:var(--t-dark); --dark2:var(--t-chip);
+  --c-act:var(--t-mut2); --c-act-soft:var(--t-chip); --c-neuro:var(--t-mut); --c-neuro-soft:var(--t-chip); --c-central:var(--t-g); --c-central-soft:var(--t-gS);
+  --ok:var(--t-g); --warn:var(--t-y); --bad:var(--t-r);
+}
+  body.fx .toast{background:var(--t-ink);color:var(--t-bg)}
+}
+body.fx button,body.fx input,body.fx select,body.fx textarea{font-family:var(--t-font)}
+/* títulos grandes y apretados */
+.fx-hd h1,body.fx .client,.hhero h1,body.fx .fx-fhead h1,body.fx .fx-fhead h2{font-weight:600!important;letter-spacing:-.03em!important}
+.fx-hd h1{font-size:32px}
+/* etiquetas en mono mayúscula */
+.fx-eye,.fx-lk,body.fx h3.sec,body.fx .hsec,body.fx table.pl th,body.fx table.data th,body.fx .kpi span,body.fx legend,body.fx .brand .sig{
+  font-family:var(--t-mono)!important;font-size:11px!important;font-weight:500!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:var(--t-mut)!important}
+body.fx h3.sec,body.fx .hsec{margin-top:6px}
+.fx-lk{color:var(--fx-live2)!important}
+/* cifras grandes */
+.fx-tile b,.fx-s b,.fx-lt b{font-weight:600;letter-spacing:-.03em}
+.fx-tile b{font-size:30px}
+/* tarjetas */
+.fx-w{border-radius:20px}
+body.fx .fx-live{border-radius:22px}
+.fx-play{background:var(--t-acc);color:var(--t-accInk)}
+.fx-d.g{background:var(--t-g)}.fx-d.y{background:var(--t-y)}.fx-d.r{background:var(--t-r)}
+/* acciones: Publicar y Guardar en salvia, primario en tinta */
+body.fx .fx-acts>#bPub,body.fx .fx-fhead .actions>#bPub,body.fx #bPub{background:var(--t-acc)!important;color:var(--t-accInk)!important;border-radius:14px}
+body.fx button.primary,body.fx .lbtn{background:var(--t-ink);color:var(--t-bg);border-radius:14px}
+body.fx .fx-avb.red{background:var(--t-ink);color:var(--t-bg)}
+/* segmentado en pastilla */
+.fx-seg{border-radius:12px;padding:3px;background:var(--t-chip)}
+body.fx .fx-seg button{border-radius:9px;font-weight:500;color:var(--t-mut)}
+body.fx .fx-seg button[aria-selected="true"]{background:var(--t-card);color:var(--t-ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+/* barra inferior limpia */
+body.fx .fx-nav,body.fx nav.fx-tabbar{-webkit-backdrop-filter:none;backdrop-filter:none}
+/* series × reps en mono */
+body.fx table.pl td:nth-child(n+2),body.fx .fx-sr,body.fx .cs-sr{font-family:var(--t-mono);font-size:13px}
+
+/* ---------- App del deportista ---------- */
+body.ath2b{background:var(--t-bg)}
+#athleteApp.ath2,#athleteApp.ath2 *{font-family:var(--t-font)}
+#athleteApp.ath2{
+  --h-bg:var(--t-bg); --h-card:var(--t-card); --h-ink:var(--t-ink); --h-2:var(--t-mut); --h-3:var(--t-mut); --h-sep:var(--t-line); --h-fill:var(--t-chip); --h-chev:var(--t-mut2);
+  --h-act:var(--t-ink); --h-on-act:var(--t-bg); --h-bar:var(--t-nav);
+  /* El hero es la tarjeta oscura protagonista; el semáforo vive en el punto */
+  --h-g:var(--t-dark); --h-g-dot:var(--t-g); --h-g-ic:var(--t-dark); --h-g-ink:var(--t-onDark); --h-g-2:var(--t-onDarkMut);
+  --h-y:var(--t-dark); --h-y-dot:var(--t-y); --h-y-ic:var(--t-dark); --h-y-ink:var(--t-onDark); --h-y-2:var(--t-onDarkMut); --h-y-txt:var(--t-y);
+  --h-r:var(--t-dark); --h-r-dot:var(--t-r); --h-r-ic:var(--t-onDark); --h-r-ink:var(--t-onDark); --h-r-2:var(--t-onDarkMut); --h-r-txt:var(--t-r);
+  --h-n:var(--t-dark); --h-n-dot:var(--t-onDarkMut); --h-n-ic:var(--t-dark); --h-n-ink:var(--t-onDark); --h-n-2:var(--t-onDarkMut);
+  --red:var(--t-ink); --coral:var(--t-ink); --sig:var(--t-ink);
+}
+@media (prefers-color-scheme:dark){
+  body.ath2b{background:var(--t-bg)}
+  #athleteApp.ath2{
+    --h-bg:var(--t-bg); --h-card:var(--t-card); --h-ink:var(--t-ink); --h-2:var(--t-mut); --h-3:var(--t-mut); --h-sep:var(--t-line); --h-fill:var(--t-chip); --h-chev:var(--t-mut2);
+    --h-act:var(--t-ink); --h-on-act:var(--t-bg); --h-bar:var(--t-nav);
+    --h-g:var(--t-dark); --h-g-dot:var(--t-g); --h-g-ic:var(--t-dark); --h-g-ink:var(--t-onDark); --h-g-2:var(--t-onDarkMut);
+    --h-y:var(--t-dark); --h-y-dot:var(--t-y); --h-y-ic:var(--t-dark); --h-y-ink:var(--t-onDark); --h-y-2:var(--t-onDarkMut); --h-y-txt:var(--t-y);
+    --h-r:var(--t-dark); --h-r-dot:var(--t-r); --h-r-ic:var(--t-dark); --h-r-ink:var(--t-onDark); --h-r-2:var(--t-onDarkMut); --h-r-txt:var(--t-r);
+    --h-n:var(--t-dark); --h-n-dot:var(--t-onDarkMut); --h-n-ic:var(--t-dark); --h-n-ink:var(--t-onDark); --h-n-2:var(--t-onDarkMut);
+    --cream:var(--t-bg); --paper:var(--t-card); --soft:var(--t-chip); --line:var(--t-line); --field:var(--t-card); --ink:var(--t-ink); --muted:var(--t-mut); --tech:var(--t-mut2);
+    --red:var(--t-ink); --coral:var(--t-ink); --sig:var(--t-ink); --green:var(--t-g); --gold:var(--t-y); --bad:var(--t-r); --ok:var(--t-g); --warn:var(--t-y);
+    --gold-soft:var(--t-yS); --green-soft:var(--t-gS); --coral-soft:var(--t-rS);
+  }
+  #athleteApp.ath2 .ap-seg button[aria-pressed="true"]{background:var(--t-card)}
+}
+/* Hero: tarjeta oscura flotante, dentro reescribo tinta y acción */
+#athleteApp.ath2 .ap-hero{
+  --h-ink:var(--t-onDark); --h-2:var(--t-onDarkMut); --h-act:var(--t-acc); --h-on-act:var(--t-accInk); --h-fill:rgba(255,255,255,.1); --h-sep:rgba(255,255,255,.12);
+  color:var(--t-onDark);
+  margin:calc(env(safe-area-inset-top,0px) + 10px) var(--gut) 0; border-radius:24px; padding:18px 18px 22px}
+#athleteApp.ath2 .ap-hero .ap-avatar{background:rgba(255,255,255,.12);color:var(--t-onDark)}
+#athleteApp.ath2 .ap-hero .ap-dot{width:12px;height:12px;border-radius:6px}
+#athleteApp.ath2 .ap-hero .ap-dot svg{display:none}
+.ap-date,#athleteApp.ath2 .ap-date{font-family:var(--t-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+#athleteApp.ath2 .ap-state h1,#athleteApp.ath2 .ap-page h1{font-weight:600;letter-spacing:-.03em}
+#athleteApp.ath2 .ap-state h1{font-size:32px;color:var(--t-onDark)}
+#athleteApp.ath2 .ap-page h1{font-size:32px}
+/* etiquetas */
+#athleteApp.ath2 .ap-sec>h2,#athleteApp.ath2 .ap-sec>h3,#athleteApp.ath2 .ap-sec>header h2,#athleteApp.ath2 .hsec,#athleteApp.ath2 h3.sec{
+  font-family:var(--t-mono)!important;font-size:11px!important;font-weight:500!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:var(--t-mut)!important}
+/* tarjetas y botones */
+.ap-card{border-radius:20px}
+#athleteApp.ath2 .ap-btn{border-radius:14px}
+.ap-seg{border-radius:12px;padding:3px;background:var(--t-chip)}
+#athleteApp.ath2 .ap-seg button{border-radius:9px;color:var(--t-mut)}
+#athleteApp.ath2 .ap-seg button[aria-pressed="true"]{background:var(--t-card);color:var(--t-ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.ap-tabs{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-top:1px solid var(--t-line)!important}
+#athleteApp.ath2 .ap-tabs button{color:var(--t-mut2)}
+#athleteApp.ath2 .ap-tabs button[aria-current="page"]{color:var(--t-ink)}
+/* anillos y métricas del inicio */
+#athleteApp.ath2{--po-w:var(--t-card);--po-l:var(--t-mut);--po-ses:var(--t-g);--po-ses-t:color-mix(in srgb,var(--t-g) 20%,transparent);--po-chk:var(--t-ink);--po-chk-t:color-mix(in srgb,var(--t-ink) 12%,transparent);--po-ses-ink:var(--t-g);--po-chk-ink:var(--t-ink);--po-q:var(--t-chip)}
+@media (prefers-color-scheme:dark){#athleteApp.ath2{--po-w:var(--t-card);--po-l:var(--t-mut);--po-ses:var(--t-acc);--po-ses-t:color-mix(in srgb,var(--t-acc) 20%,transparent);--po-chk:var(--t-ink);--po-chk-t:color-mix(in srgb,var(--t-ink) 14%,transparent);--po-ses-ink:var(--t-acc);--po-chk-ink:var(--t-ink);--po-q:var(--t-chip)}}
+.ad-rings .ad-val.chk{stroke:var(--t-ink)} .ad-l i.chk{background:var(--t-ink)}
+@media (prefers-color-scheme:dark){.ad-rings .ad-val.chk,.ad-l i.chk{stroke:var(--t-ink);background:var(--t-ink)}}
+.po-l{font-family:var(--t-mono);font-size:11px!important;font-weight:500!important;letter-spacing:.06em;text-transform:uppercase}
+.po-ht b{font-weight:600;letter-spacing:-.01em}
+#athleteApp.ath2 .po-hero .po-l{color:var(--t-onDarkMut)}
+
+/* ---------- Modo en vivo ---------- */
+body.ath2b #live,body.ath2b #live *{font-family:var(--t-font)}
+body.ath2b #live{--cream:var(--t-bg);--paper:var(--t-card);--soft:var(--t-chip);--line:var(--t-line);--field:var(--t-chip);--ink:var(--t-ink);--muted:var(--t-mut);
+  --red:var(--t-ink);--sig:var(--t-ink);--green:var(--t-g);--lv-on:var(--t-ink);--lv-on-ink:var(--t-bg);--lv-work:var(--t-r);--lv-rest:var(--t-g);--lv-sheet:var(--t-card)}
+@media (prefers-color-scheme:dark){body.ath2b #live{--cream:var(--t-bg);--paper:var(--t-card);--soft:var(--t-chip);--line:var(--t-line);--field:var(--t-chip);--ink:var(--t-ink);--muted:var(--t-mut);
+  --red:var(--t-ink);--sig:var(--t-ink);--green:var(--t-g);--lv-on:var(--t-ink);--lv-on-ink:var(--t-bg);--lv-work:var(--t-r);--lv-rest:var(--t-g);--lv-sheet:var(--t-card)}}
+
+/* ---------- Detalles del panel ---------- */
+.fx-av{background:var(--t-dark)!important;color:var(--t-onDark)!important;font-weight:600}
+#fxSaveBar{background:var(--t-dark)!important;color:var(--t-onDark)!important;border-radius:18px}
+#fxSaveBar button{background:var(--t-acc)!important;color:var(--t-accInk)!important;border-radius:12px}
+.fx-bdot{background:var(--t-r)}
+body.fx .toast,body.ath2b .toast{background:var(--t-dark);color:var(--t-onDark)}
+
+/* ---------- Ingreso ---------- */
+#login.lgA{
+  --lg-bg:var(--t-bg); --lg-card:var(--t-card); --lg-ink:var(--t-ink); --lg-2:var(--t-mut); --lg-3:var(--t-mut2); --lg-sep:var(--t-line);
+  --lg-act:var(--t-ink); --lg-on:var(--t-bg); --lg-red:var(--t-r); --lg-box:var(--t-dark);
+  font-family:var(--t-font)}
+@media (prefers-color-scheme:dark){#login.lgA{
+  --lg-bg:var(--t-bg); --lg-card:var(--t-card); --lg-ink:var(--t-ink); --lg-2:var(--t-mut); --lg-3:var(--t-mut2); --lg-sep:var(--t-line);
+  --lg-act:var(--t-ink); --lg-on:var(--t-bg); --lg-red:var(--t-r); --lg-box:var(--t-dark)}}
+#login.lgA *{font-family:var(--t-font)}
+#login .lgtop h1{font-weight:600;letter-spacing:-.03em}
+/* acento de navegación en tinta, no en rojo */
+body.fx #fxNav button[aria-current="page"]{color:var(--t-ink)}
+body.fx .fx-back{color:var(--t-ink)}
+.fx-menu button svg{color:var(--t-mut)}
+.c-plan{color:var(--t-ink)}
+/* botones secundarios: chip, no bloque claro */
+body.fx .fx-day .dayhead .actions button:not(.primary),body.fx .fx-day .dayhead>button:not(.primary):not(:has(h3)),body.fx .fx-fhead button:not(#bPub):not(.fx-back){background:var(--t-chip);color:var(--t-ink);border:0}
+body.fx .fx-acts>#bPub{border-radius:14px;font-weight:600}
+body.fx .fx-day .dayhead button{background:var(--t-chip)!important;color:var(--t-ink)!important;border:0!important}
+body.fx .fx-day .dayhead h3 button,body.fx .fx-day .dayhead button:has(h3){background:transparent!important}
+#login .lglink,#login .lgback{color:var(--t-ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--t-line)}
+#login .lgback{text-decoration:none}
+#login .lgpeak{fill:var(--t-acc)}

@@ -8,13 +8,13 @@ body.ath2b{background:#F2F2F7}
 #athleteApp.ath2{
   --h-bg:#F2F2F7; --h-card:#FFFFFF; --h-ink:#1D1D1F; --h-2:#6E6E73; --h-3:#6E6E73; --h-sep:#C6C6C8; --h-fill:rgba(120,120,128,.12); --h-chev:#C4C4C7;
   --h-act:#1D1D1F; --h-on-act:#FFFFFF; --h-bar:rgba(249,249,249,.94);
-  --h-g:#E1F5E6; --h-g-dot:#34C759; --h-g-ic:#FFFFFF; --h-g-ink:#17391F; --h-g-2:#1E6B33;
-  --h-y:#FFF1C2; --h-y-dot:#FFCC00; --h-y-ic:#1D1D1F; --h-y-ink:#3D3000; --h-y-2:#6B5200; --h-y-txt:#8A6100;
-  --h-r:#FFE4E1; --h-r-dot:#FF3B30; --h-r-ic:#FFFFFF; --h-r-ink:#4A120C; --h-r-2:#8E1F15; --h-r-txt:#C4281C;
-  --h-n:#E8E8ED; --h-n-dot:#8E8E93; --h-n-ic:#FFFFFF; --h-n-ink:#3A3A3C; --h-n-2:#5A5A5E;
+  --h-g:#E1F5E6; --h-g-dot:var(--t-g); --h-g-ic:#FFFFFF; --h-g-ink:#17391F; --h-g-2:var(--t-g);
+  --h-y:#FFF1C2; --h-y-dot:var(--t-y); --h-y-ic:#1D1D1F; --h-y-ink:#3D3000; --h-y-2:#6B5200; --h-y-txt:var(--t-y);
+  --h-r:#FFE4E1; --h-r-dot:var(--t-r); --h-r-ic:#FFFFFF; --h-r-ink:#4A120C; --h-r-2:#8E1F15; --h-r-txt:var(--t-r);
+  --h-n:#E8E8ED; --h-n-dot:var(--t-mut2); --h-n-ic:#FFFFFF; --h-n-ink:#3A3A3C; --h-n-2:#5A5A5E;
   /* Tokens que leen los componentes heredados (chequeo, registro, consentimiento, avisos) */
   --cream:#F2F2F7; --paper:#FFFFFF; --soft:#F2F2F7; --line:#D1D1D6; --field:#FFFFFF; --ink:#1D1D1F; --muted:#6E6E73; --tech:#6E6E73;
-  --red:#1D1D1F; --coral:#1D1D1F; --sig:#1D1D1F; --green:#1E6B33; --gold:#8A6100; --bad:#C4281C; --ok:#1E6B33; --warn:#8A6100;
+  --red:#1D1D1F; --coral:#1D1D1F; --sig:#1D1D1F; --green:var(--t-g); --gold:var(--t-y); --bad:var(--t-r); --ok:var(--t-g); --warn:var(--t-y);
   --gold-soft:#FFF1C2; --green-soft:#E1F5E6; --coral-soft:#FFE4E1;
   --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
   --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif; --mono:var(--body);
@@ -30,12 +30,12 @@ body.ath2b{background:#F2F2F7}
   #athleteApp.ath2{
     --h-bg:#000000; --h-card:#1C1C1E; --h-ink:#F5F5F7; --h-2:#98989F; --h-3:#98989F; --h-sep:#38383A; --h-fill:rgba(120,120,128,.28); --h-chev:#5A5A5F;
     --h-act:#F5F5F7; --h-on-act:#000000; --h-bar:rgba(22,22,24,.92);
-    --h-g:#0F2A17; --h-g-dot:#30D158; --h-g-ic:#000000; --h-g-ink:#D8F5DF; --h-g-2:#7FD99A;
-    --h-y:#2E2406; --h-y-dot:#FFD60A; --h-y-ic:#000000; --h-y-ink:#FFF3C4; --h-y-2:#E6C55A; --h-y-txt:#FFD60A;
-    --h-r:#33100D; --h-r-dot:#FF453A; --h-r-ic:#000000; --h-r-ink:#FFDAD6; --h-r-2:#FF8A80; --h-r-txt:#FF6961;
-    --h-n:#1C1C1E; --h-n-dot:#8E8E93; --h-n-ic:#000000; --h-n-ink:#E5E5EA; --h-n-2:#AEAEB2;
+    --h-g:#0F2A17; --h-g-dot:var(--t-g); --h-g-ic:#000000; --h-g-ink:#D8F5DF; --h-g-2:#7FD99A;
+    --h-y:#2E2406; --h-y-dot:var(--t-y); --h-y-ic:#000000; --h-y-ink:#FFF3C4; --h-y-2:#E6C55A; --h-y-txt:var(--t-y);
+    --h-r:#33100D; --h-r-dot:var(--t-r); --h-r-ic:#000000; --h-r-ink:#FFDAD6; --h-r-2:#FF8A80; --h-r-txt:var(--t-r);
+    --h-n:#1C1C1E; --h-n-dot:var(--t-mut2); --h-n-ic:#000000; --h-n-ink:#E5E5EA; --h-n-2:#AEAEB2;
     --cream:#000000; --paper:#1C1C1E; --soft:#000000; --line:#38383A; --field:#1C1C1E; --ink:#F5F5F7; --muted:#98989F; --tech:#98989F;
-    --red:#F5F5F7; --coral:#F5F5F7; --sig:#F5F5F7; --green:#7FD99A; --gold:#FFD60A; --bad:#FF6961; --ok:#7FD99A; --warn:#FFD60A;
+    --red:#F5F5F7; --coral:#F5F5F7; --sig:#F5F5F7; --green:#7FD99A; --gold:var(--t-y); --bad:var(--t-r); --ok:#7FD99A; --warn:var(--t-y);
     --gold-soft:#2E2406; --green-soft:#0F2A17; --coral-soft:#33100D;
     color-scheme:dark;
   }
@@ -174,9 +174,9 @@ body.ath2b{background:#F2F2F7}
 #athleteApp.ath2 .wc{border:0;background:var(--h-fill);color:var(--h-ink);font-family:var(--body);font-weight:600;font-size:16px;border-radius:10px}
 #athleteApp.ath2 .wch10 .wc{font-size:14px;border-radius:8px}
 #athleteApp.ath2 .wc.on{background:var(--h-act);color:var(--h-on-act)}
-#athleteApp.ath2 .wch7 .wc.on.t1,#athleteApp.ath2 .wch7 .wc.on.t2,#athleteApp.ath2 .wch7 .wc.on.t3,#athleteApp.ath2 .wch10 .wc.on.i1,#athleteApp.ath2 .wch10 .wc.on.i2,#athleteApp.ath2 .wch10 .wc.on.i3{background:#34C759;color:#0B2E15}
-#athleteApp.ath2 .wch7 .wc.on.t5,#athleteApp.ath2 .wch10 .wc.on.i4,#athleteApp.ath2 .wch10 .wc.on.i5{background:#FFCC00;color:#1D1D1F}
-#athleteApp.ath2 .wch7 .wc.on.t6,#athleteApp.ath2 .wch7 .wc.on.t7,#athleteApp.ath2 .wch10 .wc.on.i6,#athleteApp.ath2 .wch10 .wc.on.i7,#athleteApp.ath2 .wch10 .wc.on.i8,#athleteApp.ath2 .wch10 .wc.on.i9,#athleteApp.ath2 .wch10 .wc.on.i10{background:#D70015;color:#FFFFFF}
+#athleteApp.ath2 .wch7 .wc.on.t1,#athleteApp.ath2 .wch7 .wc.on.t2,#athleteApp.ath2 .wch7 .wc.on.t3,#athleteApp.ath2 .wch10 .wc.on.i1,#athleteApp.ath2 .wch10 .wc.on.i2,#athleteApp.ath2 .wch10 .wc.on.i3{background:var(--t-g);color:#0B2E15}
+#athleteApp.ath2 .wch7 .wc.on.t5,#athleteApp.ath2 .wch10 .wc.on.i4,#athleteApp.ath2 .wch10 .wc.on.i5{background:var(--t-y);color:#1D1D1F}
+#athleteApp.ath2 .wch7 .wc.on.t6,#athleteApp.ath2 .wch7 .wc.on.t7,#athleteApp.ath2 .wch10 .wc.on.i6,#athleteApp.ath2 .wch10 .wc.on.i7,#athleteApp.ath2 .wch10 .wc.on.i8,#athleteApp.ath2 .wch10 .wc.on.i9,#athleteApp.ath2 .wch10 .wc.on.i10{background:var(--t-r);color:#FFFFFF}
 #athleteApp.ath2 .wz{border:0;background:var(--h-fill);color:var(--h-ink);font-size:15px;font-weight:500;min-height:40px}
 #athleteApp.ath2 .wz.on{background:var(--h-act);color:var(--h-on-act)}
 #athleteApp.ath2 .wmol{background:var(--h-bg);border:0;border-radius:12px}
@@ -196,7 +196,7 @@ body.ath2b{background:#F2F2F7}
 
 /* Aviso de conexión arriba, sin chocar con la barra */
 body.ath2b #netState.off{background:#FFF1C2;color:#6B5200;border:0;box-shadow:0 6px 20px rgba(0,0,0,.15)}
-body.ath2b #netState.sync{background:#E1F5E6;color:#1E6B33;border:0;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+body.ath2b #netState.sync{background:#E1F5E6;color:var(--t-g);border:0;box-shadow:0 6px 20px rgba(0,0,0,.15)}
 body.ath2b .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px));background:#1D1D1F;color:#fff;border-radius:12px;padding:10px 16px;font-size:15px}
 @media (prefers-reduced-motion:reduce){.chev{transition:none}}
 
@@ -205,13 +205,13 @@ body.ath2b .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px));background
    ========================================================== */
 body.ath2b #live{
   --cream:#F2F2F7; --paper:#FFFFFF; --soft:rgba(120,120,128,.14); --line:#D1D1D6; --field:#F2F2F7; --ink:#1D1D1F; --muted:#6E6E73;
-  --red:#1D1D1F; --sig:#1D1D1F; --green:#34C759; --lv-on:#1D1D1F; --lv-on-ink:#FFFFFF; --lv-work:#C4281C; --lv-rest:#1E6B33; --lv-sheet:#FFFFFF;
+  --red:#1D1D1F; --sig:#1D1D1F; --green:var(--t-g); --lv-on:#1D1D1F; --lv-on-ink:#FFFFFF; --lv-work:var(--t-r); --lv-rest:var(--t-g); --lv-sheet:#FFFFFF;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
   background:var(--cream); color:var(--ink); color-scheme:light; -webkit-font-smoothing:antialiased;
 }
 @media (prefers-color-scheme:dark){
   body.ath2b #live{--cream:#000000; --paper:#1C1C1E; --soft:rgba(120,120,128,.3); --line:#38383A; --field:#2C2C2E; --ink:#F5F5F7; --muted:#98989F;
-    --red:#F5F5F7; --sig:#F5F5F7; --green:#30D158; --lv-on:#F5F5F7; --lv-on-ink:#000000; --lv-work:#FF6961; --lv-rest:#30D158; --lv-sheet:#1C1C1E; color-scheme:dark}
+    --red:#F5F5F7; --sig:#F5F5F7; --green:var(--t-g); --lv-on:#F5F5F7; --lv-on-ink:#000000; --lv-work:var(--t-r); --lv-rest:var(--t-g); --lv-sheet:#1C1C1E; color-scheme:dark}
 }
 body.ath2b #live button{font-family:inherit}
 body.ath2b #live .lvx{border:0;background:var(--soft);border-radius:22px;width:40px;height:40px;min-height:40px}
@@ -282,12 +282,12 @@ body.ath2b #live textarea{background:var(--paper);min-height:96px}
 .ad-rings circle{fill:none;stroke-width:10;stroke-linecap:round}
 .ad-rings .ad-track{stroke:var(--h-fill);stroke-linecap:butt}
 .ad-rings .ad-val.ses{stroke:var(--h-ink)}
-.ad-rings .ad-val.chk{stroke:#0A84FF}
+.ad-rings .ad-val.chk{stroke:var(--t-g)}
 .ad-txt{display:flex;flex-direction:column;gap:4px;min-width:0}
 .ad-l{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--h-2)}
 .ad-l b{color:var(--h-ink);font-weight:600;font-variant-numeric:tabular-nums}
 .ad-l i{width:10px;height:10px;border-radius:5px;flex:none}
-.ad-l i.ses{background:var(--h-ink)} .ad-l i.chk{background:#0A84FF}
+.ad-l i.ses{background:var(--h-ink)} .ad-l i.chk{background:var(--t-g)}
 .ad-m{font-size:15px;font-weight:600;color:var(--h-ink);margin-top:2px}
 .ad-racha{margin:0;font-size:14px;color:var(--h-2)}
 .ad-week.big .ad-racha{font-size:15px}
@@ -296,7 +296,7 @@ body.ath2b #live textarea{background:var(--paper);min-height:96px}
 .ad-hist span.ok{background:var(--h-ink);color:var(--h-on-act)}
 .ad-hist span.now{box-shadow:inset 0 0 0 2px var(--h-ink);background:transparent}
 .ad-cap{margin:0;font-size:13px;color:var(--h-2)}
-@media (prefers-color-scheme:dark){.ad-rings .ad-val.chk,.ad-l i.chk{stroke:#64A8FF;background:#64A8FF}}
+@media (prefers-color-scheme:dark){.ad-rings .ad-val.chk,.ad-l i.chk{stroke:var(--t-g);background:var(--t-g)}}
 
 /* ---------- Mensaje del fisio ---------- */
 .ad-msg{background:var(--h-card);box-shadow:inset 0 0 0 1.5px var(--h-ink)}
@@ -311,7 +311,7 @@ body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin
 .ap-swrow{cursor:pointer}
 #athleteApp.ath2 .ap-sw{appearance:none;-webkit-appearance:none;flex:0 0 auto;width:51px;height:31px;margin:0;border-radius:31px;background:var(--fill,#78788029);position:relative;cursor:pointer;transition:background .2s;border:0;min-height:0;padding:0}
 #athleteApp.ath2 .ap-sw::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);transition:transform .2s}
-#athleteApp.ath2 .ap-sw:checked{background:#34C759}
+#athleteApp.ath2 .ap-sw:checked{background:var(--t-g)}
 #athleteApp.ath2 .ap-sw:checked::after{transform:translateX(20px)}
 #athleteApp.ath2 .ap-sw:disabled{opacity:.4;cursor:default}
 #athleteApp.ath2 .av-note{margin:0 16px 8px}
@@ -377,8 +377,8 @@ body.ath2b #live .lvopt{font-size:13px;font-weight:500;color:var(--muted);margin
 .ap-tabs{grid-template-columns:repeat(5,minmax(0,1fr))!important}
 
 /* ---------- Portada con widgets (portada.js) ---------- */
-#athleteApp.ath2{--po-w:#FFFFFF;--po-l:#6E6E73;--po-ses:#E5202E;--po-ses-t:rgba(229,32,46,.18);--po-chk:#0A6CFF;--po-chk-t:rgba(10,108,255,.16);--po-ses-ink:#C4161F;--po-chk-ink:#0A5BD6;--po-q:#E5E5EA}
-@media (prefers-color-scheme:dark){#athleteApp.ath2{--po-w:#1C1C1E;--po-l:#98989F;--po-ses:#FF453A;--po-ses-t:rgba(255,69,58,.22);--po-chk:#64D2FF;--po-chk-t:rgba(100,210,255,.2);--po-ses-ink:#FF6961;--po-chk-ink:#64D2FF;--po-q:#2C2C2E}}
+#athleteApp.ath2{--po-w:#FFFFFF;--po-l:#6E6E73;--po-ses:var(--t-r);--po-ses-t:rgba(229,32,46,.18);--po-chk:var(--t-g);--po-chk-t:rgba(10,108,255,.16);--po-ses-ink:var(--t-r);--po-chk-ink:var(--t-g);--po-q:#E5E5EA}
+@media (prefers-color-scheme:dark){#athleteApp.ath2{--po-w:#1C1C1E;--po-l:#98989F;--po-ses:var(--t-r);--po-ses-t:rgba(255,69,58,.22);--po-chk:var(--t-g);--po-chk-t:rgba(100,210,255,.2);--po-ses-ink:var(--t-r);--po-chk-ink:var(--t-g);--po-q:#2C2C2E}}
 .po-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
 .po-top h1{margin:0}
 .po-date{margin:0;font-size:13px;font-weight:600;color:var(--po-l);text-transform:uppercase;letter-spacing:.04em}
