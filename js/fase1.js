@@ -228,7 +228,9 @@ async function signConsent(){
   }
   const {error}=await sb.from('consentimientos').insert({paciente_id:A.p.id, version:CONSENT_VERSION, nombre_firma:n.slice(0,120), documento:doc.slice(0,30), acepta_datos:true, acepta_tratamiento:true, menor, representante:rep, medio:'app', user_agent:navigator.userAgent.slice(0,400)});
   if(error){ toast('No se pudo registrar la aceptación. Inténtalo de nuevo.'); return; }
-  A.consent=true; A.consentOld=false; renderAthlete(); toast('Consentimiento aceptado. ¡Gracias!');
+  A.consent=true; A.consentOld=false;
+  if(window.__pendPwd){ const ses=window.__pendPwd; window.__pendPwd=null; toast('Consentimiento aceptado. Ahora crea tu contraseña.'); await askPwd(ses); await lgOkWait(); $('#login').hidden=true; $('#athleteApp').hidden=false; renderAthlete(); return; }
+  renderAthlete(); toast('Consentimiento aceptado. ¡Gracias!');
 }
 
 /* ---------- Eventos ---------- */

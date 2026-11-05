@@ -402,17 +402,23 @@ function askPwd(session){
 async function route(session){
   me.email=(session.user.email||'').toLowerCase(); me.uid=session.user.id;
   LS.set('apex_email', me.email);
-  if(needsPwd(session)) await askPwd(session);
+  const pendPwd = needsPwd(session);   // la contraseña se crea después del consentimiento (deportista) o de una vez (fisio)
   await lgOkWait();
   $('#login').hidden=true; document.body.classList.add('lg-enter'); setTimeout(()=>document.body.classList.remove('lg-enter'), 1200);
   const fr=await sb.from('fisios').select('email,nombre').maybeSingle();
   if(fr.error && isNetErr(fr.error)){ if(startAthleteOffline(me.uid, me.email)) return; showLogin('Sin conexión. Conéctate a internet para entrar.'); return; }
   const f=fr.data;
+  if(f && pendPwd){ await askPwd(session); await lgOkWait(); $('#login').hidden=true; }
   if(f){ me.role='fisio'; if(lgRole!=='fisio'){ setRole('fisio'); toast('Este correo es de fisioterapeuta: entraste a tu panel.'); } $('#login').hidden=true; $('#athleteApp').hidden=true; $('#fisioApp').hidden=false; $('#who').textContent=me.email;
     await Promise.all([loadPatients(), loadLib(), loadPlantillas(), loadConsents()]); initAlerts(); syncPush('fisio');
     fisioNombre=f.nombre||''; render(); renderSel(); showHome();
     return; }
   const {data:p}=await sb.from('pacientes').select('id,nombre,avisos,meta,agenda,racha_extra').maybeSingle();
+  if(p && pendPwd){
+    let ok=false; try{ const {data:cs}=await sb.from('consentimientos').select('version').eq('paciente_id',p.id); ok=(cs||[]).some(r=>r.version===CONSENT_VERSION); }catch(e){}
+    if(ok){ await askPwd(session); await lgOkWait(); $('#login').hidden=true; }
+    else window.__pendPwd=session;   // primero el consentimiento; al aceptarlo se pide la contraseña
+  }
   if(p){ me.role='deportista'; if(lgRole!=='deportista'){ setRole('deportista'); toast('Este correo es de deportista: entraste a tu plan.'); } startAthlete(p); syncPush('deportista'); return; }
   showLogin(`Entraste como <b>${esc(me.email)}</b>, ${lgRole==='fisio'?'pero este correo no está registrado como fisioterapeuta.':'pero este correo no tiene un plan asignado. Pídele a tu fisioterapeuta que te registre con este correo.'} <button id="lgOut" class="mini-btn">Usar otro correo</button>`);
   const lo=$('#lgOut'); if(lo) lo.onclick=async()=>{ await hardSignOut(); location.reload(); };

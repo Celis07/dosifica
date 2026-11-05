@@ -1,5 +1,5 @@
 /* ===================== CHEQUEO DIARIO Y AJUSTE AUTOMÁTICO =====================
-   El deportista responde cada día: sueño, estrés, fatiga, dolor muscular (Hooper 1–7)
+   El deportista responde cada día: sueño, estrés, fatiga, dolor muscular (Hooper; en pantalla 1–5)
    y si le duele algo (zona, lado, 0–10). Con eso sale un semáforo único, que ven el
    deportista y el fisio, y el plan del día se ajusta solo:
    - Verde: plan completo; puede progresar según el RPE.
@@ -21,6 +21,11 @@ const ZONA_RX = {
   tobillo:/talon|tal[oó]n|salto|pogo|carrera|sprint|skipping|step|cuerda|zancada|equilibrio|unipodal/i,
   otra:/$^/
 };
+/* Escala 1–5 en pantalla (nov 2026). Se guarda en la escala 1–7 de siempre para no romper el historial,
+   la referencia personal ni los avisos: 1→1, 2→2, 3→4, 4→5, 5→7. */
+const W5TO7 = {1:1, 2:2, 3:4, 4:5, 5:7};
+const w7to5 = v => v == null || v === '' ? null : Math.max(1, Math.min(5, Math.round(1 + (+v - 1) * 4 / 6)));
+const wSum5 = e => ['sueno','estres','fatiga','dolor'].reduce((a, k) => a + (w7to5(e[k]) || 0), 0);
 const POW_RX = /salto|pliom|sprint|swing|lanzamiento|explosiv|clean|cargada|drop|pogo|hop|skipping|m[aá]x\. intenci[oó]n/i;
 
 /* ---------- Semáforo único (reemplaza al anterior) ---------- */
@@ -41,20 +46,20 @@ wellLight = function(list){
   if(+e.sueno>=5) why.push('sueño malo'); if(+e.estres>=5) why.push('estrés alto'); if(+e.fatiga>=5) why.push('fatiga alta'); if(+e.dolor>=5) why.push('dolor muscular alto');
   const mt = molTxt(e); if(mt) why.push('dolor: ' + mt);
   const T = {g:['Verde · plan completo','Puede progresar según el RPE.'], y:['Amarillo · sin subir carga','RPE 1 punto menos y marca lo que carga la zona que molesta.'], r:['Rojo · plan recortado','≈ 1/3 menos series, RPE 2 puntos menos, sin saltos ni potencia y sin lo que carga la zona que duele. Conviene hablar con el deportista.']}[c];
-  return {c, t:T[0]+(today?'':` (último registro: ${e.fecha})`), p:`${T[1]}${why.length?' Motivo: '+why.join(', ')+'.':''} Puntaje ${sum}/28${ref}.`, sum, e, today, pm, why};
+  return {c, t:T[0]+(today?'':` (último registro: ${e.fecha})`), p:`${T[1]}${why.length?' Motivo: '+why.join(', ')+'.':''} Puntaje ${wSum5(e)}/20${ref ? ' · respecto a lo habitual para esta persona' : ''}.`, sum, sum5:wSum5(e), e, today, pm, why};
 };
 
 /* ---------- Formulario con botones (fisio 'fw' y deportista 'aw') ---------- */
 const WF = {};
 function wfInit(pfx){
   const prev = wellness.find(x=>x.fecha===todayISO());
-  WF[pfx] = prev ? {sueno:+prev.sueno, estres:+prev.estres, fatiga:+prev.fatiga, dolor:+prev.dolor, duele:(prev.molestias||[]).length?1:0, mol:JSON.parse(JSON.stringify(prev.molestias||[])), nota:prev.nota||''}
+  WF[pfx] = prev ? {sueno:w7to5(prev.sueno), estres:w7to5(prev.estres), fatiga:w7to5(prev.fatiga), dolor:w7to5(prev.dolor), duele:(prev.molestias||[]).length?1:0, mol:JSON.parse(JSON.stringify(prev.molestias||[])), nota:prev.nota||''}
                  : {sueno:null, estres:null, fatiga:null, dolor:null, duele:null, mol:[], nota:''};
 }
 const WQ = [['sueno','¿Cómo dormiste?','Muy bien','Muy mal'],['estres','Estrés','Muy bajo','Muy alto'],['fatiga','Fatiga','Nada','Mucha'],['dolor','Dolor muscular','Nada','Mucho']];
 function wfBody(pfx){
   const S = WF[pfx];
-  const q = ([k,l,a,b]) => `<div class="wq"><div class="wql"><b>${l}</b><span>${a} · ${b}</span></div><div class="wch7">${[1,2,3,4,5,6,7].map(v=>`<button type="button" class="wc t${v}${S[k]===v?' on':''}" data-wf="${pfx}|${k}|${v}" aria-pressed="${S[k]===v}" aria-label="${l}: ${v} de 7">${v}</button>`).join('')}</div></div>`;
+  const q = ([k,l,a,b]) => `<div class="wq"><div class="wql"><b>${l}</b><span>${a} · ${b}</span></div><div class="wch7 wch5">${[1,2,3,4,5].map(v=>`<button type="button" class="wc t${W5TO7[v]}${S[k]===v?' on':''}" data-wf="${pfx}|${k}|${v}" aria-pressed="${S[k]===v}" aria-label="${l}: ${v} de 5">${v}</button>`).join('')}</div></div>`;
   const zon = S.duele ? `<div class="wzs">${Object.entries(ZONAS).map(([k,l])=>`<button type="button" class="wz${S.mol.some(m=>m.z===k)?' on':''}" data-wfz="${pfx}|${k}" aria-pressed="${S.mol.some(m=>m.z===k)}">${l}</button>`).join('')}</div>
     ${S.mol.map((m,j)=>`<div class="wmol"><b>${ZONAS[m.z]}</b>
       ${ZONA_LADO.includes(m.z)?`<div class="wlado">${[['izq','Izquierda'],['der','Derecha'],['amb','Ambos']].map(([v,l])=>`<button type="button" class="wc${m.l===v?' on':''}" data-wfl="${pfx}|${j}|${v}">${l}</button>`).join('')}</div>`:''}
@@ -80,7 +85,7 @@ document.addEventListener('click', e=>{
 }, true);
 readWell = function(pfx){
   const S = WF[pfx] || {}; const nota = ($('#'+pfx+'-nota')?.value||S.nota||'').slice(0,500)||null;
-  return {fecha:todayISO(), sueno:S.sueno, estres:S.estres, fatiga:S.fatiga, dolor:S.dolor, molestias:(S.mol||[]).filter(m=>+m.i>0).map(m=>({z:m.z, l:m.l||'', i:+m.i})), nota};
+  return {fecha:todayISO(), sueno:W5TO7[S.sueno], estres:W5TO7[S.estres], fatiga:W5TO7[S.fatiga], dolor:W5TO7[S.dolor], molestias:(S.mol||[]).filter(m=>+m.i>0).map(m=>({z:m.z, l:m.l||'', i:+m.i})), nota};
 };
 const _saveWellBase = saveWell;
 saveWell = async function(pid, pfx, extra){

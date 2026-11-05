@@ -144,8 +144,8 @@ function pxProgreso(c){
     chart = `<p class="px-delta">Dolor durante el entrenamiento (0 a 10). Hasta 3 es la zona en la que puedes progresar.</p>${pxLine(pts, {min:0, max:10, unit:'/10', aria:'Dolor por sesión', dec:0, empty:'Registra el dolor en tus sesiones para ver la tendencia.'})}`;
   } else if(A.pg === 'bien'){
     const pts = wellness.filter(w => w.fecha).slice().sort((a, b) => a.fecha.localeCompare(b.fecha)).slice(-30)
-      .map(w => { const t = (+w.sueno||0)+(+w.estres||0)+(+w.fatiga||0)+(+w.dolor||0); return {x: w.fecha, y: t, tip: `${fmtD(w.fecha)}: ${t}/28 (sueño ${w.sueno}, estrés ${w.estres}, fatiga ${w.fatiga}, dolor muscular ${w.dolor})`}; });
-    chart = `<p class="px-delta">Puntaje del chequeo diario: más bajo es mejor (4 = todo muy bien, 28 = todo muy mal).</p>${pxLine(pts, {min:4, max:28, unit:'', aria:'Bienestar diario', dec:0, empty:'Haz tu chequeo diario unos días para ver la tendencia.'})}`;
+      .map(w => { const t = wSum5(w); return {x: w.fecha, y: t, tip: `${fmtD(w.fecha)}: ${t}/20 (sueño ${w7to5(w.sueno)}, estrés ${w7to5(w.estres)}, fatiga ${w7to5(w.fatiga)}, dolor muscular ${w7to5(w.dolor)})`}; });
+    chart = `<p class="px-delta">Puntaje del chequeo diario: más bajo es mejor (4 = todo muy bien, 20 = todo muy mal).</p>${pxLine(pts, {min:4, max:20, unit:'', aria:'Bienestar diario', dec:0, empty:'Haz tu chequeo diario unos días para ver la tendencia.'})}`;
   } else {
     const ws = []; for(let k = 7; k >= 0; k--) ws.push(PX.addD(PX.mon(todayISO()), -7*k));
     const rows = ws.map((w, k) => { const ss = sessions.filter(s => s.fecha >= w && s.fecha < PX.addD(w, 7)); const v = ss.reduce((a, s) => a + (num(s.min)||0)*(num(s.srpe)||0), 0);

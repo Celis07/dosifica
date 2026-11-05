@@ -188,8 +188,20 @@ function hHoy(c){
     ${vivo ? `<button type="button" class="ap-btn ap-plain" data-alog="${di}">${A.open === di ? 'Cerrar' : 'Ya la hice: marcarla como hecha'}</button>` : ''}
   </section>`;
   const d24 = d24Card();
+  // Sin el chequeo de hoy no se muestra la sesión: primero cómo amaneció
+  if(!hasW) return hero + `<div class="ap-body">${form}${A.wOpen ? '' : hLock()}${d24}${pushCard()}</div>`;
   return hero + `<div class="ap-body">${form}${session}${d24}${pushCard()}</div>`;
 }
+
+function hLock(irHoy){
+  return `<section class="ap-card ap-lock"><h3>Primero tu chequeo de hoy</h3><p>Responde cómo amaneciste para ver tu plan de hoy. Si llegas cargado, se ajusta solo.</p>
+    ${irHoy ? '<button type="button" class="ap-btn ap-primary" data-hwlock="1">Responder chequeo</button>' : ''}</section>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('#athleteApp [data-hwlock]'); if(!b) return;
+  A.tab = 'hoy'; A.wOpen = true; renderAthlete();
+  setTimeout(() => document.querySelector('#wf-aw')?.scrollIntoView({block: 'start', behavior: 'smooth'}), 60);
+});
 
 /* ---------- Pestaña Mi plan ---------- */
 function hPlan(c){
@@ -202,7 +214,7 @@ function hPlan(c){
     `<div class="ap-row"><span class="ap-l"><b>Semana ${esc(x.w)}${i === 0 ? ' (esta)' : ''}</b><span>${esc(hCap(x.l || ''))}${(x.t || []).map(t => `, ${esc(t.n || 'torneo')} el ${esc(fmtD(t.f))}`).join('')}</span></span><span class="ap-muted">${esc(fmtD(x.ini))}</span></div>`).join('')}</div></section>` : '';
   return hPage('Mi plan', `Semana ${c.semana}${c.meso?.l ? ', ' + hLow(c.meso.l) : ''}`) + `<div class="ap-body">
     <section class="ap-card"><h3>${esc(hCap(hPhase(c)))}</h3>${c.objetivo ? `<p>${esc(c.objetivo)}</p>` : ''}${c.evitar ? `<p class="ap-muted"><b>Evita por ahora:</b> ${esc(c.evitar)}</p>` : ''}</section>
-    ${(c.dias || []).map(d => `<section class="ap-sec"><div class="ap-head"><h2>${esc(d.name)}</h2>${done.has(d.name) ? `<span class="ap-done">${H_ICON.check} Hecha esta semana</span>` : ''}</div>${hBlocks(d, 'n')}</section>`).join('')}
+    ${!wellness.some(x => x.fecha === todayISO()) ? hLock(true) : (c.dias || []).map(d => `<section class="ap-sec"><div class="ap-head"><h2>${esc(d.name)}</h2>${done.has(d.name) ? `<span class="ap-done">${H_ICON.check} Hecha esta semana</span>` : ''}</div>${hBlocks(d, 'n')}</section>`).join('')}
     ${weeks}
     <section class="ap-sec"><div class="ap-head"><h2>${rod || c.modulo === 'lumbar' || c.rehab ? 'Regla de dolor' : 'Cómo dosificar'}</h2></div>
       <div class="ap-card"><p>${esc(regla)}</p>${c.rehab ? `<p>Elige el peso para quedar en el RPE indicado. "Máx. intención" es cada repetición lo más rápido posible, sin llegar a cansarte. Los ejercicios marcados como terapia no se saltan.</p>` : ''}<p class="ap-muted">RPE 8 es que podrías hacer 2 repeticiones más. RPE 7, que podrías hacer 3 más.</p>
