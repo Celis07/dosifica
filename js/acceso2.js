@@ -15,12 +15,27 @@ const _renderAcc2 = render;
 render = function(){ const r = _renderAcc2.apply(this, arguments); try{ accBtn(); }catch(e){} return r; };
 document.addEventListener('click', e => {
   if(!e.target.closest('[data-fxacc]')) return;
-  if(!(st.email || '').trim()){
-    view = 'datos'; render();
-    setTimeout(() => { const i = $('#pemail'); if(i){ i.scrollIntoView({block: 'center', behavior: 'smooth'}); i.focus(); } }, 150);
-    toast('Escribe su correo: será su usuario. Luego toca otra vez el botón de acceso.'); return;
-  }
-  accOpen = !accOpen; if(accOpen) ACC = {id: curId, link: '', busy: '', msg: '', kind: ''};
+  accOpen = !(accOpen && ACC.id === curId && document.querySelector('#accCard')); if(accOpen) ACC = {id: curId, link: '', busy: '', msg: '', kind: ''};
   accRender(); document.querySelector('[data-fxacc]')?.classList.toggle('on', accOpen);
   if(accOpen) $('#accCard')?.scrollIntoView({block: 'start', behavior: 'smooth'});
+});
+
+/* Sin correo: se pide ahí mismo, en la tarjeta de acceso (no manda a Datos) */
+const _accRowHTML2 = accRowHTML;
+accRowHTML = function(){
+  if(curId && !isExample && !(st.email || '').trim()) return `<div class="accbox"><div class="acc-h">Acceso de ${esc(st.nombre || 'la persona')}</div>
+    <label class="f" style="margin:6px 0 0">Su correo (será su usuario para entrar)<input type="email" id="accEmail" autocomplete="off" inputmode="email" placeholder="nombre@correo.com"></label>
+    <div class="actions" style="margin-top:8px"><button type="button" class="dark" id="accEmailOk">Guardar y crear enlace</button></div>
+    ${ACC.msg ? `<p class="lgmsg ${ACC.kind || ''}" style="margin:6px 0 0">${ACC.msg}</p>` : ''}</div>`;
+  return _accRowHTML2.apply(this, arguments);
+};
+document.addEventListener('click', async e => {
+  if(!e.target.closest('#accEmailOk')) return;
+  const v = ($('#accEmail')?.value || '').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){ ACC = {id: curId, link: '', busy: '', msg: 'Ese correo no es válido.', kind: 'err'}; accRender(); $('#accEmail')?.focus(); return; }
+  st.email = v; const pe = $('#pemail'); if(pe) pe.value = v;
+  await save(true);
+  if(/No se pudo/.test($('#saveState')?.textContent || '')){ ACC = {id: curId, link: '', busy: '', msg: 'No se pudo guardar el correo (¿ya lo tiene otra persona?).', kind: 'err'}; accRender(); return; }
+  ACC = {id: curId, link: '', busy: '', msg: '', kind: ''}; accRender();
+  if(typeof accMakeLink === 'function') accMakeLink();
 });
