@@ -10,36 +10,55 @@
    accesorio '' | 'gorra' (7 días) | 'medalla' (30) | 'gorro' (100, gorro de rugby subacuático). */
 const mkMood = m => m === true ? 'feliz' : (m === false || !m) ? 'normal' : m;
 const CURITA = (x, y, r) => `<g transform="translate(${x} ${y}) rotate(${r})"><rect x="-17" y="-7" width="34" height="14" rx="7" fill="#F2C9A0"/><rect x="-6" y="-7" width="12" height="14" fill="#E3B286"/><circle cx="-2" cy="-2" r="1.2" fill="#C9956A"/><circle cx="2" cy="2" r="1.2" fill="#C9956A"/></g>`;
+/* Nov 2026 · nuevo diseño: Pesi duotono (cuerpo salvia) y Nutria asomada en el agua. Los colores salen de
+   las variables --pz-* y --nt-* (css/tema.css), así cambian solos con el modo oscuro. svg2 es la segunda
+   apariencia (Pesi con los brazos arriba, Nutria flotando boca arriba) y se usa solo para recordar el chequeo. */
+const GOLD = '<circle r="12" fill="#C9932E" stroke="#9E7220" stroke-width="2"/><path d="M-4 -3 L0 -7 L0 7" stroke="#F3F1EA" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+const PZ_FACE = (m, y = 0) => {
+  const t = (x) => `transform="translate(0 ${y + x})"`;
+  if(m === 'feliz') return `<g ${t(0)}><path d="M72 138 Q82 126 92 138" stroke="var(--pz-e)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M108 138 Q118 126 128 138" stroke="var(--pz-e)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M86 152 Q100 168 114 152 Z" fill="var(--pz-e)"/></g>`;
+  const r = m === 'serio' ? 6.5 : 8;
+  return `<g ${t(0)}><circle cx="82" cy="134" r="${r}" fill="var(--pz-e)"/><circle cx="118" cy="134" r="${r}" fill="var(--pz-e)"/><circle cx="85" cy="131" r="2.5" fill="var(--pz-eh)"/><circle cx="121" cy="131" r="2.5" fill="var(--pz-eh)"/>`
+    + (m === 'serio' ? `<path d="M70 120 L90 125 M130 120 L110 125" stroke="var(--pz-e)" stroke-width="4" stroke-linecap="round"/><path d="M90 156 L110 156" stroke="var(--pz-e)" stroke-width="5" stroke-linecap="round"/>`
+                     : `<path d="M88 152 Q100 162 112 152" stroke="var(--pz-e)" stroke-width="5" fill="none" stroke-linecap="round"/>`) + '</g>';
+};
+const PZ_BODY = `<path d="M68 74 Q66 30 100 30 Q134 30 132 74" stroke="var(--pz-h)" stroke-width="17" fill="none" stroke-linecap="round"/><circle cx="100" cy="120" r="58" fill="var(--pz-b)"/><path d="M58 92 Q100 74 142 92 Q120 84 100 84 Q80 84 58 92 Z" fill="var(--pz-hi)"/><rect x="64" y="164" width="72" height="14" rx="7" fill="var(--pz-h)"/>`;
+const PZ_CHEEKS = `<circle cx="68" cy="150" r="7" fill="var(--pz-ck)" opacity=".55"/><circle cx="132" cy="150" r="7" fill="var(--pz-ck)" opacity=".55"/>`;
+const PZ_ACC = acc => acc === 'gorro' ? `<path d="M46 110 Q48 62 100 62 Q152 62 154 110 Z" fill="#F3F1EA" stroke="#CFCBBE" stroke-width="2"/><path d="M100 62 V108" stroke="#CFCBBE" stroke-width="2"/><circle cx="46" cy="116" r="13" fill="#F3F1EA" stroke="#CFCBBE" stroke-width="2"/><circle cx="154" cy="116" r="13" fill="#F3F1EA" stroke="#CFCBBE" stroke-width="2"/>`
+  : acc === 'gorra' ? `<path d="M64 92 Q66 62 100 62 Q134 62 136 92 Z" fill="var(--pz-h)"/><path d="M132 88 L166 94 Q158 101 130 98 Z" fill="var(--pz-h)"/><circle cx="100" cy="64" r="4" fill="var(--pz-hi)"/>` : '';
+const NT_FACE = m => {
+  if(m === 'feliz') return `<path d="M72 86 Q78 78 84 86 M116 86 Q122 78 128 86" stroke="var(--nt-k)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M90 98 h20 q-10 13 -20 0Z" fill="var(--nt-k)"/><path d="M92 114 Q100 126 108 114 Z" fill="var(--nt-k)"/>`;
+  return `<circle cx="78" cy="84" r="5.5" fill="var(--nt-k)"/><circle cx="122" cy="84" r="5.5" fill="var(--nt-k)"/><circle cx="80" cy="82" r="1.8" fill="#FFFFFF"/><circle cx="124" cy="82" r="1.8" fill="#FFFFFF"/><path d="M90 98 h20 q-10 13 -20 0Z" fill="var(--nt-k)"/>`
+    + (m === 'serio' ? `<path d="M68 72 L86 76 M132 72 L114 76" stroke="var(--nt-k)" stroke-width="3.5" stroke-linecap="round"/><path d="M93 116 L107 116" stroke="var(--nt-k)" stroke-width="2.5" stroke-linecap="round"/>`
+                     : `<path d="M100 106 v6 M100 112 q-5 4 -9 1 M100 112 q5 4 9 1" stroke="var(--nt-k)" stroke-width="2" fill="none" stroke-linecap="round"/>`);
+};
+const NT_WHISK = (x, y, d) => [-4, 0, 4].map(o => `<path d="M${x} ${y + o} q${d * 10} ${o * .6 - 2} ${d * 20} ${o * 1.4}" stroke="var(--nt-k)" stroke-width="1.8" fill="none" stroke-linecap="round"/>`).join('');
+const NT_BALL = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="var(--nt-ball)"/><path d="M${x - r + 1} ${y - 4} Q${x} ${y + 6} ${x + r - 1} ${y - 4}" stroke="var(--nt-k)" stroke-width="2.5" fill="none"/>`;
 const MASC = {
-  pesi: {n: 'Pesi', svg: (m, acc) => { m = mkMood(m); return `<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Pesi, la pesa rusa">
-    <path d="M68 74 Q66 30 100 30 Q134 30 132 74" stroke="var(--mk-ink)" stroke-width="17" fill="none" stroke-linecap="round"/>
-    <circle cx="100" cy="120" r="58" fill="var(--mk-ink)"/><rect x="64" y="164" width="72" height="14" rx="7" fill="var(--mk-ink)"/>
-    ${acc === 'gorro' ? `<path d="M46 112 Q48 60 100 60 Q152 60 154 112 Z" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="2"/><circle cx="46" cy="118" r="13" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="2"/><circle cx="154" cy="118" r="13" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="2"/>`
-      : `<path d="M44 106 Q100 88 156 106 L158 120 Q100 102 42 120 Z" fill="#E5202E"/><path d="M154 108 L176 98 L172 112 Z" fill="#E5202E"/><path d="M155 114 L178 120 L168 128 Z" fill="#E5202E"/>`}
-    ${acc === 'gorra' ? `<path d="M70 82 Q72 58 100 58 Q128 58 130 82 Z" fill="#E5202E"/><path d="M126 80 L158 84 Q150 90 124 88 Z" fill="#B3121F"/>` : ''}
-    ${m === 'feliz' ? `<path d="M72 140 Q82 128 92 140" stroke="var(--mk-eye)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M108 140 Q118 128 128 140" stroke="var(--mk-eye)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M86 154 Q100 170 114 154 Z" fill="var(--mk-eye)"/>`
-      : `<ellipse cx="82" cy="138" rx="11" ry="${m === 'serio' ? 8 : 12}" fill="var(--mk-eye)"/><ellipse cx="118" cy="138" rx="11" ry="${m === 'serio' ? 8 : 12}" fill="var(--mk-eye)"/><circle cx="84" cy="140" r="5.5" fill="var(--mk-ink)"/><circle cx="120" cy="140" r="5.5" fill="var(--mk-ink)"/>`
-      + (m === 'normal' ? `<path d="M92 158 Q100 165 108 158" stroke="var(--mk-eye)" stroke-width="4" fill="none" stroke-linecap="round"/>` : `<path d="M90 160 L110 160" stroke="var(--mk-eye)" stroke-width="4" stroke-linecap="round"/>`)
-      + (m === 'serio' ? `<path d="M70 124 L92 128 M130 124 L108 128" stroke="var(--mk-eye)" stroke-width="4" stroke-linecap="round"/>` : '')
-      + (m === 'curita' ? CURITA(132, 160, -25) : '')}
-    ${acc === 'medalla' ? `<path d="M88 150 L80 178 M112 150 L120 178" stroke="#E5202E" stroke-width="6"/><circle cx="100" cy="184" r="12" fill="#F2B705" stroke="#C99400" stroke-width="2"/>` : ''}
-  </svg>`; }},
-  nutria: {n: 'Nutria', svg: (m, acc) => { m = mkMood(m); return `<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Nutria con su pelota roja">
-    <path d="M140 160 Q182 162 176 128 Q170 150 140 148 Z" fill="#7A4E33"/><ellipse cx="100" cy="136" rx="50" ry="46" fill="#8A5A3B"/><ellipse cx="100" cy="146" rx="32" ry="30" fill="#F1D9C0"/>
-    <circle cx="68" cy="52" r="11" fill="#7A4E33"/><circle cx="132" cy="52" r="11" fill="#7A4E33"/><circle cx="100" cy="82" r="42" fill="#8A5A3B"/>
-    ${acc === 'gorro' ? `<path d="M58 80 Q58 34 100 34 Q142 34 142 80 Z" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="2"/><circle cx="60" cy="84" r="11" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="2"/><circle cx="140" cy="84" r="11" fill="#F5F5F7" stroke="#C7C7CC" stroke-width="2"/>` : ''}
-    ${acc === 'gorra' ? `<path d="M64 62 Q66 36 100 36 Q134 36 136 62 Z" fill="#E5202E"/><path d="M132 60 L166 64 Q158 70 130 68 Z" fill="#B3121F"/>` : ''}
-    <ellipse cx="100" cy="96" rx="24" ry="17" fill="#F1D9C0"/><ellipse cx="100" cy="88" rx="7" ry="5" fill="#1D1D1F"/>
-    ${m === 'feliz' ? `<path d="M79 76 Q85 68 91 76" stroke="#1D1D1F" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M109 76 Q115 68 121 76" stroke="#1D1D1F" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M92 99 Q100 110 108 99 Z" fill="#1D1D1F"/>`
-      : `<circle cx="85" cy="74" r="5.5" fill="#1D1D1F"/><circle cx="115" cy="74" r="5.5" fill="#1D1D1F"/>`
-      + (m === 'normal' ? `<path d="M93 100 Q100 106 107 100" stroke="#1D1D1F" stroke-width="3" fill="none" stroke-linecap="round"/>` : `<path d="M93 102 L107 102" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>`)
-      + (m === 'serio' ? `<path d="M77 64 L91 67 M123 64 L109 67" stroke="#1D1D1F" stroke-width="3" stroke-linecap="round"/>` : '')
-      + (m === 'curita' ? CURITA(124, 58, 30) : '')}
-    <path d="M78 96 L60 92 M78 100 L60 102 M122 96 L140 92 M122 100 L140 102" stroke="#5A3A26" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="100" cy="140" r="17" fill="#E5202E"/><path d="M86 132 Q100 140 114 132" stroke="#FFFFFF" stroke-width="2.5" fill="none"/>
-    <ellipse cx="80" cy="140" rx="10" ry="8" fill="#7A4E33"/><ellipse cx="120" cy="140" rx="10" ry="8" fill="#7A4E33"/>
-    ${acc === 'medalla' ? `<path d="M88 118 L80 160 M112 118 L120 160" stroke="#E5202E" stroke-width="5"/><circle cx="100" cy="170" r="11" fill="#F2B705" stroke="#C99400" stroke-width="2"/>` : ''}
-  </svg>`; }}
+  pesi: {n: 'Pesi',
+    svg: (m, acc) => { m = mkMood(m); return `<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Pesi, la pesa rusa">${PZ_BODY}${PZ_ACC(acc)}${PZ_FACE(m)}${PZ_CHEEKS}${m === 'curita' ? CURITA(136, 160, -25) : ''}${acc === 'medalla' ? `<path d="M90 164 L96 176 M110 164 L104 176" stroke="var(--pz-h)" stroke-width="5"/><g transform="translate(100 186)">${GOLD}</g>` : ''}</svg>`; },
+    svg2: () => `<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Pesi con los brazos arriba"><path d="M46 124 Q24 118 24 92" stroke="var(--pz-b)" stroke-width="15" fill="none" stroke-linecap="round"/><circle cx="24" cy="86" r="10" fill="var(--pz-b)"/><path d="M154 124 Q176 118 176 92" stroke="var(--pz-b)" stroke-width="15" fill="none" stroke-linecap="round"/><circle cx="176" cy="86" r="10" fill="var(--pz-b)"/>${PZ_BODY}${PZ_FACE('feliz')}${PZ_CHEEKS}<path d="M14 66 l6 6 M34 64 l-5 7 M186 66 l-6 6 M166 64 l5 7" stroke="var(--pz-m)" stroke-width="3" stroke-linecap="round"/></svg>`},
+  nutria: {n: 'Nutria',
+    svg: (m, acc) => { m = mkMood(m); return `<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Nutria asomada en el agua con su balón">
+    <path d="M62 120 Q58 160 52 176 H148 Q142 160 138 120Z" fill="var(--nt-b)"/><path d="M80 128 Q78 160 76 176 H124 Q122 160 120 128Z" fill="var(--nt-m)"/>
+    ${acc === 'medalla' ? `<path d="M86 130 L94 150 M114 130 L106 150" stroke="var(--nt-b2)" stroke-width="5"/><g transform="translate(100 154)">${GOLD}</g>` : ''}
+    <circle cx="52" cy="80" r="10" fill="var(--nt-b2)"/><circle cx="148" cy="80" r="10" fill="var(--nt-b2)"/><circle cx="52" cy="80" r="4.5" fill="var(--nt-m)"/><circle cx="148" cy="80" r="4.5" fill="var(--nt-m)"/>
+    <ellipse cx="100" cy="94" rx="54" ry="40" fill="var(--nt-b)"/>
+    ${acc === 'gorro' ? `<path d="M48 92 Q48 50 100 50 Q152 50 152 92 Z" fill="#F3F1EA" stroke="#CFCBBE" stroke-width="2"/><path d="M100 50 V90" stroke="#CFCBBE" stroke-width="2"/><circle cx="50" cy="86" r="12" fill="#F3F1EA" stroke="#CFCBBE" stroke-width="2"/><circle cx="150" cy="86" r="12" fill="#F3F1EA" stroke="#CFCBBE" stroke-width="2"/>` : ''}
+    ${acc === 'gorra' ? `<path d="M62 70 Q64 46 100 46 Q136 46 138 70 Z" fill="var(--nt-b2)"/><path d="M134 66 L168 72 Q160 79 132 76 Z" fill="var(--nt-b2)"/><circle cx="100" cy="48" r="4" fill="var(--nt-ball)"/>` : ''}
+    <circle cx="87" cy="111" r="17" fill="var(--nt-m)"/><circle cx="113" cy="111" r="17" fill="var(--nt-m)"/>
+    ${NT_FACE(m)}${NT_WHISK(78, 112, -1)}${NT_WHISK(122, 112, 1)}${m === 'curita' ? CURITA(132, 64, 30) : ''}
+    <path d="M0 160 q25 -10 50 0 t50 0 t50 0 t50 0 V200 H0Z" fill="var(--nt-w)" opacity=".45"/>${NT_BALL(164, 150, 17)}
+  </svg>`; },
+    svg2: () => `<svg viewBox="0 0 200 200" width="100%" height="100%" role="img" aria-label="Nutria flotando boca arriba con su balón">
+    <path d="M0 132 q25 -10 50 0 t50 0 t50 0 t50 0 V200 H0Z" fill="var(--nt-w)" opacity=".35"/><path d="M150 118 Q180 116 194 100 Q186 124 152 130Z" fill="var(--nt-b2)"/>
+    <ellipse cx="104" cy="120" rx="60" ry="24" fill="var(--nt-b)"/><ellipse cx="108" cy="114" rx="42" ry="13" fill="var(--nt-m)"/>
+    <ellipse cx="146" cy="100" rx="9" ry="6" fill="var(--nt-b2)" transform="rotate(-25 146 100)"/><ellipse cx="160" cy="104" rx="9" ry="6" fill="var(--nt-b2)" transform="rotate(-25 160 104)"/>
+    ${NT_BALL(104, 94, 15)}<ellipse cx="90" cy="100" rx="7" ry="5" fill="var(--nt-b2)"/><ellipse cx="118" cy="100" rx="7" ry="5" fill="var(--nt-b2)"/>
+    <circle cx="28" cy="88" r="6" fill="var(--nt-b2)"/><circle cx="66" cy="88" r="6" fill="var(--nt-b2)"/><ellipse cx="47" cy="104" rx="28" ry="22" fill="var(--nt-b)"/>
+    <circle cx="40" cy="113" r="10" fill="var(--nt-m)"/><circle cx="54" cy="113" r="10" fill="var(--nt-m)"/><path d="M41 105 h12 q-6 8 -12 0Z" fill="var(--nt-k)"/>
+    <circle cx="36" cy="98" r="3.2" fill="var(--nt-k)"/><circle cx="58" cy="98" r="3.2" fill="var(--nt-k)"/>${NT_WHISK(34, 113, -1)}${NT_WHISK(60, 113, 1)}
+  </svg>`}
 };
 const mkKey = () => 'apex_mascota_' + (A.p?.id || '');
 function mascotaDe(){

@@ -2,6 +2,8 @@
    Aparecen cuando la persona hace algo: inicio, chequeo, fin de la sesión en vivo, hitos de racha,
    cambio de fase, pantallas vacías y sin conexión. En el panel del fisio, junto a cada paciente con su racha. */
 const mkMini = (m, mood, acc, cls) => `<span class="${cls || 'mk-mini'}" aria-hidden="true">${MASC[m].svg(mood, acc)}</span>`;
+/* Segunda apariencia: solo para recordar el chequeo */
+const mkMini2 = (m, cls) => `<span class="${cls || 'mk-mini'}" aria-hidden="true">${(MASC[m].svg2 || MASC[m].svg)('normal')}</span>`;
 const mkVars = 'mk-vars';
 const MOOD_K = {n: 'normal', g: 'feliz', y: 'serio', r: 'curita'};
 
@@ -17,13 +19,13 @@ function mkSaludo(c){
   else if(hoy) t = 'Sesión de hoy lista. ¡Así se hace!';
   else if(semana) t = 'Semana cumplida. Hoy descansas.';
   else t = `Hoy toca ${d ? d.name : 'entrenar'}.` + (k === 'y' ? ' Sin subir peso.' : k === 'r' ? ' Hoy bajamos la carga.' : '');
-  return {m, mood: MOOD_K[k], t};
+  return {m, mood: MOOD_K[k], t, alt: k === 'n'};
 }
 /* 6 · El chequeo lo pregunta la mascota (solo la primera pregunta) */
 function mkAsk(){
   const f = document.querySelector('#athleteApp #wf-aw'); const m = mascotaDe();
   if(!f || !m || f.querySelector('.mk-ask')) return;
-  f.insertAdjacentHTML('afterbegin', `<div class="mk-ask ${mkVars}">${mkMini(m, 'normal', mkAcc(mkRacha()))}<p>¿Cómo dormiste y cómo amaneces? Empecemos por ahí.</p></div>`);
+  f.insertAdjacentHTML('afterbegin', `<div class="mk-ask ${mkVars}">${mkMini2(m)}<p>¿Cómo dormiste y cómo amaneces? Empecemos por ahí.</p></div>`);
 }
 /* 5 · Cambio de fase */
 function mkFase(c){
@@ -45,7 +47,7 @@ renderAthlete = function(){
   if(hero && c && !hero.querySelector('.mk-say')){
     const s = mkSaludo(c);
     if(s){ const dot = hero.querySelector('.po-hs'); dot.classList.add('mk-hs', mkVars);
-      dot.innerHTML = `${mkMini(s.m, s.mood, mkAcc(mkRacha()), 'mk-mini mk-hero')}<span class="po-ht mk-say"><b>${esc(s.t)}</b><span>${esc(hero.querySelector('.po-ht span')?.textContent || '')}</span></span>`; }
+      dot.innerHTML = `${s.alt ? mkMini2(s.m, 'mk-mini mk-hero') : mkMini(s.m, s.mood, mkAcc(mkRacha()), 'mk-mini mk-hero')}<span class="po-ht mk-say"><b>${esc(s.t)}</b><span>${esc(hero.querySelector('.po-ht span')?.textContent || '')}</span></span>`; }
   }
   mkAsk();
   // 7 · Sin plan todavía

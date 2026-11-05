@@ -204,3 +204,12 @@ body.fx .fx-day .dayhead h3 button,body.fx .fx-day .dayhead button:has(h3){backg
 #login .lgbox{fill:var(--t-card);stroke:var(--t-line);stroke-width:1.5}
 #login .lgbar{fill:var(--t-ink)}
 #login .lgpeak{fill:var(--t-acc)}
+
+/* ---------- Mascotas (Pesi duotono, Nutria asomada) ---------- */
+:root{--pz-b:#8FAE8B;--pz-hi:#A9C2A5;--pz-h:#1F2A24;--pz-e:#1F2A24;--pz-eh:#F3F1EA;--pz-ck:#C98A75;--pz-m:#5F675F;
+  --nt-b:#7A5843;--nt-b2:#5F4433;--nt-m:#EADBC6;--nt-k:#17201B;--nt-ball:#8FAE8B;--nt-w:#8FAE8B}
+@media (prefers-color-scheme:dark){:root{--pz-b:#9FE3B8;--pz-hi:#C3F0D3;--pz-h:#EEF0EA;--pz-e:#111412;--pz-eh:#EEF0EA;--pz-ck:#E59A86;--pz-m:#B4C0B8;
+  --nt-b:#B08566;--nt-b2:#9C7458;--nt-m:#F1E6D6;--nt-k:#17201B;--nt-ball:#9FE3B8;--nt-w:#9FE3B8}}
+/* en la tarjeta oscura del inicio el asa de Pesi va clara también en modo claro */
+#athleteApp.ath2 .po-hero{--pz-h:#EEF0EA;--pz-m:#B4C0B8}
+#athleteApp.ath2 .po-hero{--h-act:var(--t-acc);--h-on-act:var(--t-accInk)}
