@@ -9,6 +9,7 @@
 const SG = {aper: {}, vis: {}, hist: {}, histSig: {}, histOpen: false, lastV: {}, vistoT: 0};
 const sgAdd = (iso, k) => { const x = new Date(iso + 'T12:00:00'); x.setDate(x.getDate() + k); return x.toISOString().slice(0, 10); };
 const sgFecha = iso => { try{ return new Date(iso + 'T12:00:00').toLocaleDateString('es-CO', {weekday: 'short', day: 'numeric', month: 'short'}); }catch(e){ return iso; } };
+const sgCorta = iso => { try{ return new Date(iso + 'T12:00:00').toLocaleDateString('es-CO', {day: 'numeric', month: 'short'}).replace('.', ''); }catch(e){ return iso; } };
 const sgHora = ts => { try{ const d = new Date(ts), hoy = new Date().toDateString() === d.toDateString(), ay = new Date(Date.now() - 864e5).toDateString() === d.toDateString();
   const h = d.toLocaleTimeString('es-CO', {hour: 'numeric', minute: '2-digit'}); return hoy ? `hoy ${h}` : ay ? `ayer ${h}` : d.toLocaleDateString('es-CO', {day: 'numeric', month: 'short'}) + ' ' + h; }catch(e){ return ''; } };
 /* Último día del plan: desde + semanas × 7 − 1. El aviso llega el día anterior a ese. */
@@ -29,9 +30,10 @@ loadPatients = async function(){
 };
 const _openPatientSg = openPatient;
 openPatient = function(id){
+  if(id){ SG.histOpen = false; SG.durOpen = false; }
   const r = _openPatientSg.apply(this, arguments);
   if(id){
-    SG.aper[id] = new Date().toISOString(); SG.histOpen = false;
+    SG.aper[id] = new Date().toISOString();
     sb.from('aperturas').upsert({paciente_id: id, at: SG.aper[id]}, {onConflict: 'fisio_email,paciente_id'}).then(() => {}, () => {});
     sgLoadPaciente(id);
   }
@@ -89,43 +91,65 @@ async function sgRestaurar(vid){
   await save(true); render(); toast('Plan restaurado. Ya lo ve así en su app.');
 }
 
-/* ---------- Tarjeta en la vista Plan: duración, visto e historial ---------- */
+/* ---------- En la ficha: Visto y Duración como etiquetas de estado; historial al final del plan ---------- */
 const SG_SEM = [1, 2, 3, 4, 6, 8];
-function sgCard(){
-  const fin = sgFin(st), dd = fin ? sgDiasA(fin) : null, d = st.dur || {};
-  const est = !fin ? 'Sin fecha de cambio' : dd < 0 ? `Terminó el ${sgFecha(fin)}` : dd === 0 ? 'Termina hoy' : dd === 1 ? 'Termina mañana' : `Termina el ${sgFecha(fin)} · te aviso el ${sgFecha(sgAdd(fin, -1))}`;
-  const k = !fin ? '' : dd <= 1 ? ' warn' : '';
-  const v = SG.vis[curId] || {}, hist = SG.hist[curId] || [];
-  const visto = !v.hay ? '' : v.visto && v.act && v.visto >= v.act ? `<span class="sg-vis ok">Visto ${esc(sgHora(v.visto))}</span>`
-    : `<span class="sg-vis">Aún no ve la última versión${v.visto ? ` · lo abrió ${esc(sgHora(v.visto))}` : ''}</span>`;
-  return `<section class="sg-card fx-w" id="sgCard">
-    <div class="sg-top"><span class="sg-k">Duración del plan</span>${visto}</div>
-    <div class="sg-chips" role="group" aria-label="Semanas que dura el plan">${SG_SEM.map(n => `<button type="button" data-sgsem="${n}" aria-pressed="${+d.sem === n}">${n} sem</button>`).join('')}<button type="button" data-sgsem="0" aria-pressed="${!fin}">Sin fecha</button></div>
-    <div class="sg-row"><span class="sg-est${k}">${esc(est)}</span>${fin ? `<button type="button" class="sg-link" data-sgre="1">Renové el plan hoy</button>` : ''}</div>
-    <div class="sg-row"><button type="button" class="sg-link" data-sghist="1" aria-expanded="${SG.histOpen}">Historial del plan${hist.length ? ` · ${hist.length}` : ''}</button></div>
-    ${SG.histOpen ? `<div class="sg-hist">${hist.length ? hist.map((x, i) => `<div class="sg-hr"><div><b>${esc(sgHora(x.at))}</b><span>${i === 0 ? 'Versión actual · ' : ''}Semana ${esc(x.semana || '—')}${x.fase ? ' · ' + esc(x.fase) : ''} · ${x.n} ${x.n === 1 ? 'día' : 'días'}</span></div>${i === 0 ? '' : `<button type="button" data-sgrest="${esc(x.id)}">Restaurar</button>`}</div>`).join('')
-      : '<p class="sg-vacio">Todavía no hay versiones. Cada vez que guardes el plan queda una aquí (las últimas 10).</p>'}</div>` : ''}
-  </section>`;
+SG.durOpen = false;
+function sgDurTxt(){
+  const fin = sgFin(st); if(!fin) return {t: 'Duración', k: 'vacia'};
+  const dd = sgDiasA(fin), sem = +st.dur.sem;
+  return {t: dd < 0 ? `${sem} sem · terminó` : dd === 0 ? `${sem} sem · termina hoy` : dd === 1 ? `${sem} sem · termina mañana` : `${sem} sem · hasta ${sgCorta(fin)}`, k: dd <= 1 ? 'warn' : ''};
+}
+function sgTags(){
+  const tags = document.querySelector('#out .fx-fhead .fx-tags'); if(!tags || tags.querySelector('.sg-dur')) return;
+  const v = SG.vis[curId] || {}, d = sgDurTxt();
+  let html = '';
+  if(v.hay) html += v.visto && v.act && v.visto >= v.act ? `<span class="fx-tag sg-vis ok" title="Vio la última versión de su plan">Visto ${esc(sgHora(v.visto))}</span>`
+    : `<span class="fx-tag sg-vis" title="${v.visto ? 'Lo abrió por última vez ' + esc(sgHora(v.visto)) : 'Todavía no abre su plan'}">Sin ver</span>`;
+  html += `<button type="button" class="fx-tag sg-dur ${d.k}" data-sgdur="1" aria-expanded="${SG.durOpen}" aria-controls="sgPan">${d.k === 'vacia' ? '+ ' : ''}${esc(d.t)}</button>`;
+  tags.insertAdjacentHTML('beforeend', html);
+  if(SG.durOpen){
+    const fin = sgFin(st), cur = +(st.dur?.sem || 0);
+    tags.insertAdjacentHTML('afterend', `<div class="sg-pan" id="sgPan" role="group" aria-label="Duración del plan">
+      <div class="sg-chips">${SG_SEM.map(n => `<button type="button" data-sgsem="${n}" aria-pressed="${fin && cur === n}">${n} ${n === 1 ? 'semana' : 'semanas'}</button>`).join('')}</div>
+      <p class="sg-nota">${fin ? `Termina el ${esc(sgFecha(fin))}. Te aviso el día anterior.` : 'Cuenta desde hoy. Te aviso un día antes de que termine.'}</p>
+      ${fin ? `<div class="sg-acts"><button type="button" data-sgre="1">Renové el plan hoy</button><button type="button" data-sgsem="0">Quitar fecha</button></div>` : ''}
+    </div>`);
+  }
+}
+function sgHist(){
+  if(view !== 'plan') return;
+  const tpl = $('#bTpl') || $('#bXls'); if(!tpl) return;
+  const row = tpl.parentElement;
+  if(!row.querySelector('#bHist')) row.insertAdjacentHTML('beforeend', `<button type="button" id="bHist" data-sghist="1" aria-expanded="${SG.histOpen}" aria-controls="sgHist">Historial</button>`);
+  if(!SG.histOpen || $('#sgHist')) return;
+  const hist = SG.hist[curId] || [];
+  row.insertAdjacentHTML('afterend', `<section class="sg-histp fx-w" id="sgHist" aria-label="Historial del plan">
+    <div class="sg-hh"><b>Historial del plan</b><button type="button" class="sg-x" data-sghist="1" aria-label="Cerrar historial">Cerrar</button></div>
+    <p class="sg-nota">Cada vez que guardas queda una versión. Se conservan las últimas 10.</p>
+    ${hist.length ? `<div class="sg-hist">${hist.map((x, i) => `<div class="sg-hr"><div><b>${esc(sgHora(x.at))}</b><span>${i === 0 ? 'Versión actual · ' : ''}Semana ${esc(x.semana || '—')}${x.fase ? ' · ' + esc(x.fase) : ''} · ${x.n} ${x.n === 1 ? 'día' : 'días'}</span></div>${i === 0 ? '' : `<button type="button" data-sgrest="${esc(x.id)}">Restaurar</button>`}</div>`).join('')}</div>`
+      : '<p class="sg-nota">Todavía no hay versiones guardadas.</p>'}
+  </section>`);
 }
 function sgInsert(){
-  if(!document.body.classList.contains('fx') || !curId || isExample || view !== 'plan') return;
-  const out = $('#out'); if(!out || out.querySelector('#sgCard')) return;
-  const hd = out.querySelector('.fx-fhead');
-  hd ? hd.insertAdjacentHTML('afterend', sgCard()) : out.insertAdjacentHTML('afterbegin', sgCard());
+  if(!document.body.classList.contains('fx') || !curId || isExample) return;
+  sgTags(); sgHist();
 }
 const _renderSg = render;
 render = function(){ const r = _renderSg.apply(this, arguments); try{ sgInsert(); }catch(e){ console.error(e); } return r; };
 document.addEventListener('click', async e => {
   let b;
+  if((b = e.target.closest('[data-sgdur]'))){ SG.durOpen = !SG.durOpen; render(); if(SG.durOpen) $('#sgPan button')?.focus(); return; }
   if((b = e.target.closest('[data-sgsem]'))){
     const n = +b.dataset.sgsem;
     st.dur = n ? {sem: n, desde: (st.dur?.desde && +st.dur.sem) ? st.dur.desde : todayISO()} : null;
-    await save(true); render(); toast(n ? `Plan de ${n} ${n === 1 ? 'semana' : 'semanas'}: termina el ${sgFecha(sgFin(st))}.` : 'Plan sin fecha de cambio.'); return;
+    SG.durOpen = false; await save(true); render();
+    toast(n ? `Plan de ${n} ${n === 1 ? 'semana' : 'semanas'}: termina el ${sgFecha(sgFin(st))}.` : 'Plan sin fecha de cambio.'); return;
   }
-  if((b = e.target.closest('[data-sgre]'))){ if(st.dur) st.dur.desde = todayISO(); await save(true); render(); toast('Listo: cuenta desde hoy.'); return; }
-  if((b = e.target.closest('[data-sghist]'))){ SG.histOpen = !SG.histOpen; render(); return; }
+  if((b = e.target.closest('[data-sgre]'))){ if(st.dur) st.dur.desde = todayISO(); SG.durOpen = false; await save(true); render(); toast(`Cuenta desde hoy: termina el ${sgFecha(sgFin(st))}.`); return; }
+  if((b = e.target.closest('[data-sghist]'))){ SG.histOpen = !SG.histOpen; render(); if(SG.histOpen) $('#sgHist')?.scrollIntoView({block: 'start', behavior: 'smooth'}); else $('#bHist')?.focus(); return; }
   if((b = e.target.closest('[data-sgrest]'))){ sgRestaurar(b.dataset.sgrest); return; }
 });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && SG.durOpen){ SG.durOpen = false; render(); $('[data-sgdur]')?.focus(); } });
 
 /* ---------- Inicio del fisio: planes por actualizar ---------- */
 const _renderHomeSg = renderHome;

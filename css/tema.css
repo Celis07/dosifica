@@ -214,22 +214,28 @@ body.fx .fx-day .dayhead h3 button,body.fx .fx-day .dayhead button:has(h3){backg
 #athleteApp.ath2 .po-hero{--pz-h:#EEF0EA;--pz-m:#B4C0B8}
 #athleteApp.ath2 .po-hero{--h-act:var(--t-acc);--h-on-act:var(--t-accInk)}
 
-/* ---------- Seguimiento del plan: duración, visto e historial ---------- */
-.sg-card{display:flex;flex-direction:column;gap:12px;margin:12px 0}
-.sg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.sg-k,.sg-h{font-family:var(--t-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--t-mut);margin:0}
-.sg-vis{font-size:12px;font-weight:500;padding:4px 10px;border-radius:999px;background:var(--t-chip);color:var(--t-mut)}
-.sg-vis.ok{background:var(--t-gS);color:var(--t-g)}
+/* ---------- Seguimiento del plan: etiquetas Visto y Duración, panel de semanas e historial ---------- */
+.fx-tag.sg-vis{background:var(--t-chip);color:var(--t-mut);font-weight:500}
+.fx-tag.sg-vis.ok{background:var(--t-gS);color:var(--t-g);font-weight:600}
+body.fx .fx-tag.sg-dur{position:relative;border:0;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;background:var(--t-chip);color:var(--t-ink)}
+body.fx .fx-tag.sg-dur::after{content:"";position:absolute;inset:-8px -2px}  /* área táctil de 44 px sin agrandar la etiqueta */
+body.fx .fx-tag.sg-dur.vacia{background:transparent;color:var(--t-mut);box-shadow:inset 0 0 0 1px var(--t-line);font-weight:500}
+body.fx .fx-tag.sg-dur.warn{background:var(--t-rS);color:var(--t-r)}
+body.fx .fx-tag.sg-dur[aria-expanded="true"]{box-shadow:inset 0 0 0 1.5px var(--t-ink)}
+body.fx .fx-tag.sg-dur:focus-visible{outline:2px solid var(--t-ink);outline-offset:2px}
+.sg-pan{display:flex;flex-direction:column;gap:10px;background:var(--t-card);border-radius:16px;padding:14px;margin-top:2px}
 .sg-chips{display:flex;gap:6px;flex-wrap:wrap}
-body.fx .sg-chips button{border:0;border-radius:999px;height:34px;padding:0 13px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:13.5px;font-weight:500}
+body.fx .sg-chips button{border:0;border-radius:999px;min-height:40px;padding:0 14px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:14px;font-weight:500}
 body.fx .sg-chips button[aria-pressed="true"]{background:var(--t-ink);color:var(--t-bg);font-weight:600}
-.sg-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.sg-est{font-size:14px;color:var(--t-ink)} .sg-est.warn{color:var(--t-r);font-weight:600}
-body.fx .sg-link{border:0;background:transparent;padding:0;min-height:32px;font:inherit;font-size:14px;font-weight:500;color:var(--t-ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--t-line)}
+.sg-nota{margin:0;font-size:13px;color:var(--t-mut);line-height:1.4}
+.sg-acts{display:flex;gap:16px;flex-wrap:wrap}
+body.fx .sg-acts button,body.fx .sg-x{border:0;background:transparent;padding:0;min-height:40px;font:inherit;font-size:14px;font-weight:500;color:var(--t-ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--t-line)}
+.sg-histp{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.sg-hh{display:flex;justify-content:space-between;align-items:center;gap:10px} .sg-hh b{font-size:17px;font-weight:600;letter-spacing:-.01em}
 .sg-hist{display:flex;flex-direction:column;border-top:1px solid var(--t-line)}
 .sg-hr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--t-line)}
 .sg-hr>div{display:flex;flex-direction:column;gap:2px;min-width:0}
 .sg-hr b{font-size:14px;font-weight:600} .sg-hr span{font-size:12.5px;color:var(--t-mut)}
-body.fx .sg-hr button{border:0;border-radius:10px;height:32px;padding:0 12px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:13px;font-weight:600;flex:none}
-.sg-vacio{margin:10px 0 0;font-size:13px;color:var(--t-mut)}
+body.fx .sg-hr button{border:0;border-radius:10px;min-height:40px;padding:0 14px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:13.5px;font-weight:600;flex:none}
+.sg-h{font-family:var(--t-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--t-mut);margin:0}
 .sg-home{margin-top:14px}
