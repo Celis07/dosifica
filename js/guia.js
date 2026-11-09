@@ -56,6 +56,14 @@ const GUIA = [
     <li><b>Historial:</b> cada guardado deja una versión (las últimas 10, y los guardados seguidos en menos de 10 min se juntan). Restauras una con un toque.</li>
     <li><b>Duración del plan:</b> eliges cuántas semanas dura. Un día antes de que termine te llega el aviso, y en Inicio aparece en "por actualizar".</li>
     <li><b>Restablecer plan base</b> borra los cambios de la fase, pero la versión actual queda en el historial.</li></ul>`},
+  {t: 'Macrociclos con fechas', h: `
+    <p>Para planes de varias semanas armados de antemano (por ejemplo la preparación hacia un torneo).</p>
+    <ul><li><b>Cómo se cargan:</b> le pasas el macrociclo a Claude (un Excel o un documento) y él lo carga en la ficha. Cada semana queda con su fecha de inicio, su nombre, su objetivo y sus días.</li>
+    <li><b>En la ficha:</b> en Plan aparece la línea de tiempo con todas las semanas. La de hoy dice <b>Hoy</b> y las de competencia llevan ★. Toca una para verla o editarla: editar, plantillas, historial y PDF funcionan igual que siempre.</li>
+    <li><b>Lo que ve el usuario:</b> solo la semana que le toca según la fecha. Cambia sola cuando empieza la siguiente, sin que publiques nada, y las semanas futuras no las ve.</li>
+    <li><b>Reglas del plan</b> (por ejemplo semáforo de dolor o restricciones de cadera): las ves en la tarjeta del macrociclo, y el usuario en Mi plan, en "Reglas de tu plan".</li>
+    <li>Hay que publicar una vez para que el usuario tenga el macrociclo. Después, cada Guardar lo actualiza en su app.</li></ul>
+    <div class="gu-tip">Para cambiar fechas, nombres o reglas de las semanas, pídeselo a Claude. Los ejercicios de cada semana los editas tú en la app.</div>`},
   {t: 'Sesiones, racha y torneos', h: `
     <ul><li><b>Sesiones:</b> lo que registró la persona (RPE de la sesión, y si quiso: pesos, RPE por ejercicio, dolor y duración), con gráficas de carga, dolor y bienestar.</li>
     <li><b>Racha:</b> cuenta semanas cumplidas (una semana cuenta si hizo todas sus sesiones). La semana en curso no rompe la cuenta y los días de descanso no castigan. Si entrenó y no lo registró, marca ese día en la tarjeta Racha. Cuenta para la racha, pero no entra en la carga ni en las gráficas.</li>
@@ -81,7 +89,6 @@ const GUIA = [
     <ul><li><b>Banco de ejercicios:</b> los básicos y los que más usas. Puedes crear, editar y eliminar (con deshacer y restaurar desde "Eliminados"), con etiquetas para el generador, indicación y video.</li>
     <li><b>Tabla de usuarios:</b> fase, adherencia y dolor de todos en una sola tabla.</li>
     <li><b>Notificaciones:</b> actívalas para recibir alertas de dolor y mensajes.</li>
-    <li><b>Conectar con Claude:</b> Claude propone semanas que llegan a la ficha como pendientes. Tú las aceptas o rechazas, y nada se publica solo. En el Plan de cada ficha también está <b>Planificar con Claude</b>: copias las instrucciones y pegas la respuesta.</li>
     <li><b>Fisioterapeutas</b> (solo administrador): agregar o quitar fisios. Cada fisio tiene su propio panel y no ve los usuarios de los demás.</li>
     <li><b>Cambiar a mi cuenta de usuario</b> (solo administrador): pasas a tu propia cuenta de usuario con un toque y vuelves desde "Mi fisio → Volver a mi panel de fisio". La primera vez pide la contraseña de esa cuenta. Lo que registres ahí queda guardado de verdad en tu perfil de usuario. Al cerrar sesión, el celular olvida las dos sesiones.</li></ul>`},
   {t: 'Lo que ve el usuario', h: `
