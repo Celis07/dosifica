@@ -16,6 +16,8 @@ const GUIA = [
   {t: 'Inicio', h: `
     <ul><li><b>Cómo llegan hoy:</b> el color del chequeo de cada persona (verde, amarillo o rojo).</li>
     <li><b>Requiere atención:</b> alertas de dolor, chequeos en rojo, solicitudes de cambio, videos de técnica por revisar, mensajes sin leer, adherencia baja (menos de 60 % en 2 semanas, con los motivos que dio la persona) y planes que están por vencer.</li>
+    <li><b>Sin abrir su plan nuevo:</b> quien no ha abierto el plan 48 horas después de que lo publicaste o cambiaste. Toca el nombre para abrir su ficha y escribirle. Si tienes las notificaciones activas, también te llega un aviso al celular (una vez por cada versión del plan).</li>
+    <li><b>Respaldo semanal:</b> si pasaron 7 días desde tu último respaldo aparece el aviso con "Descargar" (o "Hoy no").</li>
     <li><b>Próximo torneo</b> y accesos rápidos a Bienestar en vivo e Intervalos.</li>
     <li>Cuando alguien cumple su semana te aparece el aviso para que le mandes un mensaje corto de refuerzo.</li></ul>
     <div class="gu-tip">La campana te muestra las alertas de dolor en tiempo real. Si activas las notificaciones en Cuenta, también te llegan al celular.</div>`},
@@ -71,7 +73,8 @@ const GUIA = [
     <li>Hay que publicar una vez para que el usuario tenga el macrociclo. Después, cada Guardar lo actualiza en su app.</li></ul>
     <div class="gu-tip">Para cambiar fechas, nombres o reglas de las semanas, pídeselo a Claude. Los ejercicios de cada semana los editas tú en la app.</div>`},
   {t: 'Sesiones, racha y torneos', h: `
-    <ul><li><b>Sesiones:</b> lo que registró la persona (RPE de la sesión, y si quiso: pesos, RPE por ejercicio, dolor y duración), con gráficas de carga, dolor y bienestar.</li>
+    <ul><li><b>Progreso por semana</b> (en el Resumen de la ficha): las últimas 8 semanas de sesiones, carga (RPE de la sesión × minutos), dolor promedio y volumen levantado (kg × reps × series marcadas en el modo en vivo), con el cambio frente a la semana anterior. Si la carga sube más del 30 % en una semana, revisa cómo responde.</li>
+    <li><b>Sesiones:</b> lo que registró la persona (RPE de la sesión, y si quiso: pesos, RPE por ejercicio, dolor y duración), con gráficas de carga, dolor y bienestar.</li>
     <li><b>Racha:</b> cuenta semanas cumplidas (una semana cuenta si hizo todas sus sesiones). La semana en curso no rompe la cuenta y los días de descanso no castigan. Si entrenó y no lo registró, marca ese día en la tarjeta Racha. Cuenta para la racha, pero no entra en la carga ni en las gráficas.</li>
     <li><b>Torneos:</b> calendario del mes y "Añadir al calendario" para el celular. El módulo Deporte se planifica con estas fechas.</li></ul>`},
   {t: 'Trabajo en casa y PDF', h: `
@@ -94,6 +97,7 @@ const GUIA = [
   {t: 'Cuenta', h: `
     <ul><li><b>Banco de ejercicios:</b> los básicos y los que más usas. Puedes crear, editar y eliminar (con deshacer y restaurar desde "Eliminados"), con etiquetas para el generador, indicación y video.</li>
     <li><b>Tabla de usuarios:</b> fase, adherencia y dolor de todos en una sola tabla.</li>
+    <li><b>Descargar respaldo:</b> un archivo con todas tus fichas, planes, sesiones, chequeos, evaluaciones y tu banco. Guárdalo en tu Drive o en el computador; dice cuándo descargaste el último.</li>
     <li><b>Notificaciones:</b> actívalas para recibir alertas de dolor y mensajes.</li>
     <li><b>Fisioterapeutas</b> (solo administrador): agregar o quitar fisios. Cada fisio tiene su propio panel y no ve los usuarios de los demás.</li>
     <li><b>Cambiar a mi cuenta de usuario</b> (solo administrador): pasas a tu propia cuenta de usuario con un toque y vuelves desde "Mi fisio → Volver a mi panel de fisio". La primera vez pide la contraseña de esa cuenta. Lo que registres ahí queda guardado de verdad en tu perfil de usuario. Al cerrar sesión, el celular olvida las dos sesiones.</li></ul>`},
@@ -101,7 +105,7 @@ const GUIA = [
     <ul><li><b>Al entrar la primera vez:</b> consentimiento, luego crea su contraseña y entra.</li>
     <li><b>Inicio:</b> estado del día con su sesión y el botón para entrenar, semana, torneo o fase, récord, racha, su meta personal, mensaje sin leer y la lección del día.</li>
     <li><b>Hoy:</b> franja del color del chequeo que explica qué cambió en el plan, y la sesión con un solo botón.</li>
-    <li><b>Modo en vivo:</b> ejercicio por ejercicio, series con un toque, descanso automático, relojes de AMRAP y EMOM, y RPE al final. Puedes desactivarlo por persona.</li>
+    <li><b>Modo en vivo:</b> ejercicio por ejercicio, series con un toque, peso con − / + que arranca con el último que usó en ese ejercicio (las reps arrancan con las del plan), descanso automático, relojes de AMRAP y EMOM, y RPE al final. Puedes desactivarlo por persona.</li>
     <li><b>Mi plan</b>, <b>Progreso</b> (hitos, gráficas, récords y logros), <b>Aprende</b> (sus ejercicios con video y lecciones cortas) y <b>Mi fisio</b> (chat, solicitudes y videos).</li>
     <li><b>Agenda:</b> elige días, hora y lugar, y le llega un recordatorio 30 min antes. Si se salta un día agendado, se le pregunta el motivo con un toque.</li>
     <li><b>Mascota:</b> Pesi (pesa rusa) o Nutria. Celebra la meta del día y gana accesorios con la racha.</li>

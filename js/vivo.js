@@ -95,15 +95,27 @@ function lvChips(name, val, from, to, label){
   for(let v=from; v<=to; v++) h+=`<button type="button" class="lvchip${val===v?' on':''}" data-chip="${name}|${v}" aria-pressed="${val===v}">${v}</button>`;
   return h+'</div>';
 }
+/* Peso por ejercicio sin escribir: arranca con el último peso que registró para ese ejercicio y se ajusta con − / +.
+   Las reps hechas arrancan con las del plan. Así cada serie marcada deja un dato completo (kg × reps × series). */
+function lvLastKg(e){
+  const k=String(e||'').toLowerCase();
+  for(const s of (sessions||[]).slice().sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||''))){ const x=(s.ex||[]).find(v=>String(v.e||'').toLowerCase()===k && v.kg!=null); if(x) return +x.kg; }
+  return null;
+}
+const lvPlanReps = r => { const v=String(r.r||''); if(/^\D*\d+\s*(''|"|s\b|seg|min|')/i.test(v)) return null; const m=v.match(/\d+/); return m?+m[0]:null; };
+function lvKgStep(kg){ return !kg ? 2 : kg<20 ? 1 : 2.5; }
 function lvExStep(st){
-  const r=st.row, d=L.done[L.i]||[], lg=L.log[r.e]||{};
+  const r=st.row, d=L.done[L.i]||[];
+  if(st.log && !L.log[r.e]){ L.log[r.e]={kg:lvLastKg(r.e), reps:lvPlanReps(r)}; }
+  const lg=L.log[r.e]||{};
   let sets=''; for(let s=0;s<st.sets;s++) sets+=`<button type="button" class="lvset${d[s]?' on':''}" data-set="${s}" aria-pressed="${!!d[s]}"><span>Serie ${s+1}</span><b>${esc(r.r||'—')}</b><i>${esc(sinRPE(r.c))}</i></button>`;
   const all=d.filter(Boolean).length>=st.sets;
   return `<div class="lvex"><div class="lvmeta">${lvSide(r.lado)}${r.ter?'<span class="lado l-a">Terapia</span>':''}</div>
     <h1 class="lvname">${esc(r.e)}</h1>${r.cue?`<p class="lvcue">${esc(r.cue)}</p>`:''}${r.n?`<p class="lvnote">${esc(r.n)}</p>`:''}${lvVideo(r)}
+    ${st.log?`<div class="lvkg" role="group" aria-label="Peso"><span>Peso</span><button type="button" class="lvround" data-kg="-1" aria-label="Menos peso">−</button><output>${lg.kg!=null&&lg.kg>0?`${String(lg.kg).replace('.',',')} kg`:'Sin peso'}</output><button type="button" class="lvround" data-kg="1" aria-label="Más peso">+</button></div>`:''}
     <div class="lvsets">${sets}</div>
     ${st.log&&all?`<div class="lvbox"><b>¿Qué RPE sentiste en la última serie? <span class="lvopt">Opcional</span></b>${lvChips('rpe', lg.rpe??null, 5, 10, 'RPE real')}
-      <div class="row2"><label class="f">Peso (kg)<input type="number" inputmode="decimal" step="0.5" data-lg="kg" value="${lg.kg??''}"></label><label class="f">Reps hechas<input type="number" inputmode="numeric" data-lg="reps" value="${lg.reps??''}"></label></div></div>`:''}
+      <div class="row2"><label class="f">Reps hechas (por serie)<input type="number" inputmode="numeric" data-lg="reps" value="${lg.reps??''}"></label></div></div>`:''}
   </div>`;
 }
 function lvCircStep(st){
@@ -169,6 +181,8 @@ function lvClick(e){
   if((b=q('[data-chip]'))){ const [nm,v]=b.dataset.chip.split('|');
     if(nm==='rpe'){ const r=st.row.e; L.log[r]=Object.assign({}, L.log[r], {rpe:+v}); } else L.sum[nm]=+v;
     lvSave(); renderLive(); return; }
+  if((b=q('[data-kg]'))){ const r=st.row.e, cur=(L.log[r]||{}).kg, step=lvKgStep(cur), v=Math.max(0, Math.round(((cur||0) + step * +b.dataset.kg)*2)/2);
+    L.log[r]=Object.assign({}, L.log[r], {kg: v>0?v:null}); lvSave(); renderLive(); return; }
   if((b=q('[data-rnd]'))){ L.rounds[L.i]=Math.max(0,(L.rounds[L.i]||0)+ +b.dataset.rnd); lvSave(); renderLive(); return; }
   if((b=q('[data-clk]'))){ if(b.dataset.clk==='reset') lvClkReset(false); else { const s=lvTimed(st); if(s.done){ lvClkReset(true); L.done[L.i]=false; } else lvClkToggle(); } L.phase=lvTimed(st).key; renderLive(); return; }
   if(q('[data-save]')) lvFinish();
@@ -183,7 +197,8 @@ async function lvFinish(){
   if(S.srpe==null){ toast('Elige el RPE de la sesión.'); return; }
   if(S.dolor==null){ toast('Elige tu nivel de dolor (0 si no hubo).'); return; }
   const c=A.plan.contenido, clamp=(v,a,b)=>v==null?null:Math.max(a,Math.min(b,Math.round(v)));
-  const ex=Object.entries(L.log).map(([e,v])=>({e, kg:v.kg??null, reps:v.reps??null, rpe:v.rpe??null})).filter(x=>x.kg!=null||x.rpe!=null||x.reps!=null);
+  const setsDe = e => { let n=0; L.steps.forEach((x,k)=>{ if(x.k==='ex' && x.row.e===e) n+=(L.done[k]||[]).filter(Boolean).length; }); return n; };
+  const ex=Object.entries(L.log).map(([e,v])=>({e, kg:v.kg??null, reps:v.reps??null, rpe:v.rpe??null, sets:setsDe(e)})).filter(x=>x.sets>0 && (x.kg!=null||x.rpe!=null||x.reps!=null));
   const amr=L.steps.map((s,k)=>s.k==='amrap'&&L.rounds[k]?`AMRAP ${s.min}': ${L.rounds[k]} rondas`:'').filter(Boolean);
   const row={fecha:todayISO(), dia:L.day.name, min:clamp((lvNow()-L.t0)/60000,1,600), srpe:clamp(S.srpe,0,10), dolor:clamp(S.dolor,0,10), d24:'',
     nota:[(S.nota||'').trim(), ...amr, 'Registrada en modo en vivo'].filter(Boolean).join(' · ').slice(0,2000), ex,

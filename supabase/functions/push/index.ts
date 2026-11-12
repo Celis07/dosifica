@@ -1,7 +1,7 @@
 // Ápex · envío de notificaciones push.
 // La llaman la base de datos (disparadores y tareas programadas) con la cabecera x-apex-token.
 // tipos: alerta (dolor alto → fisio), plan (plan publicado → deportista), bienestar (cada chequeo del deportista → fisio, en verde, amarillo o rojo),
-//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), registro (8:30 p. m., chequeo hecho y sesión sin registrar), finplan (fisio, el día antes del último día del plan), agenda (30 min antes de la hora elegida), semanal (lunes, resumen al fisio), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
+//        manana (¿cómo amaneció? + chequeo del día), tarde (3 días sin registrar), racha (7 p. m., racha de chequeos en peligro), registro (8:30 p. m., chequeo hecho y sesión sin registrar), finplan (fisio, el día antes del último día del plan), sinver (fisio, plan nuevo sin abrir en 48 h), agenda (30 min antes de la hora elegida), semanal (lunes, resumen al fisio), mensaje (chat en ambos sentidos), tecnica (video nuevo → fisio, comentario → deportista), prueba (a un correo).
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -232,6 +232,24 @@ Deno.serve(async (req) => {
       for (const [f, noms] of Object.entries(porFisio)) {
         const body = noms.length === 1 ? `El plan de ${noms[0]} termina mañana. Prepárale el siguiente.` : `Terminan mañana: ${noms.slice(0, 5).join(", ")}${noms.length > 5 ? "…" : ""}. Prepárales el siguiente plan.`;
         n += await enviar(f, { title: "Plan por actualizar", body, tag: "finplan" });
+      }
+    }
+    if (b.tipo === "sinver") { // al fisio: plan publicado o cambiado hace más de 48 h que el usuario no ha abierto (una vez por versión)
+      const lim = new Date(Date.now() - 48 * 36e5).toISOString(), viejo = new Date(Date.now() - 21 * 864e5).toISOString();
+      const { data: pls } = await db.from("planes").select("paciente_id,actualizado_at,publicado_at").lt("actualizado_at", lim).gt("actualizado_at", viejo).order("publicado_at", { ascending: false });
+      const ult: Record<string, string> = {};
+      for (const r of (pls || []) as any[]) if (!ult[r.paciente_id]) ult[r.paciente_id] = r.actualizado_at;
+      const ids = Object.keys(ult);
+      const { data: ps } = ids.length ? await db.from("pacientes").select("id,nombre,fisio_email,plan_visto_at").in("id", ids) : { data: [] };
+      const porFisio: Record<string, string[]> = {};
+      for (const p of (ps || []) as any[]) {
+        const act = ult[p.id]; if (!p.fisio_email || (p.plan_visto_at && p.plan_visto_at >= act)) continue;
+        if (!(await unaVez(`sinver-${p.id}-${act}`))) continue;
+        (porFisio[p.fisio_email] ||= []).push(p.nombre || "Sin nombre");
+      }
+      for (const [f, noms] of Object.entries(porFisio)) {
+        const body = noms.length === 1 ? `${noms[0]} no ha abierto su plan nuevo en 48 horas. Puedes escribirle.` : `No han abierto su plan nuevo en 48 horas: ${noms.slice(0, 5).join(", ")}${noms.length > 5 ? "…" : ""}.`;
+        n += await enviar(f, { title: "Plan sin abrir", body, tag: "sinver" });
       }
     }
     if (b.tipo === "prueba" && b.email) n = await enviar(b.email, { title: "Ápex", body: "Las notificaciones quedaron activas en este dispositivo.", tag: "prueba" });
