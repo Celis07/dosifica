@@ -244,3 +244,64 @@ body.fx .sg-hr button{border:0;border-radius:10px;min-height:40px;padding:0 14px
 #fxNet{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);z-index:80;padding:7px 14px;border-radius:999px;font:500 13px/1.2 var(--t-font);background:var(--t-dark);color:var(--t-onDark);box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
 #fxNet.up{background:var(--t-acc);color:var(--t-accInk)}
 #fxNet[hidden]{display:none}
+
+/* ---------- Editor del día: tarjeta por ejercicio, botones grandes ---------- */
+body.fx .day.editing .stp{display:flex;align-items:center;gap:4px}
+body.fx .day.editing .stl{display:none}
+body.fx .day.editing .stb{flex:none;width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:10px;background:var(--t-chip);color:var(--t-ink);font:600 18px/1 var(--t-font)}
+body.fx .day.editing .stp input{min-width:0;text-align:center}
+body.fx .day.editing .cub{margin-top:6px;border:1px solid var(--t-line);border-radius:999px;background:transparent;color:var(--t-mut);font:500 12.5px var(--t-font);padding:4px 10px;min-height:30px}
+body.fx .day.editing .cub.on{background:var(--t-ink);color:var(--t-bg);border-color:var(--t-ink)}
+body.fx .day.editing .mvb{display:inline-flex;gap:4px}
+body.fx .day.editing .xbtn2{width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:10px;background:var(--t-chip);color:var(--t-ink);font:600 15px/1 var(--t-font)}
+body.fx .day.editing .tchk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--t-mut)}
+body.fx .day.editing .tchk span{font-family:var(--t-font)}
+body.fx .dbtns .ddup{background:var(--t-chip);color:var(--t-ink);border:0}
+body.fx .day.editing .dsave,body.fx .dfoot .dsave{background:var(--t-acc)!important;color:var(--t-accInk)!important;border:0;border-radius:12px}
+@media (max-width:640px){
+  body.fx .day.editing .tbl{overflow:visible}
+  body.fx .day.editing table.pl,body.fx .day.editing table.pl tbody{display:block;width:100%;min-width:0!important}
+  body.fx .day.editing table.pl thead{display:none}
+  body.fx .day.editing table.pl tr.er{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"e e" "s r" "ld x";gap:10px 10px;padding:14px 0;border-top:1px solid var(--t-line)}
+  body.fx .day.editing table.pl tr.er:first-child{border-top:0}
+  body.fx .day.editing table.pl tr.er>td{display:block;padding:0!important;border:0!important;min-width:0}
+  body.fx .day.editing td.e{grid-area:e} body.fx .day.editing td.s{grid-area:s} body.fx .day.editing td.r{grid-area:r}
+  body.fx .day.editing td.ld{grid-area:ld;display:flex!important;align-items:center;gap:10px;flex-wrap:wrap}
+  body.fx .day.editing td.x{grid-area:x;display:flex!important;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+  body.fx .day.editing table.pl:not(:has(td.ld)) tr.er{grid-template-areas:"e e" "s r" "x x"}
+  body.fx .day.editing table.pl tr.er>td{width:auto!important;max-width:none!important}
+  body.fx .day.editing .stl{display:block;grid-column:1/-1;font:500 11px var(--t-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--t-mut)}
+  body.fx .day.editing .stp{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:6px;align-items:center}
+  body.fx .day.editing .stb,body.fx .day.editing .xbtn2,body.fx .day.editing .xbtn{width:44px;height:44px;min-height:44px}
+  body.fx .day.editing .stp input{width:100%!important;min-width:0;height:44px;font-size:16px!important;box-sizing:border-box}
+  body.fx .day.editing td.e textarea{font-size:16px!important;width:100%}
+  body.fx .day.editing td.ld select{height:44px;font-size:15px;width:auto!important;min-width:9em}
+  body.fx .day.editing td.e .addnote{min-height:36px}
+  body.fx .day.editing .cub{min-height:36px}
+}
+/* Deshacer */
+#edUndo{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:85;display:flex;align-items:center;gap:14px;padding:8px 8px 8px 16px;border-radius:14px;background:var(--t-dark);color:var(--t-onDark);font:500 14px var(--t-font);box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100% - 32px)}
+#edUndo span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#edUndo button{flex:none;border:0;border-radius:10px;background:var(--t-acc);color:var(--t-accInk);font:600 14px var(--t-font);padding:9px 14px}
+#edUndo[hidden]{display:none}
+/* Herramientas de la semana */
+body.fx .wk-card{padding:0!important;overflow:hidden}
+body.fx .wk-h{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;border:0;background:transparent;padding:14px 16px;text-align:left;color:var(--t-ink);font-family:var(--t-font)}
+body.fx .wk-h b{font-size:15px;font-weight:600} body.fx .wk-h span{font-size:13px;color:var(--t-mut)}
+body.fx .wk-b{display:flex;flex-direction:column;gap:12px;padding:0 16px 16px}
+body.fx .wk-opts{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+body.fx .wk-opts legend{font:500 11px var(--t-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--t-mut);margin-bottom:6px}
+body.fx .wk-opts label{display:flex;align-items:center;gap:10px;font-size:15px;min-height:32px}
+body.fx .wk-acts{display:flex;flex-wrap:wrap;gap:8px}
+body.fx .wk-acts button{border:0;border-radius:12px;min-height:44px;padding:0 14px;background:var(--t-chip);color:var(--t-ink);font:600 14px var(--t-font)}
+body.fx .wk-acts button.pri{background:var(--t-acc);color:var(--t-accInk)}
+body.fx .wk-n{margin:0;font-size:12.5px;color:var(--t-mut)}
+
+/* ---------- Lo que lee el usuario ---------- */
+#athleteApp.ath2 .ap-xd b{font-family:var(--t-mono);font-size:15px;font-weight:500;letter-spacing:-.01em;color:var(--t-ink);overflow-wrap:anywhere;line-height:1.3}
+#athleteApp.ath2 .ap-xd span{font-size:12.5px}
+#athleteApp.ath2 .ap-ter{background:var(--t-gS);color:var(--t-g)}
+#athleteApp.ath2 .ap-note{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+#athleteApp.ath2 .ap-note.open{display:block;-webkit-line-clamp:unset}
+body.fx .day.editing .xbtn{border:0;border-radius:10px;background:var(--t-rS);color:var(--t-r);font:600 18px/1 var(--t-font);width:34px;height:34px;min-height:34px;padding:0}
+@media (min-width:641px){ body.fx .day.editing .stp input{width:3.6em} body.fx .day.editing td.r .stp input{width:6.5em} body.fx .day.editing td.x{white-space:nowrap} }

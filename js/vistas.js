@@ -37,12 +37,17 @@ function rowView(r){
   return `<tr><td class="e">${r.ter?'<span class="ter" title="Terapia">T</span>':''}${vid?`<a href="${esc(vid)}" target="_blank" rel="noopener">${esc(r.e)}</a>`:esc(r.e)}${cue?`<div class="cue">${esc(cue)}</div>`:''}${sug?`<div class="sug">${esc(sug)}</div>`:''}${r.n?`<div class="rnote">${esc(r.n)}</div>`:''}</td>${isRod(st)?`<td class="ld">${ladoTag(r.lado)}</td>`:''}<td class="s">${esc(r.s)}</td><td class="r">${esc(r.r)}</td></tr>`;
 }
 function rowEdit(r, di, gi, ri){
-  const a=(f,w,v)=>`<input value="${esc(v??r[f])}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}"${w?` style="width:${w}"`:''} aria-label="${f}">`;
-  const ta=(f,lbl,v)=>`<textarea rows="1" class="grow" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}" aria-label="${lbl}"${f==='e'?' data-sugx autocomplete="off"':''}>${esc(v??r[f])}</textarea>`;
-  const nota = r.n ? ta('n','Nota') : `<button type="button" class="addnote" data-addnote="${di}|${gi}|${ri}">+ Añadir nota</button>`;
-  let html = `<tr><td class="e">${ta('e','Ejercicio')}${nota}</td>
-    ${isRod(st)?`<td class="ld"><select data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="lado" aria-label="Lado"><option value="">—</option>${LADOS.map(l=>`<option${r.lado===l?' selected':''}>${l}</option>`).join('')}</select><label class="tchk"><input type="checkbox" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="ter"${r.ter?' checked':''}> Terapia</label></td>`:''}
-    <td class="s">${a('s','4.5em')}</td><td class="r">${a('r','7em')}</td><td class="x"><button class="xbtn" data-del="${di}|${gi}|${ri}" aria-label="Quitar ejercicio">×</button></td></tr>`;
+  const id=`${di}|${gi}|${ri}`;
+  const a=(f,ph,mode)=>`<input value="${esc(r[f]??'')}" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}" placeholder="${ph}"${mode?` inputmode="${mode}"`:''} aria-label="${ph}">`;
+  const ta=(f,lbl,v)=>`<textarea rows="1" class="grow" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="${f}" aria-label="${lbl}"${f==='e'?' data-sugx autocomplete="off" placeholder="Ejercicio"':''}>${esc(v??r[f])}</textarea>`;
+  const nota = r.n ? ta('n','Nota') : `<button type="button" class="addnote" data-addnote="${id}">+ Añadir nota</button>`;
+  const stp=(f,lbl,mode)=>`<div class="stp"><span class="stl">${lbl}</span><button type="button" class="stb" data-step="${id}|${f}|-1" aria-label="${lbl}: menos">−</button>${a(f,lbl,mode)}<button type="button" class="stb" data-step="${id}|${f}|1" aria-label="${lbl}: más">+</button></div>`;
+  const cu=/c\/u|por lado/i.test(r.r||'');
+  const ter=`<label class="tchk"><input type="checkbox" data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="ter"${r.ter?' checked':''}><span>Terapia</span></label>`;
+  let html = `<tr class="er"><td class="e">${ta('e','Ejercicio')}${nota}</td>
+    ${isRod(st)?`<td class="ld"><select data-d="${di}" data-g="${gi}" data-r="${ri}" data-f="lado" aria-label="Lado"><option value="">Lado</option>${LADOS.map(l=>`<option${r.lado===l?' selected':''}>${l}</option>`).join('')}</select>${ter}</td>`:''}
+    <td class="s">${stp('s','Series','numeric')}</td><td class="r">${stp('r','Reps / tiempo')}<button type="button" class="cub${cu?' on':''}" data-cu="${id}" aria-pressed="${cu}">Por lado</button></td>
+    <td class="x">${isRod(st)?'':ter}<span class="mvb"><button type="button" class="xbtn2" data-mv="${id}|-1" aria-label="Subir ejercicio">↑</button><button type="button" class="xbtn2" data-mv="${id}|1" aria-label="Bajar ejercicio">↓</button></span><button class="xbtn" data-del="${id}" aria-label="Quitar ejercicio">×</button></td></tr>`;
   if(subOpen===`${di}|${gi}|${ri}`){
     const c=candidates(r.e, st);
     html += `<tr class="subrow"><td colspan="8">${c.length?`<span class="small">Alternativas que respetan las restricciones de esta fase:</span><div class="picks">${c.map(x=>`<button class="pick" data-pick="${di}|${gi}|${ri}|${esc(x.n)}">${esc(x.n)}<i>${esc(x.cue)}</i></button>`).join('')}</div>`:'<span class="small">No hay alternativas en la biblioteca que respeten las restricciones de esta fase. Escribe una tú.</span>'}</td></tr>`;
@@ -71,7 +76,7 @@ let editDay = null;   // día que se está editando (null = ninguno)
 function dayHTML(day, di){
   const ed = editMode && (editDay==null || editDay===di);
   const saveBtn = `<button type="button" class="dsave" data-dsave="${di}">Guardar</button>`;
-  const headBtns = ed ? saveBtn
+  const headBtns = ed ? `<span class="dbtns"><button type="button" class="lbtn ddup" data-ddup="${di}">Duplicar</button>${saveBtn}</span>`
     : `<span class="dbtns"><button type="button" class="lbtn dedit" data-dedit="${di}">Editar</button><button class="lbtn" data-log="${di}">${logOpen===di?'Cerrar registro':'Registrar sesión'}</button></span>`;
   return `<section class="card day${ed?' editing':''}" style="padding:12px" data-day="${di}">
   <div class="dayhead"><h3>${esc(day.name)}</h3>${headBtns}</div>

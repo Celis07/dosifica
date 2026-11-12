@@ -56,7 +56,11 @@ const GUIA = [
     <li><b>Historial:</b> cada guardado deja una versión (las últimas 10, y los guardados seguidos en menos de 10 min se juntan). Restauras una con un toque.</li>
     <li><b>Duración del plan:</b> eliges cuántas semanas dura. Un día antes de que termine te llega el aviso, y en Inicio aparece en "por actualizar".</li>
     <li><b>Restablecer plan base</b> borra los cambios de la fase, pero la versión actual queda en el historial.</li>
-    <li><b>Quitar o agregar ejercicios</b> deja la pantalla donde estabas: el día que editas no se mueve.</li>
+    <li><b>Editar en el celular:</b> cada ejercicio es una tarjeta: nombre arriba; series y reps con botones − y + (los rangos como 8–10 suben juntos); "Por lado" se activa con un toque; lado y terapia abajo; flechas para subir o bajar el ejercicio.</li>
+    <li><b>Quitar un ejercicio</b> no pregunta: sale "Deshacer" por unos segundos. La pantalla se queda donde estabas.</li>
+    <li><b>Duplicar día:</b> en un día que estás editando, "Duplicar" crea una copia justo debajo.</li>
+    <li><b>Herramientas de la semana</b> (antes del Día 1): "Progresar esta semana" sube lo que marques (+1 serie en el trabajo central, +2 reps, RPE +1, isométricos +10 s). En macrociclos, "Copiar a la semana siguiente" la copia con o sin esa progresión y te lleva a verla.</li>
+    <li><b>Datos para medir:</b> al guardar, la app guarda aparte series, reps, segundos y RPE de cada ejercicio (sin cambiar lo que escribiste) para medir volumen y progreso más adelante.</li>
     <li><b>Sin internet:</b> el panel abre con la copia guardada en tu celular y puedes editar y guardar. Arriba sale "Sin conexión · N fichas por subir". Al volver la conexión se sube todo solo: la ficha y el plan que ve la persona. Sin internet no puedes crear usuarios nuevos ni publicar.</li></ul>`},
   {t: 'Macrociclos con fechas', h: `
     <p>Para planes de varias semanas armados de antemano (por ejemplo la preparación hacia un torneo).</p>
@@ -101,6 +105,7 @@ const GUIA = [
     <li><b>Mi plan</b>, <b>Progreso</b> (hitos, gráficas, récords y logros), <b>Aprende</b> (sus ejercicios con video y lecciones cortas) y <b>Mi fisio</b> (chat, solicitudes y videos).</li>
     <li><b>Agenda:</b> elige días, hora y lugar, y le llega un recordatorio 30 min antes. Si se salta un día agendado, se le pregunta el motivo con un toque.</li>
     <li><b>Mascota:</b> Pesi (pesa rusa) o Nutria. Celebra la meta del día y gana accesorios con la racha.</li>
+    <li><b>Cómo lee el plan:</b> la dosis en grande ("3 × 8") y "por lado" escrito completo; los bloques intermitentes y AMRAP explicados en una frase ("15 s de trabajo y 10 s de pausa, 4 rondas"); las notas largas en dos líneas que se abren al tocar; los terapéuticos con la etiqueta "Terapia · no se salta".</li>
     <li><b>Sin internet:</b> su app abre igual y lo que registre se envía al volver la conexión. Tu panel también funciona sin internet (ver Editar el plan).</li>
     <li><b>Notificaciones:</b> la persona puede activar o desactivar cada tipo (mensajes, plan nuevo, recordatorio del chequeo, inactividad).</li></ul>`}
 ];

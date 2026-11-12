@@ -75,17 +75,28 @@ function hWhy(wl){
 /* ---------- Piezas ---------- */
 function hRow(r, rod){
   const name = r.video ? `<a href="${esc(r.video)}" target="_blank" rel="noopener">${esc(r.e)}</a>` : esc(r.e);
-  const dose = r.s && r.r ? `${r.s} × ${r.r}` : (r.s || r.r || '');
+  const porLado = /c\/u|por lado/i.test(r.r || '');
+  const rr = String(r.r || '').replace(/\s*(c\/u|por lado)\s*/ig, ' ').trim();
+  const dose = r.s && rr ? `${r.s} × ${rr}` : (r.s || rr || '');
   const lado = rod && r.lado && r.lado !== 'Ambas' ? `Pierna ${String(r.lado).toLowerCase()}` : '';
   const sug = suggestion(r);
   const warn = /^Molestia/.test(r.n || '');
   return `<div class="ap-x">
-    <div class="ap-xm"><span class="ap-xn">${r.ter ? '<span class="ap-ter">Terapia</span>' : ''}${name}</span>
+    <div class="ap-xm"><span class="ap-xn">${r.ter ? '<span class="ap-ter">Terapia · no se salta</span>' : ''}${name}</span>
       ${lado ? `<span class="ap-xs">${esc(lado)}</span>` : ''}
       ${r.cue ? `<span class="ap-xs">${esc(r.cue)}</span>` : ''}
-      ${r.n ? `<span class="ap-xs${warn ? ' ap-warn' : ''}">${esc(r.n)}</span>` : ''}
+      ${r.n ? `<span class="ap-xs ap-note${warn ? ' ap-warn' : ''}" tabindex="0">${esc(r.n)}</span>` : ''}
       ${sug ? `<span class="ap-xs ap-sug">${esc(hCap(sug))}</span>` : ''}</div>
-    <div class="ap-xd">${dose ? `<b>${esc(dose)}</b>` : ''}</div></div>`;
+    <div class="ap-xd">${dose ? `<b>${esc(dose)}</b>` : ''}${porLado ? '<span>por lado</span>' : ''}</div></div>`;
+}
+/* El formato del bloque explicado para quien entrena sola (no "15:10 × 4") */
+function fmtHumano(f){
+  if(!f || !f.t || f.t === 'series') return '';
+  if(f.t === 'inter') return `${f.a || 40} s de trabajo y ${f.b || 20} s de pausa, ${f.c || 3} rondas`;
+  if(f.t === 'amrap') return `todas las rondas que puedas en ${f.a || 12} min`;
+  if(f.t === 'emom') return `cada minuto, durante ${f.a || 10} min`;
+  if(f.t === 'rondas') return `${f.a || 3} rondas seguidas${f.b ? ', descanso ' + f.b : ''}`;
+  return fmtLabel(f);
 }
 function hBlocks(day, k){
   const rod = (A.plan?.contenido?.modulo || 'rodilla') === 'rodilla';
@@ -94,11 +105,11 @@ function hBlocks(day, k){
   const rpeLine = ses ? `<p class="ap-rpes${adj ? ' k-' + k : ''}">Esfuerzo de la sesión <b>RPE ${esc(ses)}${adj ? ' hoy' : ''}</b></p>` : '';
   return rpeLine + `<div class="ap-list">${day.segs.filter(sg => sg.rows.length).map(sg => {
     const n = sg.rows.length, rpe = '', mark = false;
-    const sub = [sg.sub, fmtLabel(sg.fmt), blkInt(sg) ? 'máxima intención' : '', `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(', ');
+    const sub = [sg.sub, fmtHumano(sg.fmt), blkInt(sg) ? 'máxima intención' : '', `${n} ejercicio${n === 1 ? '' : 's'}`].filter(Boolean).join(' · ');
     return `<details class="ap-blk"><summary>
       <span class="ap-l"><b>${esc(SEGS[sg.type] || sg.type)}</b><span>${esc(sub)}</span></span>
       <span class="ap-r">${rpe ? `<span class="ap-rpe${mark ? ' k-' + k : ''}">${esc(rpe)}${mark ? ' hoy' : ''}</span>` : ''}${H_ICON.chev}</span>
-    </summary><div class="ap-ex">${sg.rows.map(r => hRow(r, rod)).join('')}</div></details>`;
+    </summary><div class="ap-ex">${sg.rows.map(r => hRow(sg.fmt && sg.fmt.t === 'inter' ? Object.assign({}, r, {s: '', r: ''}) : r, rod)).join('')}</div></details>`;
   }).join('')}</div>`;
 }
 function hTabbar(){
@@ -295,3 +306,6 @@ startLive = function(di){
   if(!wellness.some(x => x.fecha === todayISO()) && A.tab !== 'hoy'){ A.tab = 'hoy'; }
   _startLiveH(di);
 };
+
+/* Notas largas: dos líneas y se abren al tocar */
+document.addEventListener('click', e => { const n = e.target.closest('#athleteApp .ap-note'); if(n) n.classList.toggle('open'); });
