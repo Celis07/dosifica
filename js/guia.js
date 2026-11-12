@@ -2,7 +2,7 @@
    Cuenta → Herramientas → "Guía de Ápex". Explica todas las funciones del panel y de la app del usuario.
    REGLA: cada cambio en la app actualiza esta guía en el mismo cambio (ver CLAUDE.md) y la fecha GUIA_FECHA.
    Se carga de último: su envoltorio de renderHome reemplaza la página de Cuenta mientras la guía está abierta. */
-const GUIA_FECHA = '9 de noviembre de 2026';
+const GUIA_FECHA = '11 de noviembre de 2026';
 const GUIA = [
   {t: 'Primeros pasos', h: `
     <p>Ápex tiene dos caras: tu <b>panel de fisio</b>, donde creas y ajustas los planes, y la <b>app del usuario</b>, donde cada persona ve su plan, hace su chequeo diario y registra sus sesiones.</p>
@@ -55,7 +55,9 @@ const GUIA = [
     <li><b>Plantillas:</b> guarda la semana actual como plantilla. Luego puedes "Agregar como día" (suma un día sin tocar la semana) o "Reemplazar semana". Si la marcas como compartida, la ven los otros fisios (solo la plantilla, nunca los datos de la persona).</li>
     <li><b>Historial:</b> cada guardado deja una versión (las últimas 10, y los guardados seguidos en menos de 10 min se juntan). Restauras una con un toque.</li>
     <li><b>Duración del plan:</b> eliges cuántas semanas dura. Un día antes de que termine te llega el aviso, y en Inicio aparece en "por actualizar".</li>
-    <li><b>Restablecer plan base</b> borra los cambios de la fase, pero la versión actual queda en el historial.</li></ul>`},
+    <li><b>Restablecer plan base</b> borra los cambios de la fase, pero la versión actual queda en el historial.</li>
+    <li><b>Quitar o agregar ejercicios</b> deja la pantalla donde estabas: el día que editas no se mueve.</li>
+    <li><b>Sin internet:</b> el panel abre con la copia guardada en tu celular y puedes editar y guardar. Arriba sale "Sin conexión · N fichas por subir". Al volver la conexión se sube todo solo: la ficha y el plan que ve la persona. Sin internet no puedes crear usuarios nuevos ni publicar.</li></ul>`},
   {t: 'Macrociclos con fechas', h: `
     <p>Para planes de varias semanas armados de antemano (por ejemplo la preparación hacia un torneo).</p>
     <ul><li><b>Cómo se cargan:</b> le pasas el macrociclo a Claude (un Excel o un documento) y él lo carga en la ficha. Cada semana queda con su fecha de inicio, su nombre, su objetivo y sus días.</li>
@@ -99,7 +101,7 @@ const GUIA = [
     <li><b>Mi plan</b>, <b>Progreso</b> (hitos, gráficas, récords y logros), <b>Aprende</b> (sus ejercicios con video y lecciones cortas) y <b>Mi fisio</b> (chat, solicitudes y videos).</li>
     <li><b>Agenda:</b> elige días, hora y lugar, y le llega un recordatorio 30 min antes. Si se salta un día agendado, se le pregunta el motivo con un toque.</li>
     <li><b>Mascota:</b> Pesi (pesa rusa) o Nutria. Celebra la meta del día y gana accesorios con la racha.</li>
-    <li><b>Sin internet:</b> su app abre igual y lo que registre se envía al volver la conexión. Tu panel sí necesita internet.</li>
+    <li><b>Sin internet:</b> su app abre igual y lo que registre se envía al volver la conexión. Tu panel también funciona sin internet (ver Editar el plan).</li>
     <li><b>Notificaciones:</b> la persona puede activar o desactivar cada tipo (mensajes, plan nuevo, recordatorio del chequeo, inactividad).</li></ul>`}
 ];
 FX.guia = false;

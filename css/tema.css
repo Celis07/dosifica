@@ -239,3 +239,8 @@ body.fx .sg-acts button,body.fx .sg-x{border:0;background:transparent;padding:0;
 body.fx .sg-hr button{border:0;border-radius:10px;min-height:40px;padding:0 14px;background:var(--t-chip);color:var(--t-ink);font:inherit;font-size:13.5px;font-weight:600;flex:none}
 .sg-h{font-family:var(--t-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--t-mut);margin:0}
 .sg-home{margin-top:14px}
+
+/* ---------- Sin conexión en el panel del fisio ---------- */
+#fxNet{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 8px);z-index:80;padding:7px 14px;border-radius:999px;font:500 13px/1.2 var(--t-font);background:var(--t-dark);color:var(--t-onDark);box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+#fxNet.up{background:var(--t-acc);color:var(--t-accInk)}
+#fxNet[hidden]{display:none}

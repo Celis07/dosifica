@@ -329,6 +329,13 @@ $('#out').addEventListener('change', e=>{
   if(t.dataset.f==='e'){ const v=t.value.trim(); if(v && !BASE.has(v) && !myLib.includes(v)){ myLib.push(v); buildBanco(); renderLib(); saveLib(); } if(!editMode) render(); }
   else if(t.dataset.f && !editMode && !document.querySelector('.edited')) render();   // en edición no se repinta: se perdía lo que escribías en el siguiente campo
 });
+/* Mantiene el día que se edita en el mismo lugar de la pantalla al repintar (quitar o agregar ejercicios no sube la página) */
+function keepDay(d, fn){
+  const sel=`section.day[data-day="${d}"]`, el=document.querySelector(sel), y0=el?el.getBoundingClientRect().top:null, sy=window.scrollY;
+  fn();
+  const el2=document.querySelector(sel);
+  if(el2 && y0!=null) window.scrollTo(0, window.scrollY + el2.getBoundingClientRect().top - y0); else window.scrollTo(0, sy);
+}
 $('#out').addEventListener('click', async e=>{
   const q=s=>e.target.closest(s);
   let b;
@@ -341,8 +348,8 @@ $('#out').addEventListener('click', async e=>{
     document.querySelector(`section.day[data-day="${d}"]`)?.scrollIntoView({block:'nearest'}); return save(false); }
   if(q('#bReset')){ delete st.plans[planKey(st)]; render(); return markDirty(); }
   if((b=q('[data-view]'))){ view=b.dataset.view; editMode=false; editDay=null; logOpen=null; return render(); }
-  if((b=q('[data-del]'))){ const [d,g,r]=b.dataset.del.split('|').map(Number); ensureCustom()[d].segs[g].rows.splice(r,1); subOpen=null; render(); return markDirty(); }
-  if((b=q('[data-add]'))){ const [d,g]=b.dataset.add.split('|').map(Number); const days=ensureCustom(); days[d].segs[g].rows.push({e:'',lado:days[d].segs[g].type==='central'?'Ambas':'',s:'3',r:'',c:'RPE 8',n:'',ter:false}); render(); markDirty();
+  if((b=q('[data-del]'))){ const [d,g,r]=b.dataset.del.split('|').map(Number); keepDay(d, ()=>{ ensureCustom()[d].segs[g].rows.splice(r,1); subOpen=null; render(); }); return markDirty(); }
+  if((b=q('[data-add]'))){ const [d,g]=b.dataset.add.split('|').map(Number); const days=ensureCustom(); days[d].segs[g].rows.push({e:'',lado:days[d].segs[g].type==='central'?'Ambas':'',s:'3',r:'',c:'RPE 8',n:'',ter:false}); keepDay(d, render); markDirty();
     const inp=document.querySelector(`[data-d="${d}"][data-g="${g}"][data-r="${days[d].segs[g].rows.length-1}"][data-f="e"]`); if(inp) inp.focus(); return; }
   if((b=q('[data-sub]'))){ subOpen = subOpen===b.dataset.sub ? null : b.dataset.sub; return render(); }
   if((b=q('[data-pick]'))){ const p=b.dataset.pick.split('|'); const [d,g,r]=p.slice(0,3).map(Number); const name=p.slice(3).join('|'); const row=ensureCustom()[d].segs[g].rows[r]; row.e=name; subOpen=null; render(); return markDirty(); }
