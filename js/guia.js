@@ -2,7 +2,7 @@
    Cuenta → Herramientas → "Guía de Ápex". Explica todas las funciones del panel y de la app del usuario.
    REGLA: cada cambio en la app actualiza esta guía en el mismo cambio (ver CLAUDE.md) y la fecha GUIA_FECHA.
    Se carga de último: su envoltorio de renderHome reemplaza la página de Cuenta mientras la guía está abierta. */
-const GUIA_FECHA = '11 de noviembre de 2026';
+const GUIA_FECHA = '13 de noviembre de 2026';
 const GUIA = [
   {t: 'Primeros pasos', h: `
     <p>Ápex tiene dos caras: tu <b>panel de fisio</b>, donde creas y ajustas los planes, y la <b>app del usuario</b>, donde cada persona ve su plan, hace su chequeo diario y registra sus sesiones.</p>
@@ -30,11 +30,12 @@ const GUIA = [
     <ul><li>El punto en la foto es el estado del chequeo de hoy. Debajo del nombre van etiquetas cortas con la condición.</li>
     <li>A la vista quedan <b>Publicar</b>, <b>Mensaje</b> y <b>Bienestar</b>. <b>Solicitudes</b> solo aparece si hay pendientes.</li>
     <li>En el menú <b>⋯</b>: Guardar, Enviar acceso a la app, Duración del plan, Restablecer plan base (pide confirmación) y otras acciones. La ficha se guarda sola.</li>
-    <li>Etiquetas como "Visto" te dicen si la persona ya vio la última versión de su plan.</li></ul>
+    <li>Etiquetas como "Visto" te dicen si la persona ya vio la última versión de su plan.</li>
+    <li><b>Enviar acceso a la app:</b> si la ficha no tiene correo, toca <b>Crear enlace de registro</b> y mándalo por WhatsApp. La persona abre el enlace, escribe su propio correo, acepta el consentimiento y crea su contraseña. El enlace sirve una sola vez, vence en 7 días y crear otro anula el anterior. Si ya tienes su correo, puedes escribirlo tú y enviarle el enlace de acceso de siempre.</li></ul>
     <h4>Secciones (pestañas de la ficha)</h4>
     <p><b>Resumen</b>, <b>Plan</b>, <b>Sesiones</b> y <b>Torneos</b>. Con el lápiz junto al nombre abres <b>Datos</b>, donde están la historia clínica, la evaluación y el consentimiento.</p>`},
   {t: 'Datos, historia y evaluación', h: `
-    <ul><li><b>Datos:</b> nombre, correo (su usuario para entrar), módulo, condición, lado, días por semana (1 a 6), fecha de inicio, deporte y nivel. La semana del plan se calcula sola con la fecha de inicio.</li>
+    <ul><li><b>Datos:</b> nombre, correo (su usuario para entrar; puede quedar vacío si le envías un enlace de registro), módulo, condición, lado, días por semana (1 a 6), fecha de inicio, deporte y nivel. La semana del plan se calcula sola con la fecha de inicio.</li>
     <li><b>Deporte:</b> una sola lista con los deportes más comunes, y puedes añadir otro. Uno nuevo se entrena "parecido a" un perfil existente.</li>
     <li><b>Historia clínica:</b> motivo, mecanismo, fecha de la lesión, diagnóstico, cirugía y antecedentes.</li>
     <li><b>Perfil de evaluación:</b> antecedentes, banderas rojas y amarillas, dolor por zonas y pruebas físicas con su historial (por ejemplo sentarse y pararse en 30 s, TUG, prensión, velocidad de marcha y pruebas de tobillo). Se guarda en la ficha.</li>
