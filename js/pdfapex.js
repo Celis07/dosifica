@@ -54,14 +54,26 @@ async function apxPDF(D){
   if(D.intro){ F('OswaldL', 10, [60, 68, 62]); wrap(D.intro, 400).slice(0, 4).forEach((l, k) => T(l, W / 2, 418 + k * 15, {al: 'c'})); }
   // Fila de datos
   doc.setDrawColor(...APX.ink); doc.setLineWidth(1.6); doc.line(L, 661, R, 661);
-  const cw = CW / 4;
-  (D.info || []).slice(0, 4).forEach(([lab, val, pill], k) => {
-    const x = L + k * cw + (k ? 10 : 0);
-    if(k){ doc.setDrawColor(...APX.line); doc.setLineWidth(0.75); doc.line(L + k * cw, 662, L + k * cw, 717); }
+  // Columnas a la medida del contenido (nombre y fase más anchas). Nada se corta con "…":
+  // el texto baja de tamaño hasta 9 pt y, si aún no cabe, pasa a 2 líneas.
+  const info = (D.info || []).slice(0, 4), PESO = [0.31, 0.35, 0.16, 0.18].slice(0, info.length), sumP = PESO.reduce((a, b) => a + b, 0) || 1;
+  let cx = L;
+  info.forEach(([lab, val, pill], k) => {
+    const cw = CW * PESO[k] / sumP, x = cx + (k ? 10 : 0), maxW = cw - (k ? 10 : 0) - (pill ? 22 : 8);
+    if(k){ doc.setDrawColor(...APX.line); doc.setLineWidth(0.75); doc.line(cx, 662, cx, 717); }
+    cx += cw;
     F('Mono', 7, APX.mut); T(String(lab).toUpperCase(), x, 682, {cs: 1.8});
-    F('OswaldSB', 12.5, APX.ink); let v = apxClean(val); while(doc.getTextWidth(v) > cw - 26 && v.length > 4) v = v.slice(0, -2).trim() + '…';
-    if(pill){ const w = doc.getTextWidth(v) + 14; doc.setFillColor(...APX.lime); doc.roundedRect(x, 689, w, 23, 11.5, 11.5, 'F'); T(v, x + 7, 706); }
-    else T(v, x, 706);
+    const v = apxClean(val);
+    let size = 12.5, lines = [v];
+    for(const sz of [12.5, 11.5, 10.5, 9.5]){ size = sz; F('OswaldSB', sz, APX.ink); if(doc.getTextWidth(v) <= maxW) break; }
+    if(doc.getTextWidth(v) > maxW){ F('OswaldSB', size = 9, APX.ink); lines = doc.splitTextToSize(v, maxW).slice(0, 2); }
+    const lw = Math.max(...lines.map(l => doc.getTextWidth(l))), two = lines.length > 1;
+    if(pill){
+      doc.setFillColor(...APX.lime);
+      if(two){ doc.roundedRect(x, 686, lw + 14, 29, 8, 8, 'F'); lines.forEach((l, i) => T(l, x + 7, 698 + i * 11)); }
+      else { doc.roundedRect(x, 689, lw + 14, 23, 11.5, 11.5, 'F'); T(lines[0], x + 7, 705 - (12.5 - size) / 3); }
+    } else if(two) lines.forEach((l, i) => T(l, x, 700 + i * 11));
+    else T(lines[0], x, 706);
   });
   hline(736); F('Mono', 6.5, APX.mut); T(`${D.autor} · FISIOTERAPEUTA`.toUpperCase(), L, 757, {cs: 1.2}); T('HUMAN PERFORMANCE', 384, 757, {cs: 1.2, al: 'c'}); pages.push(page);
 
@@ -140,9 +152,13 @@ pdf = async function(){
       : 'Elige el peso para quedar en el RPE indicado. Si te sobra, sube un poco la próxima vez; si no llegas a las repeticiones, bájalo. "Máx. intención" es cada repetición lo más rápido posible, sin cansarte.';
     const ind = [regla, 'RPE 8 = podrías hacer 2 repeticiones más. RPE 7 = 3 más.', ph.avoid ? 'Evitar por ahora: ' + ph.avoid : '', st.notas ? 'Notas: ' + st.notas : ''].filter(Boolean);
     void ind; /* La guía "Cómo dosificar" ya no se imprime en el PDF del plan. */
-    const doc = await apxPDF({autor: apxAutor(), eyebrow: `PLAN DE ENTRENAMIENTO — ${new Date().getFullYear()}`, intro: ph.goal, fase: fase,
-      derecha: `${fase} · ${nd} SESION${nd > 1 ? 'ES' : ''} / SEMANA`.toUpperCase(),
-      info: [[quien, st.nombre || '—'], ['Fase', fase.toUpperCase(), true], ['Semana', apxPad(sem)], ['Sesiones', `${nd} / SEMANA`]], paginas});
+    // Con macrociclo: la semana que se está viendo (su nombre, objetivo y fechas), no la fase genérica
+    const mw = typeof mcActiva === 'function' && mcActiva(st) ? mcVista(st) : null;
+    const faseP = mw ? String(mw.nombre || fase).replace(/^M\d+\s*·\s*/, '') : fase, intro = mw ? (mw.nota || mw.objetivo || '') : ph.goal;
+    const semP = mw ? ['Fechas', mcFechas(st.macro.semanas, mw).replace(/^(\d+) (\S+) – (\d+) \2$/, '$1 – $3 $2').toUpperCase()] : ['Semana', apxPad(sem)];
+    const doc = await apxPDF({autor: apxAutor(), eyebrow: `PLAN DE ENTRENAMIENTO — ${new Date().getFullYear()}`, intro, fase: faseP,
+      derecha: `${faseP} · ${nd} SESION${nd > 1 ? 'ES' : ''}`.toUpperCase(),
+      info: [[quien, st.nombre || '—'], ['Fase', faseP.toUpperCase(), true], semP, ['Sesiones', `${nd} / SEMANA`]], paginas});
     await apxSave(doc, `Plan ${(st.nombre || 'usuario').replace(/[^\p{L}\p{N} _-]/gu, '')} - semana ${sem}.pdf`);
   }catch(e){ console.error(e); return _pdfViejo(); }
 };

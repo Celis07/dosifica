@@ -80,7 +80,7 @@ const GUIA = [
     <li><b>Torneos:</b> calendario del mes y "Añadir al calendario" para el celular. El módulo Deporte se planifica con estas fechas.</li></ul>`},
   {t: 'Trabajo en casa y PDF', h: `
     <ul><li><b>En casa</b> (usuarios de rehabilitación): se genera según el módulo y la fase. Todo es editable. "Enviar a su app" lo pone en su plan, y también viaja con cada publicación.</li>
-    <li><b>PDF del plan</b> y <b>PDF de casa</b> con el estilo de Ápex: portada y una página por día o por bloque.</li></ul>`},
+    <li><b>PDF del plan</b> y <b>PDF de casa</b> con el estilo de Ápex: portada y una página por día o por bloque. En la portada nada se corta: los nombres y fases largas se achican o pasan a dos líneas. Con macrociclo, la portada muestra la semana que estás viendo (nombre, nota y fechas).</li></ul>`},
   {t: 'Chequeo diario y ajuste automático', h: `
     <ul><li>Antes de ver el plan de cada día, la persona responde su chequeo: sueño, estrés, fatiga y dolor muscular (de 1 a 5), y si le duele algo (zona, lado y 0–10).</li>
     <li>Sale un semáforo que ven los dos, y el plan del día se ajusta solo:
